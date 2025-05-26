@@ -157,6 +157,92 @@ const QUESTIONS = {
             "correctAnswer": 0,
             "explanation": "QuickSort prints array after each partition. First partition around 9, then 5, then 8.",
             "difficulty": "hard"
+        },
+        {
+            "question": "What will be printed by the following code?\n```java\ntry { throw new Exception(); }\ncatch(Exception e) { System.out.print(\"1\"); }\nfinally { System.out.print(\"2\"); }",
+            "options": ["12", "1", "2", "Exception"],
+            "correctAnswer": 0,
+            "explanation": "catch block executes when exception is thrown, finally always executes",
+            "difficulty": "hard"
+        },
+        {
+            "question": "What is the time complexity of binary search?",
+            "options": ["O(log n)", "O(n)", "O(n log n)", "O(1)"],
+            "correctAnswer": 0,
+            "explanation": "Binary search halves the search space in each step",
+            "difficulty": "hard"
+        },
+        {
+            "question": "Which of the following is the correct bubble sort algorithm in Java?",
+            "options": [
+                "for(int i=0;i<n-1;i++)for(int j=0;j<n-i-1;j++)if(arr[j]>arr[j+1])swap(arr[j],arr[j+1]);",
+                "for(int i=0;i<n;i++)for(int j=0;j<n;j++)if(arr[i]>arr[j])swap(arr[i],arr[j]);",
+                "for(int i=0;i<n;i++)if(arr[i]>arr[i+1])swap(arr[i],arr[i+1]);",
+                "for(int i=n-1;i>=0;i--)for(int j=0;j<i;j++)if(arr[j]>arr[j+1])swap(arr[j],arr[j+1]);"
+            ],
+            "correctAnswer": 0,
+            "explanation": "Bubble sort uses nested loops to repeatedly swap adjacent elements",
+            "difficulty": "hard"
+        },
+        {
+            "question": "What is the purpose of the volatile keyword in Java?",
+            "options": [
+                "Thread visibility",
+                "Memory optimization",
+                "Performance improvement",
+                "Exception handling"
+            ],
+            "correctAnswer": 0,
+            "explanation": "volatile ensures that variable updates are immediately visible to other threads",
+            "difficulty": "hard"
+        },
+        {
+            "question": "What is the diamond problem in multiple inheritance?",
+            "options": [
+                "When a class inherits from two classes with common ancestor",
+                "When a class has multiple constructors",
+                "When a class implements multiple interfaces",
+                "When a class has cyclic dependencies"
+            ],
+            "correctAnswer": 0,
+            "explanation": "The diamond problem occurs in multiple inheritance when a class inherits from two classes that have a common ancestor",
+            "difficulty": "hard"
+        },
+        {
+            "question": "What is the difference between Runnable and Callable?",
+            "options": [
+                "Callable can return value and throw exceptions",
+                "Runnable is faster than Callable",
+                "Callable is deprecated",
+                "Runnable supports multiple threads"
+            ],
+            "correctAnswer": 0,
+            "explanation": "Runnable's run() returns void, while Callable's call() can return values and throw checked exceptions",
+            "difficulty": "hard"
+        },
+        {
+            "question": "How does HashMap work internally in Java?",
+            "options": [
+                "Uses buckets with linked lists/trees for collision",
+                "Uses only arrays for storage",
+                "Uses only linked lists",
+                "Uses binary search trees only"
+            ],
+            "correctAnswer": 0,
+            "explanation": "HashMap uses an array of buckets, each containing a linked list or tree of entries with the same hash",
+            "difficulty": "hard"
+        },
+        {
+            "question": "What is the best way to prevent deadlocks in Java?",
+            "options": [
+                "Acquire locks in fixed order",
+                "Use more synchronization",
+                "Avoid using locks",
+                "Use wait() and notify()"
+            ],
+            "correctAnswer": 0,
+            "explanation": "Acquiring locks in a consistent order prevents circular wait condition",
+            "difficulty": "hard"
         }
     ]
 };
