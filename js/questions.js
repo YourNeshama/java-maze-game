@@ -97,16 +97,29 @@ const QUESTIONS = {
 };
 
 // Helper function to get questions by difficulty
-function getQuestionsByDifficulty(difficulty) {
-    return QUESTIONS[difficulty] || [];
+export function getQuestionsByDifficulty(difficulty) {
+    switch(difficulty.toLowerCase()) {
+        case 'easy':
+            return QUESTIONS.easy;
+        case 'medium':
+            return QUESTIONS.medium;
+        case 'hard':
+            return QUESTIONS.hard;
+        default:
+            console.error('Invalid difficulty:', difficulty);
+            return [];
+    }
 }
 
 // Helper function to get a random question from a specific difficulty
-function getRandomQuestion(difficulty) {
+export function getRandomQuestion(difficulty) {
     const questions = getQuestionsByDifficulty(difficulty);
-    if (questions.length === 0) return null;
-    return questions[Math.floor(Math.random() * questions.length)];
-}
-
-// Export the functions
-export { getQuestionsByDifficulty, getRandomQuestion }; 
+    if (!questions || questions.length === 0) {
+        console.error('No questions available for difficulty:', difficulty);
+        return null;
+    }
+    const randomIndex = Math.floor(Math.random() * questions.length);
+    const question = questions[randomIndex];
+    console.log(`Selected ${difficulty} question:`, question);
+    return question;
+} 

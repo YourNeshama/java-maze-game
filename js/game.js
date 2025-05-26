@@ -1,3 +1,6 @@
+// Import questions module
+import { getRandomQuestion } from './questions.js';
+
 const WALL = 1;
 const PATH = 0;
 const CORRECT_PATH = 2;
@@ -23,12 +26,6 @@ class MazeGame {
         console.log('Creating new MazeGame with difficulty:', difficulty);
         this.difficulty = difficulty;
         this.initializeGameSettings();
-        
-        // Initialize questions with proper difficulty
-        this.initializeAllQuestions();
-        
-        // Display questions for debugging
-        this.displayQuestionsForDebugging();
         
         // Initialize canvas
         this.canvas = document.getElementById('mazeCanvas');
@@ -297,8 +294,7 @@ class MazeGame {
     setupEventListeners() {
         // Keyboard controls
         document.addEventListener('keydown', (e) => {
-            if (this.isMoving) return;
-
+            console.log('Key pressed:', e.key); // Debug log
             let dx = 0;
             let dy = 0;
 
@@ -323,9 +319,12 @@ class MazeGame {
                 case 'D':
                     dx = 1;
                     break;
+                default:
+                    return; // Ignore other keys
             }
 
             if (dx !== 0 || dy !== 0) {
+                console.log('Moving:', {dx, dy}); // Debug log
                 this.tryMove(dx, dy);
             }
         });
@@ -357,7 +356,7 @@ class MazeGame {
         this.canvas.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
-            e.preventDefault(); // Prevent scrolling
+            e.preventDefault();
         }, { passive: false });
 
         this.canvas.addEventListener('touchend', (e) => {
@@ -379,27 +378,47 @@ class MazeGame {
             e.preventDefault();
         }, { passive: false });
 
-        document.getElementById('regenerateMazeBtn').addEventListener('click', () => {
-            this.initializeMaze();
-            this.playerX = 0;
-            this.playerY = 0;
-            this.draw();
-        });
+        // Add regenerate maze button listener
+        const regenerateBtn = document.getElementById('regenerateMazeBtn');
+        if (regenerateBtn) {
+            regenerateBtn.addEventListener('click', () => {
+                this.initializeMaze();
+                this.playerX = 0;
+                this.playerY = 0;
+                this.draw();
+            });
+        }
     }
 
     tryMove(dx, dy) {
         const newX = this.playerX + dx;
         const newY = this.playerY + dy;
 
-        if (newX >= 0 && newX < this.size && newY >= 0 && newY < this.size && this.maze[newY][newX] !== WALL) {
-            // Get a random question based on current difficulty
-            console.log(`Selecting question for ${this.difficulty} mode`);
-            const currentQuestion = getRandomQuestion(this.difficulty);
-            console.log('Selected question:', currentQuestion.question);
+        console.log('Attempting to move to:', {newX, newY}); // Debug log
+
+        if (newX >= 0 && newX < this.size && 
+            newY >= 0 && newY < this.size && 
+            this.maze[newY][newX] !== WALL) {
             
+            console.log('Valid move, getting question...'); // Debug log
+            // Get a random question based on current difficulty
+            const currentQuestion = getRandomQuestion(this.difficulty);
+            
+            if (!currentQuestion) {
+                console.error('No questions available for difficulty:', this.difficulty);
+                alert('Error: No questions available for this difficulty level');
+                return;
+            }
+            
+            console.log('Selected question:', currentQuestion); // Debug log
             const answer = prompt(currentQuestion.question);
             
-            if (currentQuestion.checkAnswer(answer)) {
+            if (answer === null) return; // User cancelled
+            
+            const isCorrect = this.checkAnswer(currentQuestion, answer.trim());
+            console.log('Answer check result:', isCorrect); // Debug log
+            
+            if (isCorrect) {
                 alert("Correct! " + currentQuestion.explanation);
                 this.playerX = newX;
                 this.playerY = newY;
@@ -407,11 +426,17 @@ class MazeGame {
                 this.updateStepCounter();
                 
                 // Special handling for third block
-                if (this.isThirdBlock(newX, newY) && this.maze[newY][newX] === DEAD_END) {
+                if (this.isThirdBlock(newX, newY)) {
                     const deadEndQuestion = getRandomQuestion(this.difficulty);
-                    const deadEndAnswer = prompt(deadEndQuestion.question);
+                    if (!deadEndQuestion) {
+                        console.error('No dead end questions available for difficulty:', this.difficulty);
+                        return;
+                    }
                     
-                    if (!deadEndQuestion.checkAnswer(deadEndAnswer)) {
+                    const deadEndAnswer = prompt(deadEndQuestion.question);
+                    if (deadEndAnswer === null) return; // User cancelled
+                    
+                    if (!this.checkAnswer(deadEndQuestion, deadEndAnswer.trim())) {
                         alert("Wrong! " + deadEndQuestion.explanation + "\nReturning to start!");
                         this.playerX = 0;
                         this.playerY = 0;
@@ -448,7 +473,19 @@ class MazeGame {
             }
             
             this.draw();
+        } else {
+            console.log('Invalid move - wall or out of bounds'); // Debug log
         }
+    }
+
+    checkAnswer(question, userAnswer) {
+        // For multiple choice questions (0-based index)
+        if (typeof question.correctAnswer === 'number') {
+            const index = parseInt(userAnswer) - 1; // Convert 1-based to 0-based
+            return index === question.correctAnswer;
+        }
+        // For text answers
+        return userAnswer.toLowerCase() === question.correctAnswer.toLowerCase();
     }
 
     isThirdBlock(x, y) {
@@ -734,8 +771,8 @@ class MazeGame {
 }
 
 // Game initialization
-window.onload = () => {
-    console.log('Window loaded');
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing game...');
     const startScreen = document.getElementById('startScreen');
     const gameContainer = document.getElementById('gameContainer');
     console.log('Start screen:', startScreen);
@@ -743,49 +780,63 @@ window.onload = () => {
     let currentGame = null;
 
     // Show start screen, hide game container initially
-    startScreen.style.display = 'flex';
-    gameContainer.style.display = 'none';
-
-    function startGame(difficulty) {
-        console.log('Starting game with difficulty:', difficulty);
-        startScreen.style.display = 'none';
-        gameContainer.style.display = 'block';
-        currentGame = new MazeGame(difficulty);
-    }
-
-    // Add click event listeners to difficulty buttons
-    const easyBtn = document.getElementById('easyBtn');
-    const mediumBtn = document.getElementById('mediumBtn');
-    const hardBtn = document.getElementById('hardBtn');
-    
-    console.log('Difficulty buttons:', { easyBtn, mediumBtn, hardBtn });
-
-    easyBtn.addEventListener('click', () => {
-        console.log('Easy button clicked');
-        startGame('easy');
-    });
-    mediumBtn.addEventListener('click', () => {
-        console.log('Medium button clicked');
-        startGame('medium');
-    });
-    hardBtn.addEventListener('click', () => {
-        console.log('Hard button clicked');
-        startGame('hard');
-    });
-
-    // Add click event listener to new game button
-    const newGameBtn = document.getElementById('newGameBtn');
-    console.log('New game button:', newGameBtn);
-    
-    newGameBtn.addEventListener('click', () => {
-        console.log('New game button clicked');
+    if (startScreen && gameContainer) {
         startScreen.style.display = 'flex';
         gameContainer.style.display = 'none';
-        if (currentGame) {
-            // Clean up any existing game resources
-            currentGame = null;
-        }
-    });
 
-    console.log('All event listeners set up');
-}; 
+        function startGame(difficulty) {
+            console.log('Starting game with difficulty:', difficulty);
+            startScreen.style.display = 'none';
+            gameContainer.style.display = 'block';
+            currentGame = new MazeGame(difficulty);
+        }
+
+        // Add click event listeners to difficulty buttons
+        const easyBtn = document.getElementById('easyBtn');
+        const mediumBtn = document.getElementById('mediumBtn');
+        const hardBtn = document.getElementById('hardBtn');
+        
+        console.log('Difficulty buttons:', { easyBtn, mediumBtn, hardBtn });
+
+        if (easyBtn) {
+            easyBtn.addEventListener('click', () => {
+                console.log('Easy button clicked');
+                startGame('easy');
+            });
+        }
+        
+        if (mediumBtn) {
+            mediumBtn.addEventListener('click', () => {
+                console.log('Medium button clicked');
+                startGame('medium');
+            });
+        }
+        
+        if (hardBtn) {
+            hardBtn.addEventListener('click', () => {
+                console.log('Hard button clicked');
+                startGame('hard');
+            });
+        }
+
+        // Add click event listener to new game button
+        const newGameBtn = document.getElementById('newGameBtn');
+        console.log('New game button:', newGameBtn);
+        
+        if (newGameBtn) {
+            newGameBtn.addEventListener('click', () => {
+                console.log('New game button clicked');
+                startScreen.style.display = 'flex';
+                gameContainer.style.display = 'none';
+                if (currentGame) {
+                    // Clean up any existing game resources
+                    currentGame = null;
+                }
+            });
+        }
+
+        console.log('All event listeners set up');
+    } else {
+        console.error('Could not find required DOM elements');
+    }
+}); 

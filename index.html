@@ -203,12 +203,13 @@
                 errorMessage.style.display = 'block';
                 errorMessage.textContent = 'An error occurred: ' + msg;
             }
-                    return false;
+            return false;
         };
 
         // Check if script loads
         console.log('HTML loaded, attempting to load game.js...');
     </script>
-    <script src="js/game.js" onerror="console.error('Failed to load game.js');" onload="console.log('game.js loaded successfully');"></script>
+    <script src="js/questions.js" type="module"></script>
+    <script src="js/game.js" type="module" onerror="console.error('Failed to load game.js');" onload="console.log('game.js loaded successfully');"></script>
 </body>
 </html> 
