@@ -38,9 +38,8 @@ class MazeGame {
         this.initializeMaze();
         this.setupEventListeners();
         
-        // Calculate minimum path length
-        this.minPathLength = this.findShortestPath();
-        this.stepsRemaining = this.minPathLength;
+        // Calculate remaining steps to goal
+        this.stepsRemaining = this.calculateRemainingSteps();
         this.updateStepCounter();
         console.log('MazeGame initialization complete');
     }
@@ -499,7 +498,8 @@ class MazeGame {
                         // Move to the new position
                         this.playerX = newX;
                         this.playerY = newY;
-                        this.stepsRemaining--;
+                        // Calculate remaining steps to goal
+                        this.stepsRemaining = this.calculateRemainingSteps();
                         this.updateStepCounter();
                         
                         // Check if player has reached the end
@@ -519,7 +519,8 @@ class MazeGame {
                             if (nearestDeadEnd) {
                                 this.playerX = nearestDeadEnd.x;
                                 this.playerY = nearestDeadEnd.y;
-                                this.stepsRemaining += 3;
+                                // Recalculate remaining steps after teleporting
+                                this.stepsRemaining = this.calculateRemainingSteps();
                                 this.updateStepCounter();
                             }
                         }
@@ -534,6 +535,36 @@ class MazeGame {
         } else {
             console.log('Invalid move - wall or out of bounds'); // Debug log
         }
+    }
+
+    calculateRemainingSteps() {
+        // Calculate shortest path from current position to goal
+        const visited = Array(this.size).fill().map(() => Array(this.size).fill(false));
+        const queue = [{x: this.playerX, y: this.playerY, steps: 0}];
+        visited[this.playerY][this.playerX] = true;
+
+        while (queue.length > 0) {
+            const {x, y, steps} = queue.shift();
+            
+            if (x === this.size - 1 && y === this.size - 1) {
+                return steps;
+            }
+
+            const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+            for (const [dx, dy] of directions) {
+                const newX = x + dx;
+                const newY = y + dy;
+                
+                if (newX >= 0 && newX < this.size && 
+                    newY >= 0 && newY < this.size && 
+                    !visited[newY][newX] && 
+                    this.maze[newY][newX] !== WALL) {
+                    visited[newY][newX] = true;
+                    queue.push({x: newX, y: newY, steps: steps + 1});
+                }
+            }
+        }
+        return Infinity;
     }
 
     checkAnswer(question, userAnswer) {
