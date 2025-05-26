@@ -480,6 +480,7 @@ class MazeGame {
                     font-size: 14px;
                     transition: all 0.2s;
                     width: 100%;
+                    color: #333;
                 `;
                 button.addEventListener('mouseover', () => {
                     button.style.background = '#e9ecef';
