@@ -424,13 +424,20 @@ class MazeGame {
                     document.getElementById('newGameBtn').click();
                 }
             } else {
-                alert("Wrong! " + currentQuestion.explanation + "\nTeleporting to nearest dead end!");
-                const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
-                if (nearestDeadEnd) {
-                    this.playerX = nearestDeadEnd.x;
-                    this.playerY = nearestDeadEnd.y;
-                    this.stepsRemaining += 3;
-                    this.updateStepCounter();
+                alert("Wrong! " + currentQuestion.explanation);
+                if (this.playerX === 0 && this.playerY === 0) {
+                    // If at starting point, stay there
+                    alert("You're at the starting point (which is a dead end). Stay here and try again!");
+                } else {
+                    // Otherwise teleport to nearest dead end
+                    alert("Teleporting to nearest dead end!");
+                    const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
+                    if (nearestDeadEnd) {
+                        this.playerX = nearestDeadEnd.x;
+                        this.playerY = nearestDeadEnd.y;
+                        this.stepsRemaining += 3;
+                        this.updateStepCounter();
+                    }
                 }
             }
             
@@ -476,85 +483,100 @@ class MazeGame {
         // Questions organized by difficulty
         const easyQuestions = [
             new Question(
-                "What is the length of \"Hello\"?\nA) 4\nB) 5\nC) 6\nD) 0",
-                "B",
-                "String length counts all characters, 'Hello' has 5 characters"
+                "What is the output of: int x = 5 + 3; System.out.println(x);",
+                "8",
+                "Basic arithmetic operation: 5 + 3 equals 8"
             ),
             new Question(
-                "Which operator is used for string concatenation in Java?\nA) +\nB) &\nC) .\nD) ,",
-                "A",
-                "The + operator is used to concatenate strings in Java"
+                "Which keyword is used to declare a constant in Java?",
+                "final",
+                "The 'final' keyword is used to declare constants in Java"
             ),
             new Question(
-                "What is the default value of an int?\nA) 0\nB) null\nC) 1\nD) undefined",
-                "A",
-                "Numeric primitive types default to 0"
+                "What is the correct way to declare a String variable?",
+                "String name;",
+                "String is the correct class name for text in Java, and it starts with a capital S"
             ),
             new Question(
-                "What is the main method's return type?\nA) int\nB) void\nC) String\nD) boolean",
-                "B",
-                "The main method in Java must be declared as void"
+                "What is the output of: System.out.println(\"Hello\" + 123);",
+                "Hello123",
+                "String concatenation combines the string with the number"
             ),
             new Question(
-                "Which symbol is used for single-line comments?\nA) //\nB) /*\nC) #\nD) --",
-                "A",
-                "// is used for single-line comments in Java"
+                "Which loop is used when you know how many iterations you need?",
+                "for",
+                "for loops are best when you know the number of iterations in advance"
             )
         ];
 
         const mediumQuestions = [
             new Question(
-                "Which is NOT a primitive type in Java?\nA) int\nB) String\nC) boolean\nD) char",
-                "B",
-                "String is a class, not a primitive type"
+                "What is the output of:\nint[] arr = {1, 2, 3};\nSystem.out.println(arr[1]);",
+                "2",
+                "Array indices start at 0, so arr[1] is the second element"
             ),
             new Question(
-                "What is the correct way to declare a constant in Java?\nA) const int NUM\nB) final int NUM\nC) static int NUM\nD) constant int NUM",
-                "B",
-                "The 'final' keyword is used to declare constants in Java"
+                "What happens when you divide two integers: 7/2",
+                "3",
+                "Integer division truncates the decimal part"
             ),
             new Question(
-                "What is the size of int in Java?\nA) 16 bits\nB) 32 bits\nC) 64 bits\nD) 8 bits",
-                "B",
-                "In Java, int is 32 bits (4 bytes)"
+                "Which interface allows a class to be used in a for-each loop?",
+                "Iterable",
+                "The Iterable interface is required for for-each loop functionality"
             ),
             new Question(
-                "Which collection type is ordered and allows duplicates?\nA) HashSet\nB) ArrayList\nC) HashMap\nD) TreeSet",
-                "B",
-                "ArrayList maintains insertion order and allows duplicate elements"
+                "What is the difference between ArrayList and LinkedList?",
+                "ArrayList uses array, LinkedList uses nodes",
+                "ArrayList is backed by an array, while LinkedList uses doubly-linked nodes"
             ),
             new Question(
-                "What is the purpose of 'break' statement?\nA) Exit program\nB) Exit loop or switch\nC) Skip iteration\nD) Debug code",
-                "B",
-                "break statement is used to exit a loop or switch statement"
+                "Write a method signature for a static method named 'sum' that takes two integers and returns their sum:",
+                "public static int sum(int a, int b)",
+                "Static methods belong to the class, not instances, and need return type and parameters specified"
             )
         ];
 
         const hardQuestions = [
             new Question(
-                "What is the difference between '==' and '.equals()'?\nA) No difference\nB) == for primitives, equals() for objects\nC) == is faster\nD) equals() is deprecated",
-                "B",
-                "== compares references for objects, while equals() compares content"
+                "What is the output of:\ntry { throw new Exception(); }\ncatch(Exception e) { System.out.print(\"1\"); }\nfinally { System.out.print(\"2\"); }",
+                "12",
+                "catch block executes when exception is thrown, finally always executes"
             ),
             new Question(
-                "Which interface is used for functional programming?\nA) Runnable\nB) Comparable\nC) Function\nD) Iterator",
-                "C",
-                "Function interface is a key component of Java's functional programming support"
+                "What is the time complexity of binary search?",
+                "O(log n)",
+                "Binary search halves the search space in each step"
             ),
             new Question(
-                "What is the purpose of 'synchronized' keyword?\nA) Increase speed\nB) Thread safety\nC) Memory management\nD) Error handling",
-                "B",
-                "synchronized keyword is used to prevent thread interference and memory consistency errors"
+                "Write a bubble sort algorithm in Java (basic structure):",
+                "for(int i=0;i<n-1;i++)for(int j=0;j<n-i-1;j++)if(arr[j]>arr[j+1])swap(arr[j],arr[j+1]);",
+                "Bubble sort uses nested loops to repeatedly swap adjacent elements"
             ),
             new Question(
-                "What is the difference between abstract class and interface?\nA) No difference\nB) Abstract class can have state\nC) Interface can have constructors\nD) Abstract class is faster",
-                "B",
-                "Abstract classes can have state (fields) and constructors, interfaces traditionally cannot"
+                "What is the purpose of the volatile keyword in Java?",
+                "Thread visibility",
+                "volatile ensures that variable updates are immediately visible to other threads"
             ),
             new Question(
-                "What is the purpose of volatile keyword?\nA) Speed optimization\nB) Thread visibility\nC) Memory saving\nD) Error prevention",
-                "B",
-                "volatile ensures that variable updates are visible across threads"
+                "Explain the diamond problem in multiple inheritance:",
+                "When a class inherits from two classes with common ancestor",
+                "The diamond problem occurs in multiple inheritance when a class inherits from two classes that have a common ancestor"
+            ),
+            new Question(
+                "What is the difference between Runnable and Callable?",
+                "Callable can return value and throw exceptions",
+                "Runnable's run() returns void, while Callable's call() can return values and throw checked exceptions"
+            ),
+            new Question(
+                "Explain how HashMap works internally:",
+                "Uses buckets with linked lists/trees for collision",
+                "HashMap uses an array of buckets, each containing a linked list or tree of entries with the same hash"
+            ),
+            new Question(
+                "Write a deadlock prevention condition:",
+                "Acquire locks in fixed order",
+                "Acquiring locks in a consistent order prevents circular wait condition"
             )
         ];
 
@@ -565,10 +587,10 @@ class MazeGame {
                 selectedQuestions = easyQuestions;
                 break;
             case 'medium':
-                selectedQuestions = mediumQuestions;
+                selectedQuestions = [...easyQuestions, ...mediumQuestions];
                 break;
             case 'hard':
-                selectedQuestions = hardQuestions;
+                selectedQuestions = [...mediumQuestions, ...hardQuestions];
                 break;
             default:
                 console.error('Invalid difficulty:', this.difficulty);
@@ -580,43 +602,57 @@ class MazeGame {
     }
 
     initializeDeadEndQuestions() {
-        // Dead end questions are also separated by difficulty
         const easyDeadEndQuestions = [
             new Question(
-                "What does JVM stand for?\nA) Java Virtual Machine\nB) Java Variable Method\nC) Java Visual Monitor\nD) Java Version Manager",
-                "A",
+                "What does JVM stand for?",
+                "Java Virtual Machine",
                 "JVM (Java Virtual Machine) is the runtime environment for executing Java bytecode"
             ),
             new Question(
-                "What is the entry point of a Java program?\nA) start()\nB) main()\nC) run()\nD) execute()",
-                "B",
+                "What is the entry point of a Java program?",
+                "main",
                 "The main() method is the entry point of every Java program"
             )
         ];
 
         const mediumDeadEndQuestions = [
             new Question(
-                "What is garbage collection in Java?\nA) Cleaning files\nB) Automatic memory management\nC) Removing variables\nD) Code optimization",
-                "B",
+                "What is garbage collection in Java?",
+                "Automatic memory management",
                 "Garbage collection automatically manages memory by removing unused objects"
             ),
             new Question(
-                "Which of these is not a valid access modifier?\nA) public\nB) friendly\nC) protected\nD) private",
-                "B",
-                "The valid access modifiers are public, private, protected, and default (package-private)"
+                "What is the difference between == and .equals()?",
+                "== compares references, equals compares content",
+                "== compares object references, while .equals() compares the actual content"
+            ),
+            new Question(
+                "Explain method overloading:",
+                "Same name different parameters",
+                "Method overloading allows multiple methods with the same name but different parameter lists"
             )
         ];
 
         const hardDeadEndQuestions = [
             new Question(
-                "What is the parent class of all classes in Java?\nA) Parent\nB) Main\nC) Object\nD) Class",
-                "C",
-                "In Java, Object is the root class of all class hierarchy"
+                "Explain the Singleton pattern:",
+                "Ensures only one instance exists",
+                "Singleton pattern restricts instantiation of a class to one single instance"
             ),
             new Question(
-                "Which design pattern is used in Runtime class?\nA) Factory\nB) Singleton\nC) Observer\nD) Builder",
-                "B",
-                "Runtime class uses the Singleton pattern to ensure only one instance exists"
+                "What is the difference between abstract class and interface in Java 8+?",
+                "Abstract class can have state",
+                "Abstract classes can have state and constructors, interfaces can have default methods but no state"
+            ),
+            new Question(
+                "Explain the producer-consumer problem:",
+                "Synchronization between threads producing and consuming data",
+                "Producer-consumer is a classic synchronization problem where threads share a fixed-size buffer"
+            ),
+            new Question(
+                "What is the purpose of the transient keyword?",
+                "Skip serialization",
+                "transient marks fields that should not be serialized when the object is converted to a byte stream"
             )
         ];
 
@@ -625,9 +661,9 @@ class MazeGame {
             case 'easy':
                 return easyDeadEndQuestions;
             case 'medium':
-                return mediumDeadEndQuestions;
+                return [...easyDeadEndQuestions, ...mediumDeadEndQuestions];
             case 'hard':
-                return hardDeadEndQuestions;
+                return [...mediumDeadEndQuestions, ...hardDeadEndQuestions];
             default:
                 return easyDeadEndQuestions;
         }
