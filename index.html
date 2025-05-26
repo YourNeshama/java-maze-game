@@ -202,7 +202,7 @@
     </style>
 </head>
 <body>
-    <a id="github-link" href="https://github.com/YourNeshama/java-maze-game" target="_blank">View on GitHub</a>
+    <a href="https://github.com/YourNeshama/java-maze-game" target="_blank" id="github-link">View on GitHub</a>
     
     <div id="startScreen">
         <div id="startContent">
@@ -222,21 +222,14 @@
                 <div class="difficulty-label">9x9 Maze - Advanced Topics</div>
             </div>
             <div id="instructions">
-                <p><strong>Controls:</strong></p>
-                <p>Desktop: Use arrow keys or WASD to move</p>
-                <p>Mobile: Tap adjacent cells or swipe to move</p>
+                <strong>Controls:</strong><br>
+                Desktop: Use arrow keys or WASD to move<br>
+                Mobile: Tap adjacent cells or swipe to move
             </div>
             <div id="errorMessage"></div>
-            <a href="custom-questions.html" style="
-                display: inline-block;
-                margin-top: 20px;
-                padding: 10px 20px;
-                background-color: #2196F3;
-                color: white;
-                text-decoration: none;
-                border-radius: 5px;
-                font-size: 14px;
-            ">Add Your Own Questions</a>
+            <a href="custom-questions.html" style="text-decoration: none;">
+                <button style="margin-top: 20px;">Add Your Own Questions</button>
+            </a>
         </div>
     </div>
 
@@ -250,44 +243,19 @@
         <button id="regenerateMazeBtn">Generate New Maze</button>
         <button id="newGameBtn">New Game</button>
         <div id="instructions">
-            <p><strong>Controls:</strong></p>
-            <p>Desktop: Use arrow keys or WASD to move</p>
-            <p>Mobile: Tap adjacent cells or swipe to move</p>
+            <strong>Controls:</strong><br>
+            Desktop: Use arrow keys or WASD to move<br>
+            Mobile: Tap adjacent cells or swipe to move
         </div>
     </div>
 
-    <button class="contact-button" onclick="toggleContactForm()">?</button>
+    <button class="contact-button" onclick="toggleContactPopup()">?</button>
 
-    <div id="contactPopup" class="contact-popup">
-        <button class="close-button" onclick="toggleContactForm()">×</button>
-        <p style="margin: 0 0 10px 0; font-size: 14px;">Questions? Email: kexinliu7a@gmail.com</p>
-        <form id="contactForm" onsubmit="sendEmail(event)">
-            <textarea 
-                id="messageInput" 
-                placeholder="Enter your message..." 
-                style="
-                    width: 100%;
-                    min-height: 80px;
-                    padding: 8px;
-                    margin-bottom: 10px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    resize: vertical;
-                "
-            ></textarea>
-            <button 
-                type="submit" 
-                style="
-                    background: #4CAF50;
-                    color: white;
-                    border: none;
-                    padding: 8px 15px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    width: 100%;
-                "
-            >Send Message</button>
-        </form>
+    <div class="contact-popup" id="contactPopup">
+        <button class="close-button" onclick="toggleContactPopup()">×</button>
+        <h3>Questions?</h3>
+        <p>Email: kexinliu7a@gmail.com</p>
+        <button onclick="sendMessage()">Send Message</button>
     </div>
 
     <script>
@@ -305,21 +273,16 @@
         // Check if script loads
         console.log('HTML loaded, attempting to load game.js...');
     </script>
-    <script src="js/questions.js" type="module"></script>
-    <script src="js/game.js" type="module" onerror="console.error('Failed to load game.js');" onload="console.log('game.js loaded successfully');"></script>
+    <script type="module" src="js/questions.js"></script>
+    <script type="module" src="js/game.js"></script>
     <script>
-    function toggleContactForm() {
+    function toggleContactPopup() {
         const popup = document.getElementById('contactPopup');
         popup.classList.toggle('show');
     }
 
-    function sendEmail(event) {
-        event.preventDefault();
-        const message = document.getElementById('messageInput').value;
-        const mailtoLink = `mailto:kexinliu7a@gmail.com?subject=Java Maze Game Question&body=${encodeURIComponent(message)}`;
-        window.location.href = mailtoLink;
-        document.getElementById('messageInput').value = '';
-        toggleContactForm(); // Close the popup after sending
+    function sendMessage() {
+        window.location.href = 'mailto:kexinliu7a@gmail.com';
     }
     </script>
 </body>
