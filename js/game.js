@@ -429,53 +429,82 @@ class MazeGame {
             
             console.log('Selected question:', currentQuestion); // Debug log
             
-            // Format the question with options if they exist
-            let questionText = currentQuestion.question + "\n\n";
-            if (currentQuestion.options) {
-                currentQuestion.options.forEach((option, index) => {
-                    questionText += `${index + 1}) ${option}\n`;
-                });
-            }
-            
-            const answer = prompt(questionText);
-            
-            if (answer === null) return; // User cancelled
-            
-            const isCorrect = this.checkAnswer(currentQuestion, answer.trim());
-            console.log('Answer check result:', isCorrect); // Debug log
-            
-            if (isCorrect) {
-                alert("Correct! " + currentQuestion.explanation);
-                // Move to the new position
-                this.playerX = newX;
-                this.playerY = newY;
-                this.stepsRemaining--;
-                this.updateStepCounter();
-                
-                // Check if player has reached the end
-                if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
-                    alert("Congratulations! You've completed the maze!");
-                    document.getElementById('newGameBtn').click();
-                }
-            } else {
-                alert("Wrong! " + currentQuestion.explanation);
-                if (this.playerX === 0 && this.playerY === 0) {
-                    // If at starting point, stay there
-                    alert("You're at the starting point. Try again!");
-                } else {
-                    // Otherwise teleport to nearest dead end
-                    alert("Teleporting to nearest dead end!");
-                    const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
-                    if (nearestDeadEnd) {
-                        this.playerX = nearestDeadEnd.x;
-                        this.playerY = nearestDeadEnd.y;
-                        this.stepsRemaining += 3;
+            // Create dialog with question and options
+            const dialog = document.createElement('div');
+            dialog.className = 'question-dialog';
+            dialog.style.position = 'fixed';
+            dialog.style.top = '50%';
+            dialog.style.left = '50%';
+            dialog.style.transform = 'translate(-50%, -50%)';
+            dialog.style.backgroundColor = 'white';
+            dialog.style.padding = '20px';
+            dialog.style.borderRadius = '8px';
+            dialog.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            dialog.style.zIndex = '1000';
+            dialog.style.maxWidth = '90%';
+            dialog.style.width = '500px';
+
+            const questionText = document.createElement('p');
+            questionText.textContent = currentQuestion.question;
+            questionText.style.marginBottom = '20px';
+            questionText.style.whiteSpace = 'pre-wrap';
+            dialog.appendChild(questionText);
+
+            const optionsContainer = document.createElement('div');
+            optionsContainer.style.display = 'flex';
+            optionsContainer.style.flexDirection = 'column';
+            optionsContainer.style.gap = '10px';
+
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = `${index + 1}) ${option}`;
+                button.style.padding = '10px 15px';
+                button.style.border = '1px solid #ddd';
+                button.style.borderRadius = '4px';
+                button.style.backgroundColor = '#f8f9fa';
+                button.style.cursor = 'pointer';
+                button.style.textAlign = 'left';
+                button.addEventListener('click', () => {
+                    const isCorrect = this.checkAnswer(currentQuestion, option);
+                    dialog.remove();
+                    
+                    if (isCorrect) {
+                        alert("Correct! " + currentQuestion.explanation);
+                        // Move to the new position
+                        this.playerX = newX;
+                        this.playerY = newY;
+                        this.stepsRemaining--;
                         this.updateStepCounter();
+                        
+                        // Check if player has reached the end
+                        if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
+                            alert("Congratulations! You've completed the maze!");
+                            document.getElementById('newGameBtn').click();
+                        }
+                    } else {
+                        alert("Wrong! " + currentQuestion.explanation);
+                        if (this.playerX === 0 && this.playerY === 0) {
+                            // If at starting point, stay there
+                            alert("You're at the starting point. Try again!");
+                        } else {
+                            // Otherwise teleport to nearest dead end
+                            alert("Teleporting to nearest dead end!");
+                            const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
+                            if (nearestDeadEnd) {
+                                this.playerX = nearestDeadEnd.x;
+                                this.playerY = nearestDeadEnd.y;
+                                this.stepsRemaining += 3;
+                                this.updateStepCounter();
+                            }
+                        }
                     }
-                }
-            }
-            
-            this.draw();
+                    this.draw();
+                });
+                optionsContainer.appendChild(button);
+            });
+
+            dialog.appendChild(optionsContainer);
+            document.body.appendChild(dialog);
         } else {
             console.log('Invalid move - wall or out of bounds'); // Debug log
         }
