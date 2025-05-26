@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Question System Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Question System Tests</h1>
+        <p>Please check the console for test results.</p>
+        <p>If you see no errors in the console, the tests are running successfully.</p>
+        <pre id="results">Running tests...</pre>
+    </div>
+    <script type="module">
+        import { QUESTIONS, getQuestionsByDifficulty, getRandomQuestion } from './js/questions.js';
+        
+        // Display test results in the page
+        const resultsElement = document.getElementById('results');
+        let output = '';
+        
+        try {
+            // Test 1: Count questions
+            const easyCount = getQuestionsByDifficulty('easy').length;
+            const mediumCount = getQuestionsByDifficulty('medium').length;
+            const hardCount = getQuestionsByDifficulty('hard').length;
+            
+            output += `Questions count:\n`;
+            output += `Easy: ${easyCount}\n`;
+            output += `Medium: ${mediumCount}\n`;
+            output += `Hard: ${hardCount}\n\n`;
+            
+            // Test 2: Get random question
+            const randomQuestion = getRandomQuestion('easy');
+            output += `Random question loaded: ${randomQuestion ? 'Yes' : 'No'}\n`;
+            
+            resultsElement.textContent = output;
+        } catch (error) {
+            resultsElement.textContent = `Error: ${error.message}`;
+            console.error(error);
+        }
+    </script>
+</body>
+</html> 
