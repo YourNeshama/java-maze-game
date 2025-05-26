@@ -121,6 +121,14 @@
         #github-link:hover {
             background-color: #f0f0f0;
         }
+        #errorMessage {
+            color: red;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid red;
+            border-radius: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -143,6 +151,7 @@
                 <button id="hardBtn" class="difficulty-btn">Hard</button>
                 <div class="difficulty-label">9x9 Maze - Advanced Topics</div>
             </div>
+            <div id="errorMessage"></div>
         </div>
     </div>
 
@@ -157,6 +166,21 @@
         <button id="newGameBtn">New Game</button>
     </div>
 
-    <script src="js/game.js"></script>
+    <script>
+        // Add error handling for script loading
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
+            const errorMessage = document.getElementById('errorMessage');
+            if (errorMessage) {
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'An error occurred: ' + msg;
+            }
+            return false;
+        };
+
+        // Check if script loads
+        console.log('HTML loaded, attempting to load game.js...');
+    </script>
+    <script src="js/game.js" onerror="console.error('Failed to load game.js');" onload="console.log('game.js loaded successfully');"></script>
 </body>
 </html> 
