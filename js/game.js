@@ -432,40 +432,63 @@ class MazeGame {
             // Create dialog with question and options
             const dialog = document.createElement('div');
             dialog.className = 'question-dialog';
-            dialog.style.position = 'fixed';
-            dialog.style.top = '50%';
-            dialog.style.left = '50%';
-            dialog.style.transform = 'translate(-50%, -50%)';
-            dialog.style.backgroundColor = 'white';
-            dialog.style.padding = '20px';
-            dialog.style.borderRadius = '8px';
-            dialog.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-            dialog.style.zIndex = '1000';
-            dialog.style.maxWidth = '90%';
-            dialog.style.width = '500px';
+            dialog.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                max-width: 90%;
+                width: 500px;
+                font-family: Arial, sans-serif;
+            `;
 
+            // Add question text
             const questionText = document.createElement('p');
-            questionText.textContent = currentQuestion.question;
-            questionText.style.marginBottom = '20px';
-            questionText.style.whiteSpace = 'pre-wrap';
+            questionText.innerHTML = currentQuestion.question;
+            questionText.style.cssText = `
+                margin-bottom: 20px;
+                white-space: pre-wrap;
+                font-size: 16px;
+                line-height: 1.5;
+            `;
             dialog.appendChild(questionText);
 
+            // Add options container
             const optionsContainer = document.createElement('div');
-            optionsContainer.style.display = 'flex';
-            optionsContainer.style.flexDirection = 'column';
-            optionsContainer.style.gap = '10px';
+            optionsContainer.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            `;
 
+            // Add options as buttons
             currentQuestion.options.forEach((option, index) => {
                 const button = document.createElement('button');
                 button.textContent = `${index + 1}) ${option}`;
-                button.style.padding = '10px 15px';
-                button.style.border = '1px solid #ddd';
-                button.style.borderRadius = '4px';
-                button.style.backgroundColor = '#f8f9fa';
-                button.style.cursor = 'pointer';
-                button.style.textAlign = 'left';
+                button.style.cssText = `
+                    padding: 10px 15px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    background: #f8f9fa;
+                    cursor: pointer;
+                    text-align: left;
+                    font-size: 14px;
+                    transition: all 0.2s;
+                    width: 100%;
+                `;
+                button.addEventListener('mouseover', () => {
+                    button.style.background = '#e9ecef';
+                });
+                button.addEventListener('mouseout', () => {
+                    button.style.background = '#f8f9fa';
+                });
                 button.addEventListener('click', () => {
-                    const isCorrect = this.checkAnswer(currentQuestion, option);
+                    const isCorrect = index === currentQuestion.correctAnswer;
                     dialog.remove();
                     
                     if (isCorrect) {
