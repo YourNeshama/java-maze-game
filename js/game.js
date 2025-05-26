@@ -242,13 +242,11 @@ class MazeGame {
                         this.ctx.fillStyle = '#333';
                         break;
                     case PATH:
+                    case DEAD_END:  // Dead ends now look like normal paths
                         this.ctx.fillStyle = '#fff';
                         break;
                     case CORRECT_PATH:
                         this.ctx.fillStyle = '#90EE90';
-                        break;
-                    case DEAD_END:
-                        this.ctx.fillStyle = '#FFB6C1';
                         break;
                 }
                 this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
