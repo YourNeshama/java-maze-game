@@ -313,10 +313,12 @@ class MazeGame {
         
         // Draw goal as a square
         this.ctx.fillStyle = '#0f0';
-        const goalSize = this.cellSize * 0.8; // Make the square slightly smaller than the cell
-        const goalX = (this.size - 1) * this.cellSize + (this.cellSize - goalSize) / 2;
-        const goalY = (this.size - 1) * this.cellSize + (this.cellSize - goalSize) / 2;
-        this.ctx.fillRect(goalX, goalY, goalSize, goalSize);
+        this.ctx.fillRect(
+            (this.size - 1) * this.cellSize,
+            (this.size - 1) * this.cellSize,
+            this.cellSize,
+            this.cellSize
+        );
     }
 
     setupEventListeners() {
