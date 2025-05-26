@@ -123,20 +123,6 @@ class MazeGame {
         return Infinity;
     }
 
-    initializeMaze() {
-        // Initialize maze with walls
-        this.maze = Array(this.size).fill().map(() => Array(this.size).fill(WALL));
-        
-        // Create paths using recursive backtracking
-        this.generateMaze(0, 0);
-        
-        // Ensure there's a path to the end
-        this.maze[this.size - 1][this.size - 1] = PATH;
-        
-        // Draw the initial state
-        this.draw();
-    }
-
     generateMaze(x, y) {
         this.maze[y][x] = PATH;
         
@@ -168,6 +154,42 @@ class MazeGame {
                 this.generateMaze(newX, newY);
             }
         }
+    }
+
+    // Add new method to ensure minimum path length
+    ensureMinimumPathLength() {
+        let currentPathLength = this.findShortestPath();
+        const targetLength = {
+            'easy': 5,
+            'medium': 10,
+            'hard': 15
+        }[this.difficulty];
+
+        // If path is too short, regenerate maze
+        if (currentPathLength < targetLength) {
+            this.maze = Array(this.size).fill().map(() => Array(this.size).fill(WALL));
+            this.generateMaze(0, 0);
+            this.maze[this.size - 1][this.size - 1] = PATH;
+            return this.ensureMinimumPathLength(); // Recursively try again
+        }
+        return true;
+    }
+
+    initializeMaze() {
+        // Initialize maze with walls
+        this.maze = Array(this.size).fill().map(() => Array(this.size).fill(WALL));
+        
+        // Create paths using recursive backtracking
+        this.generateMaze(0, 0);
+        
+        // Ensure there's a path to the end
+        this.maze[this.size - 1][this.size - 1] = PATH;
+        
+        // Ensure minimum path length
+        this.ensureMinimumPathLength();
+        
+        // Draw the initial state
+        this.draw();
     }
 
     addDeadEnds() {
