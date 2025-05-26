@@ -289,9 +289,8 @@ class MazeGame {
         );
         this.ctx.fill();
         
-        // Draw goal
-        this.ctx.fillStyle = '#0f0';
         // Draw goal as a square
+        this.ctx.fillStyle = '#0f0';
         const goalSize = this.cellSize * 0.8; // Make the square slightly smaller than the cell
         const goalX = (this.size - 1) * this.cellSize + (this.cellSize - goalSize) / 2;
         const goalY = (this.size - 1) * this.cellSize + (this.cellSize - goalSize) / 2;
