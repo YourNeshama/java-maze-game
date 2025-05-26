@@ -198,6 +198,7 @@ class MazeGame {
     }
 
     setupEventListeners() {
+        // Keyboard controls
         document.addEventListener('keydown', (e) => {
             if (this.isMoving) return;
 
@@ -206,15 +207,23 @@ class MazeGame {
 
             switch(e.key) {
                 case 'ArrowUp':
+                case 'w':
+                case 'W':
                     dy = -1;
                     break;
                 case 'ArrowDown':
+                case 's':
+                case 'S':
                     dy = 1;
                     break;
                 case 'ArrowLeft':
+                case 'a':
+                case 'A':
                     dx = -1;
                     break;
                 case 'ArrowRight':
+                case 'd':
+                case 'D':
                     dx = 1;
                     break;
             }
@@ -223,6 +232,55 @@ class MazeGame {
                 this.tryMove(dx, dy);
             }
         });
+
+        // Touch/click controls
+        this.canvas.addEventListener('click', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Calculate cell coordinates
+            const cellX = Math.floor(x / this.cellSize);
+            const cellY = Math.floor(y / this.cellSize);
+            
+            // Calculate direction based on clicked cell relative to player
+            const dx = Math.sign(cellX - this.playerX);
+            const dy = Math.sign(cellY - this.playerY);
+            
+            // Only move if clicked adjacent cell
+            if (Math.abs(dx) + Math.abs(dy) === 1) {
+                this.tryMove(dx, dy);
+            }
+        });
+
+        // Add touch controls
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        this.canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            e.preventDefault(); // Prevent scrolling
+        }, { passive: false });
+
+        this.canvas.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+            
+            // Determine swipe direction
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // Horizontal swipe
+                this.tryMove(Math.sign(dx), 0);
+            } else {
+                // Vertical swipe
+                this.tryMove(0, Math.sign(dy));
+            }
+            
+            e.preventDefault();
+        }, { passive: false });
 
         document.getElementById('regenerateMazeBtn').addEventListener('click', () => {
             this.initializeMaze();
@@ -312,23 +370,23 @@ class MazeGame {
     initializeQuestions() {
         const questions = [];
         
-        // 基础 Java 问题
+        // Basic Java questions
         questions.push(new Question(
-            "String \"Hello\" 的长度是多少?\nA) 4\nB) 5\nC) 6\nD) 0",
+            "What is the length of \"Hello\"?\nA) 4\nB) 5\nC) 6\nD) 0",
             "B",
-            "String 的长度包括所有字符，'Hello' 有 5 个字符"
+            "String length counts all characters, 'Hello' has 5 characters"
         ));
         
         questions.push(new Question(
-            "下列哪个不是 Java 的基本数据类型?\nA) int\nB) String\nC) boolean\nD) char",
+            "Which is NOT a primitive type in Java?\nA) int\nB) String\nC) boolean\nD) char",
             "B",
-            "String 是一个类，不是基本数据类型"
+            "String is a class, not a primitive type"
         ));
 
         questions.push(new Question(
-            "int 类型的默认值是什么?\nA) 0\nB) null\nC) 1\nD) undefined",
+            "What is the default value of an int?\nA) 0\nB) null\nC) 1\nD) undefined",
             "A",
-            "数值类型的默认值是 0"
+            "Numeric primitive types default to 0"
         ));
 
         return questions;
@@ -338,15 +396,15 @@ class MazeGame {
         const questions = [];
         
         questions.push(new Question(
-            "JVM 是什么?\nA) Java Virtual Machine\nB) Java Variable Method\nC) Java Visual Monitor\nD) Java Version Manager",
+            "What is JVM?\nA) Java Virtual Machine\nB) Java Variable Method\nC) Java Visual Monitor\nD) Java Version Manager",
             "A",
-            "JVM (Java Virtual Machine) 是 Java 虚拟机，用于执行 Java 字节码"
+            "JVM (Java Virtual Machine) executes Java bytecode"
         ));
 
         questions.push(new Question(
-            "什么是垃圾回收?\nA) 清理电脑\nB) 自动内存管理\nC) 删除文件\nD) 代码优化",
+            "What is garbage collection?\nA) Cleaning computer\nB) Automatic memory management\nC) Removing files\nD) Code optimization",
             "B",
-            "垃圾回收是 Java 的自动内存管理机制，用于释放不再使用的内存"
+            "Garbage collection automatically frees unused memory"
         ));
 
         return questions;

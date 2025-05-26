@@ -129,6 +129,24 @@
             border-radius: 5px;
             display: none;
         }
+        #instructions {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        @media (max-width: 768px) {
+            .difficulty-btn {
+                width: 150px;
+                font-size: 16px;
+                padding: 12px 24px;
+            }
+            #instructions {
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -151,6 +169,11 @@
                 <button id="hardBtn" class="difficulty-btn">Hard</button>
                 <div class="difficulty-label">9x9 Maze - Advanced Topics</div>
             </div>
+            <div id="instructions">
+                <p><strong>Controls:</strong></p>
+                <p>Desktop: Use arrow keys or WASD to move</p>
+                <p>Mobile: Tap adjacent cells or swipe to move</p>
+            </div>
             <div id="errorMessage"></div>
         </div>
     </div>
@@ -164,6 +187,11 @@
         <br>
         <button id="regenerateMazeBtn">Generate New Maze</button>
         <button id="newGameBtn">New Game</button>
+        <div id="instructions">
+            <p><strong>Controls:</strong></p>
+            <p>Desktop: Use arrow keys or WASD to move</p>
+            <p>Mobile: Tap adjacent cells or swipe to move</p>
+        </div>
     </div>
 
     <script>
