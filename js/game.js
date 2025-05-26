@@ -121,7 +121,7 @@ class MazeGame {
         this.generateMaze(0, 0);
         
         // Set start and end points
-        this.maze[0][0] = PATH;
+        this.maze[0][0] = DEAD_END;
         this.maze[this.size-1][this.size-1] = PATH;
         
         // Add dead ends near start and end
@@ -441,6 +441,13 @@ class MazeGame {
     findNearestDeadEnd(startX, startY) {
         let nearestDeadEnd = null;
         let minDistance = Infinity;
+
+        // Consider starting point (0,0) as a dead end
+        const distanceToStart = Math.abs(startX) + Math.abs(startY);
+        if (distanceToStart < minDistance) {
+            minDistance = distanceToStart;
+            nearestDeadEnd = { x: 0, y: 0 };
+        }
 
         // Traverse the maze to find the nearest dead end
         for (let y = 0; y < this.size; y++) {
