@@ -455,6 +455,7 @@ class MazeGame {
                 white-space: pre-wrap;
                 font-size: 16px;
                 line-height: 1.5;
+                color: #333;
             `;
             dialog.appendChild(questionText);
 
@@ -464,6 +465,7 @@ class MazeGame {
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
+                color: #333;
             `;
 
             // Add options as buttons
