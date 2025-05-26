@@ -119,9 +119,9 @@ class MazeGame {
         // Set start point as dead end
         this.maze[0][0] = DEAD_END;
         
-        // Ensure the path to second block and make sure it's a PATH
-        if (this.maze[0][1] === PATH || this.maze[0][1] === DEAD_END) {
-            this.maze[0][1] = PATH; // Second block is always a path
+        // Ensure the second block is a path and has at least two connections
+        if (this.maze[0][1] === PATH) {
+            this.maze[0][1] = PATH;
             // Make sure there's at least one more path connected to second block
             if (this.maze[0][2] !== PATH && this.maze[1][1] !== PATH) {
                 if (Math.random() < 0.5) {
@@ -130,8 +130,8 @@ class MazeGame {
                     this.maze[1][1] = PATH;
                 }
             }
-        } else if (this.maze[1][0] === PATH || this.maze[1][0] === DEAD_END) {
-            this.maze[1][0] = PATH; // Second block is always a path
+        } else if (this.maze[1][0] === PATH) {
+            this.maze[1][0] = PATH;
             // Make sure there's at least one more path connected to second block
             if (this.maze[2][0] !== PATH && this.maze[1][1] !== PATH) {
                 if (Math.random() < 0.5) {
@@ -145,7 +145,7 @@ class MazeGame {
         // Set end point
         this.maze[this.size-1][this.size-1] = PATH;
         
-        // Add dead ends near start and end, but avoid the second block
+        // Add dead ends near start and end
         this.addDeadEnds();
         
         this.draw();
@@ -184,12 +184,12 @@ class MazeGame {
 
     addDeadEnds() {
         // Reduce number of dead ends based on maze size
-        const deadEndCount = Math.floor(this.size / 2);
+        const deadEndCount = Math.floor(this.size / 2); // Reduced from this.size * 1.5
         let added = 0;
         
-        // Priority areas for dead ends (near start and end, but not the second block)
+        // Priority areas for dead ends (near start and end)
         const priorityAreas = [
-            {x: 2, y: 0},  // Near start (but not second block)
+            {x: 1, y: 0},  // Near start
             {x: this.size-2, y: this.size-1}  // Near end
         ];
 
@@ -201,16 +201,15 @@ class MazeGame {
             }
         }
 
-        // Then add remaining dead ends randomly, but avoid second block
+        // Then add remaining dead ends randomly, but with more restrictions
         let attempts = 0;
-        while (added < deadEndCount && attempts < 50) {
+        while (added < deadEndCount && attempts < 50) { // Reduced max attempts
             const x = Math.floor(Math.random() * this.size);
             const y = Math.floor(Math.random() * this.size);
 
-            // Don't place dead ends at start, end, second block, or adjacent to other dead ends
+            // Don't place dead ends at start, end, or adjacent to other dead ends
             if ((x === 0 && y === 0) || 
                 (x === this.size-1 && y === this.size-1) ||
-                (x === 0 && y === 1) || (x === 1 && y === 0) ||
                 this.hasAdjacentDeadEnd(x, y)) {
                 attempts++;
                 continue;
