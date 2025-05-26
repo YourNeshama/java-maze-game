@@ -23,13 +23,15 @@ class MazeGame {
         console.log('Creating new MazeGame with difficulty:', difficulty);
         this.difficulty = difficulty;
         this.initializeGameSettings();
+        console.log('Initializing questions for difficulty:', this.difficulty);
         this.questions = this.initializeQuestions();
+        console.log('Questions initialized:', this.questions.length, 'questions available');
         this.deadEndQuestions = this.initializeDeadEndQuestions();
+        console.log('Dead end questions initialized:', this.deadEndQuestions.length, 'questions available');
         this.playerPath = [];
         this.moveQueue = [];
         this.isMoving = false;
         this.inDeadEnd = false;
-        this.minPathLength = 0;
 
         // Initialize canvas
         this.canvas = document.getElementById('mazeCanvas');
@@ -41,29 +43,57 @@ class MazeGame {
 
         this.initializeMaze();
         this.setupEventListeners();
-        this.updateQuestionCounter();
+        
+        // Calculate minimum path length
+        this.minPathLength = this.findShortestPath();
+        this.stepsRemaining = this.minPathLength;
+        this.updateStepCounter();
         console.log('MazeGame initialization complete');
+    }
+
+    findShortestPath() {
+        const visited = Array(this.size).fill().map(() => Array(this.size).fill(false));
+        const queue = [{x: 0, y: 0, steps: 0}];
+        visited[0][0] = true;
+
+        while (queue.length > 0) {
+            const {x, y, steps} = queue.shift();
+            
+            if (x === this.size - 1 && y === this.size - 1) {
+                return steps;
+            }
+
+            const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+            for (const [dx, dy] of directions) {
+                const newX = x + dx;
+                const newY = y + dy;
+                
+                if (newX >= 0 && newX < this.size && 
+                    newY >= 0 && newY < this.size && 
+                    !visited[newY][newX] && 
+                    this.maze[newY][newX] !== WALL) {
+                    visited[newY][newX] = true;
+                    queue.push({x: newX, y: newY, steps: steps + 1});
+                }
+            }
+        }
+        return Infinity;
     }
 
     initializeGameSettings() {
         switch(this.difficulty) {
             case 'easy':
                 this.size = 5;
-                this.questionCount = 5;
                 break;
             case 'medium':
                 this.size = 7;
-                this.questionCount = 8;
                 break;
             case 'hard':
                 this.size = 9;
-                this.questionCount = 12;
                 break;
             default:
                 this.size = 5;
-                this.questionCount = 5;
         }
-        this.questionsRemaining = this.questionCount;
         this.playerX = 0;
         this.playerY = 0;
     }
@@ -80,7 +110,7 @@ class MazeGame {
         this.maze[0][0] = PATH;
         this.maze[this.size-1][this.size-1] = PATH;
         
-        // Add some dead ends
+        // Add dead ends near start and end
         this.addDeadEnds();
         
         this.draw();
@@ -118,17 +148,40 @@ class MazeGame {
     }
 
     addDeadEnds() {
-        const deadEndCount = Math.floor(this.size / 2);
+        const deadEndCount = Math.floor(this.size * 1.5); // Increase number of dead ends
         let added = 0;
+        
+        // Priority areas for dead ends (near start and end)
+        const priorityAreas = [
+            {x: 1, y: 0}, {x: 0, y: 1},  // Near start
+            {x: this.size-2, y: this.size-1}, {x: this.size-1, y: this.size-2}  // Near end
+        ];
 
-        while (added < deadEndCount) {
+        // First try to add dead ends in priority areas
+        for (const pos of priorityAreas) {
+            if (this.maze[pos.y][pos.x] === PATH && this.countPathNeighbors(pos.x, pos.y) === 1) {
+                this.maze[pos.y][pos.x] = DEAD_END;
+                added++;
+            }
+        }
+
+        // Then add remaining dead ends randomly
+        let attempts = 0;
+        while (added < deadEndCount && attempts < 100) {
             const x = Math.floor(Math.random() * this.size);
             const y = Math.floor(Math.random() * this.size);
+
+            // Don't place dead ends at start or end
+            if ((x === 0 && y === 0) || (x === this.size-1 && y === this.size-1)) {
+                attempts++;
+                continue;
+            }
 
             if (this.maze[y][x] === PATH && this.countPathNeighbors(x, y) === 1) {
                 this.maze[y][x] = DEAD_END;
                 added++;
             }
+            attempts++;
         }
     }
 
@@ -180,6 +233,12 @@ class MazeGame {
         this.ctx.fillRect(endX * this.cellSize, endY * this.cellSize, this.cellSize, this.cellSize);
         this.ctx.strokeStyle = '#999';
         this.ctx.strokeRect(endX * this.cellSize, endY * this.cellSize, this.cellSize, this.cellSize);
+
+        // Draw player's current cell with a highlight
+        this.ctx.fillStyle = '#4CAF50';
+        this.ctx.globalAlpha = 0.3;
+        this.ctx.fillRect(this.playerX * this.cellSize, this.playerY * this.cellSize, this.cellSize, this.cellSize);
+        this.ctx.globalAlpha = 1.0;
 
         // Draw player as a circle with a border
         this.ctx.fillStyle = '#4CAF50';
@@ -295,47 +354,60 @@ class MazeGame {
         const newY = this.playerY + dy;
 
         if (newX >= 0 && newX < this.size && newY >= 0 && newY < this.size && this.maze[newY][newX] !== WALL) {
-            const currentQuestion = this.questions[Math.floor(Math.random() * this.questions.length)];
+            // Get a random question based on current difficulty
+            console.log('Current difficulty:', this.difficulty);
+            console.log('Available questions:', this.questions.map(q => q.question.substring(0, 50) + '...'));
+            
+            const currentQuestions = this.questions;
+            const currentQuestion = currentQuestions[Math.floor(Math.random() * currentQuestions.length)];
+            console.log('Selected question:', currentQuestion.question.substring(0, 50) + '...');
+            
             const answer = prompt(currentQuestion.question);
             
             if (currentQuestion.checkAnswer(answer)) {
-                alert("正确! " + currentQuestion.explanation);
+                alert("Correct! " + currentQuestion.explanation);
                 this.playerX = newX;
                 this.playerY = newY;
-                this.questionsRemaining--;
-                this.updateQuestionCounter();
+                this.stepsRemaining--;
+                this.updateStepCounter();
                 
                 if (this.maze[newY][newX] === DEAD_END) {
-                    const deadEndQuestion = this.deadEndQuestions[Math.floor(Math.random() * this.deadEndQuestions.length)];
+                    // Get a random dead end question based on current difficulty
+                    console.log('In dead end. Available dead end questions:', 
+                              this.deadEndQuestions.map(q => q.question.substring(0, 50) + '...'));
+                    
+                    const deadEndQuestions = this.deadEndQuestions;
+                    const deadEndQuestion = deadEndQuestions[Math.floor(Math.random() * deadEndQuestions.length)];
+                    console.log('Selected dead end question:', deadEndQuestion.question.substring(0, 50) + '...');
+                    
                     const deadEndAnswer = prompt(deadEndQuestion.question);
                     
                     if (!deadEndQuestion.checkAnswer(deadEndAnswer)) {
-                        alert("回答错误! " + deadEndQuestion.explanation + "\n传送到最近的死胡同!");
-                        // 找到最近的死胡同
-                        let nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
+                        alert("Wrong! " + deadEndQuestion.explanation + "\nTeleporting to nearest dead end!");
+                        const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
                         if (nearestDeadEnd) {
                             this.playerX = nearestDeadEnd.x;
                             this.playerY = nearestDeadEnd.y;
-                        } else {
-                            // 如果找不到死胡同，就回到起点
-                            this.playerX = 0;
-                            this.playerY = 0;
+                            // Add penalty steps
+                            this.stepsRemaining += 3;
+                            this.updateStepCounter();
                         }
                     }
                 }
                 
                 if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
-                    alert("恭喜你完成了迷宫!");
+                    alert("Congratulations! You've completed the maze!");
                     document.getElementById('newGameBtn').click();
                 }
             } else {
-                alert("回答错误! " + currentQuestion.explanation);
-                // 找到最近的死胡同
-                let nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
+                alert("Wrong! " + currentQuestion.explanation + "\nTeleporting to nearest dead end!");
+                const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
                 if (nearestDeadEnd) {
-                    alert("传送到最近的死胡同!");
                     this.playerX = nearestDeadEnd.x;
                     this.playerY = nearestDeadEnd.y;
+                    // Add penalty steps
+                    this.stepsRemaining += 3;
+                    this.updateStepCounter();
                 }
             }
             
@@ -347,7 +419,7 @@ class MazeGame {
         let nearestDeadEnd = null;
         let minDistance = Infinity;
 
-        // 遍历迷宫找到最近的死胡同
+        // Traverse the maze to find the nearest dead end
         for (let y = 0; y < this.size; y++) {
             for (let x = 0; x < this.size; x++) {
                 if (this.maze[y][x] === DEAD_END) {
@@ -363,51 +435,170 @@ class MazeGame {
         return nearestDeadEnd;
     }
 
-    updateQuestionCounter() {
-        document.getElementById('questionCounter').textContent = `Questions Remaining: ${this.questionsRemaining}`;
+    updateStepCounter() {
+        document.getElementById('questionCounter').textContent = 
+            `Steps Remaining: ${this.stepsRemaining} (Minimum path: ${this.minPathLength} steps)`;
     }
 
     initializeQuestions() {
-        const questions = [];
-        
-        // Basic Java questions
-        questions.push(new Question(
-            "What is the length of \"Hello\"?\nA) 4\nB) 5\nC) 6\nD) 0",
-            "B",
-            "String length counts all characters, 'Hello' has 5 characters"
-        ));
-        
-        questions.push(new Question(
-            "Which is NOT a primitive type in Java?\nA) int\nB) String\nC) boolean\nD) char",
-            "B",
-            "String is a class, not a primitive type"
-        ));
+        console.log('Initializing questions for difficulty level:', this.difficulty);
+        // Questions are now organized by difficulty
+        const easyQuestions = [
+            new Question(
+                "What is the length of \"Hello\"?\nA) 4\nB) 5\nC) 6\nD) 0",
+                "B",
+                "String length counts all characters, 'Hello' has 5 characters"
+            ),
+            new Question(
+                "Which operator is used for string concatenation in Java?\nA) +\nB) &\nC) .\nD) ,",
+                "A",
+                "The + operator is used to concatenate strings in Java"
+            ),
+            new Question(
+                "What is the default value of an int?\nA) 0\nB) null\nC) 1\nD) undefined",
+                "A",
+                "Numeric primitive types default to 0"
+            ),
+            new Question(
+                "What is the main method's return type?\nA) int\nB) void\nC) String\nD) boolean",
+                "B",
+                "The main method in Java must be declared as void"
+            ),
+            new Question(
+                "Which symbol is used for single-line comments?\nA) //\nB) /*\nC) #\nD) --",
+                "A",
+                "// is used for single-line comments in Java"
+            )
+        ];
 
-        questions.push(new Question(
-            "What is the default value of an int?\nA) 0\nB) null\nC) 1\nD) undefined",
-            "A",
-            "Numeric primitive types default to 0"
-        ));
+        const mediumQuestions = [
+            new Question(
+                "Which is NOT a primitive type in Java?\nA) int\nB) String\nC) boolean\nD) char",
+                "B",
+                "String is a class, not a primitive type"
+            ),
+            new Question(
+                "What is the correct way to declare a constant in Java?\nA) const int NUM\nB) final int NUM\nC) static int NUM\nD) constant int NUM",
+                "B",
+                "The 'final' keyword is used to declare constants in Java"
+            ),
+            new Question(
+                "What is the size of int in Java?\nA) 16 bits\nB) 32 bits\nC) 64 bits\nD) 8 bits",
+                "B",
+                "In Java, int is 32 bits (4 bytes)"
+            ),
+            new Question(
+                "Which collection type is ordered and allows duplicates?\nA) HashSet\nB) ArrayList\nC) HashMap\nD) TreeSet",
+                "B",
+                "ArrayList maintains insertion order and allows duplicate elements"
+            ),
+            new Question(
+                "What is the purpose of 'break' statement?\nA) Exit program\nB) Exit loop or switch\nC) Skip iteration\nD) Debug code",
+                "B",
+                "break statement is used to exit a loop or switch statement"
+            )
+        ];
 
-        return questions;
+        const hardQuestions = [
+            new Question(
+                "What is the difference between '==' and '.equals()'?\nA) No difference\nB) == for primitives, equals() for objects\nC) == is faster\nD) equals() is deprecated",
+                "B",
+                "== compares references for objects, while equals() compares content"
+            ),
+            new Question(
+                "Which interface is used for functional programming?\nA) Runnable\nB) Comparable\nC) Function\nD) Iterator",
+                "C",
+                "Function interface is a key component of Java's functional programming support"
+            ),
+            new Question(
+                "What is the purpose of 'synchronized' keyword?\nA) Increase speed\nB) Thread safety\nC) Memory management\nD) Error handling",
+                "B",
+                "synchronized keyword is used to prevent thread interference and memory consistency errors"
+            ),
+            new Question(
+                "What is the difference between abstract class and interface?\nA) No difference\nB) Abstract class can have state\nC) Interface can have constructors\nD) Abstract class is faster",
+                "B",
+                "Abstract classes can have state (fields) and constructors, interfaces traditionally cannot"
+            ),
+            new Question(
+                "What is the purpose of volatile keyword?\nA) Speed optimization\nB) Thread visibility\nC) Memory saving\nD) Error prevention",
+                "B",
+                "volatile ensures that variable updates are visible across threads"
+            )
+        ];
+
+        let selectedQuestions;
+        // Return questions based on difficulty
+        switch(this.difficulty) {
+            case 'easy':
+                selectedQuestions = easyQuestions;
+                break;
+            case 'medium':
+                selectedQuestions = mediumQuestions;
+                break;
+            case 'hard':
+                selectedQuestions = hardQuestions;
+                break;
+            default:
+                selectedQuestions = easyQuestions;
+        }
+        console.log('Selected questions for difficulty', this.difficulty, ':', 
+                    selectedQuestions.map(q => q.question.substring(0, 50) + '...'));
+        return selectedQuestions;
     }
 
     initializeDeadEndQuestions() {
-        const questions = [];
-        
-        questions.push(new Question(
-            "What is JVM?\nA) Java Virtual Machine\nB) Java Variable Method\nC) Java Visual Monitor\nD) Java Version Manager",
-            "A",
-            "JVM (Java Virtual Machine) executes Java bytecode"
-        ));
+        // Dead end questions are also separated by difficulty
+        const easyDeadEndQuestions = [
+            new Question(
+                "What does JVM stand for?\nA) Java Virtual Machine\nB) Java Variable Method\nC) Java Visual Monitor\nD) Java Version Manager",
+                "A",
+                "JVM (Java Virtual Machine) is the runtime environment for executing Java bytecode"
+            ),
+            new Question(
+                "What is the entry point of a Java program?\nA) start()\nB) main()\nC) run()\nD) execute()",
+                "B",
+                "The main() method is the entry point of every Java program"
+            )
+        ];
 
-        questions.push(new Question(
-            "What is garbage collection?\nA) Cleaning computer\nB) Automatic memory management\nC) Removing files\nD) Code optimization",
-            "B",
-            "Garbage collection automatically frees unused memory"
-        ));
+        const mediumDeadEndQuestions = [
+            new Question(
+                "What is garbage collection in Java?\nA) Cleaning files\nB) Automatic memory management\nC) Removing variables\nD) Code optimization",
+                "B",
+                "Garbage collection automatically manages memory by removing unused objects"
+            ),
+            new Question(
+                "Which of these is not a valid access modifier?\nA) public\nB) friendly\nC) protected\nD) private",
+                "B",
+                "The valid access modifiers are public, private, protected, and default (package-private)"
+            )
+        ];
 
-        return questions;
+        const hardDeadEndQuestions = [
+            new Question(
+                "What is the parent class of all classes in Java?\nA) Parent\nB) Main\nC) Object\nD) Class",
+                "C",
+                "In Java, Object is the root class of all class hierarchy"
+            ),
+            new Question(
+                "Which design pattern is used in Runtime class?\nA) Factory\nB) Singleton\nC) Observer\nD) Builder",
+                "B",
+                "Runtime class uses the Singleton pattern to ensure only one instance exists"
+            )
+        ];
+
+        // Return dead end questions based on difficulty
+        switch(this.difficulty) {
+            case 'easy':
+                return easyDeadEndQuestions;
+            case 'medium':
+                return mediumDeadEndQuestions;
+            case 'hard':
+                return hardDeadEndQuestions;
+            default:
+                return easyDeadEndQuestions;
+        }
     }
 }
 
