@@ -589,7 +589,7 @@ class MazeGame {
 
     updateStepCounter() {
         document.getElementById('questionCounter').textContent = 
-            `Steps Remaining: ${this.stepsRemaining} (Minimum path: ${this.minPathLength} steps)`;
+            `Steps Remaining: ${this.stepsRemaining}`;
     }
 
     initializeQuestions() {
