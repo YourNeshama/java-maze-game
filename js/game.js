@@ -162,13 +162,14 @@ class MazeGame {
     }
 
     addDeadEnds() {
-        const deadEndCount = Math.floor(this.size * 1.5); // Increase number of dead ends
+        // Reduce number of dead ends based on maze size
+        const deadEndCount = Math.floor(this.size / 2); // Reduced from this.size * 1.5
         let added = 0;
         
         // Priority areas for dead ends (near start and end)
         const priorityAreas = [
-            {x: 1, y: 0}, {x: 0, y: 1},  // Near start
-            {x: this.size-2, y: this.size-1}, {x: this.size-1, y: this.size-2}  // Near end
+            {x: 1, y: 0},  // Near start
+            {x: this.size-2, y: this.size-1}  // Near end
         ];
 
         // First try to add dead ends in priority areas
@@ -179,14 +180,16 @@ class MazeGame {
             }
         }
 
-        // Then add remaining dead ends randomly
+        // Then add remaining dead ends randomly, but with more restrictions
         let attempts = 0;
-        while (added < deadEndCount && attempts < 100) {
+        while (added < deadEndCount && attempts < 50) { // Reduced max attempts
             const x = Math.floor(Math.random() * this.size);
             const y = Math.floor(Math.random() * this.size);
 
-            // Don't place dead ends at start or end
-            if ((x === 0 && y === 0) || (x === this.size-1 && y === this.size-1)) {
+            // Don't place dead ends at start, end, or adjacent to other dead ends
+            if ((x === 0 && y === 0) || 
+                (x === this.size-1 && y === this.size-1) ||
+                this.hasAdjacentDeadEnd(x, y)) {
                 attempts++;
                 continue;
             }
@@ -197,6 +200,20 @@ class MazeGame {
             }
             attempts++;
         }
+    }
+
+    hasAdjacentDeadEnd(x, y) {
+        const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+        for (const [dx, dy] of directions) {
+            const newX = x + dx;
+            const newY = y + dy;
+            if (newX >= 0 && newX < this.size && newY >= 0 && newY < this.size) {
+                if (this.maze[newY][newX] === DEAD_END) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     countPathNeighbors(x, y) {
