@@ -120,8 +120,17 @@ class MazeGame {
         // Generate maze using recursive backtracking
         this.generateMaze(0, 0);
         
-        // Set start and end points
+        // Set start point as dead end and ensure second block is not
         this.maze[0][0] = DEAD_END;
+        
+        // Ensure the path to second block
+        if (this.maze[0][1] === PATH) {
+            this.maze[0][1] = PATH; // Second block is always a path
+        } else if (this.maze[1][0] === PATH) {
+            this.maze[1][0] = PATH; // Second block is always a path
+        }
+        
+        // Set end point
         this.maze[this.size-1][this.size-1] = PATH;
         
         // Add dead ends near start and end
@@ -384,9 +393,8 @@ class MazeGame {
 
         if (newX >= 0 && newX < this.size && newY >= 0 && newY < this.size && this.maze[newY][newX] !== WALL) {
             // Get a random question based on current difficulty
-            console.log(`Selecting question for ${this.difficulty} mode from ${this.questions.length} questions`);
-            const questionIndex = Math.floor(Math.random() * this.questions.length);
-            const currentQuestion = this.questions[questionIndex];
+            console.log(`Selecting question for ${this.difficulty} mode`);
+            const currentQuestion = getRandomQuestion(this.difficulty);
             console.log('Selected question:', currentQuestion.question);
             
             const answer = prompt(currentQuestion.question);
@@ -398,24 +406,17 @@ class MazeGame {
                 this.stepsRemaining--;
                 this.updateStepCounter();
                 
-                if (this.maze[newY][newX] === DEAD_END) {
-                    // Get a random dead end question
-                    console.log(`Selecting dead end question for ${this.difficulty} mode from ${this.deadEndQuestions.length} questions`);
-                    const deadEndIndex = Math.floor(Math.random() * this.deadEndQuestions.length);
-                    const deadEndQuestion = this.deadEndQuestions[deadEndIndex];
-                    console.log('Selected dead end question:', deadEndQuestion.question);
-                    
+                // Special handling for third block
+                if (this.isThirdBlock(newX, newY) && this.maze[newY][newX] === DEAD_END) {
+                    const deadEndQuestion = getRandomQuestion(this.difficulty);
                     const deadEndAnswer = prompt(deadEndQuestion.question);
                     
                     if (!deadEndQuestion.checkAnswer(deadEndAnswer)) {
-                        alert("Wrong! " + deadEndQuestion.explanation + "\nTeleporting to nearest dead end!");
-                        const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
-                        if (nearestDeadEnd) {
-                            this.playerX = nearestDeadEnd.x;
-                            this.playerY = nearestDeadEnd.y;
-                            this.stepsRemaining += 3;
-                            this.updateStepCounter();
-                        }
+                        alert("Wrong! " + deadEndQuestion.explanation + "\nReturning to start!");
+                        this.playerX = 0;
+                        this.playerY = 0;
+                        this.stepsRemaining += 3;
+                        this.updateStepCounter();
                     }
                 }
                 
@@ -427,7 +428,12 @@ class MazeGame {
                 alert("Wrong! " + currentQuestion.explanation);
                 if (this.playerX === 0 && this.playerY === 0) {
                     // If at starting point, stay there
-                    alert("You're at the starting point (which is a dead end). Stay here and try again!");
+                    alert("You're at the starting point. Try again!");
+                } else if (this.isThirdBlock(this.playerX, this.playerY)) {
+                    // If at third block, return to start
+                    alert("Returning to start!");
+                    this.playerX = 0;
+                    this.playerY = 0;
                 } else {
                     // Otherwise teleport to nearest dead end
                     alert("Teleporting to nearest dead end!");
@@ -443,6 +449,15 @@ class MazeGame {
             
             this.draw();
         }
+    }
+
+    isThirdBlock(x, y) {
+        // Check if the current position is the third block from start
+        if ((x === 0 && y === 2) || (x === 2 && y === 0) || 
+            (x === 1 && y === 1)) {
+            return true;
+        }
+        return false;
     }
 
     findNearestDeadEnd(startX, startY) {
