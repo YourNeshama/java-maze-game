@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Java Question Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .options-container {
+            margin-bottom: 15px;
+        }
+        .option-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .questions-list {
+            margin-top: 20px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+        .question-item {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .export-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e9e9e9;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Java Question Editor</h1>
+        
+        <div class="form-group">
+            <label for="difficulty">Difficulty:</label>
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="question">Question:</label>
+            <textarea id="question" rows="4" placeholder="Enter your question here. You can use ```java for code blocks"></textarea>
+        </div>
+
+        <div class="options-container">
+            <label>Options:</label>
+            <div id="options">
+                <div class="option-group">
+                    <input type="text" placeholder="Option 1">
+                    <input type="radio" name="correct" value="0">
+                </div>
+                <div class="option-group">
+                    <input type="text" placeholder="Option 2">
+                    <input type="radio" name="correct" value="1">
+                </div>
+                <div class="option-group">
+                    <input type="text" placeholder="Option 3">
+                    <input type="radio" name="correct" value="2">
+                </div>
+                <div class="option-group">
+                    <input type="text" placeholder="Option 4">
+                    <input type="radio" name="correct" value="3">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="explanation">Explanation:</label>
+            <textarea id="explanation" rows="2" placeholder="Explain why this answer is correct"></textarea>
+        </div>
+
+        <button onclick="addQuestion()">Add Question</button>
+        
+        <div class="questions-list">
+            <h2>Current Questions</h2>
+            <div id="questionsList"></div>
+        </div>
+
+        <div class="export-section">
+            <h2>Export Questions</h2>
+            <button onclick="exportQuestions()">Export to JSON</button>
+            <button onclick="copyToClipboard()">Copy to Clipboard</button>
+        </div>
+    </div>
+
+    <script>
+        let questions = {
+            easy: [],
+            medium: [],
+            hard: []
+        };
+
+        // Load existing questions
+        fetch('js/questions.js')
+            .then(response => response.text())
+            .then(text => {
+                // Extract the QUESTIONS object from the file
+                const match = text.match(/const QUESTIONS = ({[\s\S]*?});/);
+                if (match) {
+                    questions = JSON.parse(match[1]);
+                    displayQuestions();
+                }
+            })
+            .catch(error => console.error('Error loading questions:', error));
+
+        function addQuestion() {
+            const difficulty = document.getElementById('difficulty').value;
+            const questionText = document.getElementById('question').value;
+            const explanation = document.getElementById('explanation').value;
+            
+            const options = [];
+            const optionInputs = document.querySelectorAll('#options input[type="text"]');
+            optionInputs.forEach(input => {
+                options.push(input.value);
+            });
+
+            const correctAnswer = document.querySelector('input[name="correct"]:checked').value;
+
+            const newQuestion = {
+                question: questionText,
+                options: options,
+                correctAnswer: parseInt(correctAnswer),
+                explanation: explanation,
+                difficulty: difficulty
+            };
+
+            questions[difficulty].push(newQuestion);
+            displayQuestions();
+            clearForm();
+        }
+
+        function displayQuestions() {
+            const container = document.getElementById('questionsList');
+            container.innerHTML = '';
+
+            ['easy', 'medium', 'hard'].forEach(difficulty => {
+                const difficultyQuestions = questions[difficulty];
+                if (difficultyQuestions.length > 0) {
+                    const section = document.createElement('div');
+                    section.innerHTML = `<h3>${difficulty.toUpperCase()} (${difficultyQuestions.length})</h3>`;
+                    
+                    difficultyQuestions.forEach((q, index) => {
+                        const questionDiv = document.createElement('div');
+                        questionDiv.className = 'question-item';
+                        questionDiv.innerHTML = `
+                            <p><strong>Q:</strong> ${q.question}</p>
+                            <p><strong>Options:</strong></p>
+                            <ul>
+                                ${q.options.map((opt, i) => `
+                                    <li>${opt} ${i === q.correctAnswer ? '✓' : ''}</li>
+                                `).join('')}
+                            </ul>
+                            <p><strong>Explanation:</strong> ${q.explanation}</p>
+                            <button onclick="removeQuestion('${difficulty}', ${index})">Remove</button>
+                        `;
+                        section.appendChild(questionDiv);
+                    });
+                    container.appendChild(section);
+                }
+            });
+        }
+
+        function removeQuestion(difficulty, index) {
+            questions[difficulty].splice(index, 1);
+            displayQuestions();
+        }
+
+        function clearForm() {
+            document.getElementById('question').value = '';
+            document.getElementById('explanation').value = '';
+            document.querySelectorAll('#options input[type="text"]').forEach(input => {
+                input.value = '';
+            });
+            document.querySelector('input[name="correct"]:checked').checked = false;
+        }
+
+        function exportQuestions() {
+            const questionsJson = JSON.stringify(questions, null, 2);
+            const questionsModule = `const QUESTIONS = ${questionsJson};
+
+// Helper function to get questions by difficulty
+function getQuestionsByDifficulty(difficulty) {
+    const normalizedDifficulty = difficulty.toLowerCase();
+    if (QUESTIONS.hasOwnProperty(normalizedDifficulty)) {
+        return QUESTIONS[normalizedDifficulty];
+    }
+    console.error(\`Invalid difficulty: \${difficulty}. Please choose 'easy', 'medium', or 'hard'.\`);
+    return [];
+}
+
+// Helper function to get a random question from a specific difficulty
+function getRandomQuestion(difficulty) {
+    const questions = getQuestionsByDifficulty(difficulty);
+    if (questions.length === 0) {
+        return null;
+    }
+    const randomIndex = Math.floor(Math.random() * questions.length);
+    return questions[randomIndex];
+}
+
+export { QUESTIONS, getQuestionsByDifficulty, getRandomQuestion };`;
+
+            const blob = new Blob([questionsModule], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'questions.js';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function copyToClipboard() {
+            const questionsJson = JSON.stringify(questions, null, 2);
+            navigator.clipboard.writeText(questionsJson)
+                .then(() => alert('Questions copied to clipboard!'))
+                .catch(err => console.error('Failed to copy:', err));
+        }
+    </script>
+</body>
+</html> 

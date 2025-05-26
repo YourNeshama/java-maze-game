@@ -1,58 +1,356 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Question System Tests</title>
+    <title>Java Question System Tests</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
             line-height: 1.6;
+            background-color: #f5f5f5;
         }
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        pre {
-            background-color: #f5f5f5;
-            padding: 10px;
+        h1, h2, h3 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
             border-radius: 4px;
         }
+        .question {
+            margin: 15px 0;
+            padding: 20px;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .question pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        .options {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+        .option {
+            padding: 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        .option:hover {
+            background-color: #f0f0f0;
+        }
+        .option.selected {
+            background-color: #e3f2fd;
+            border-color: #2196F3;
+        }
+        .correct {
+            color: #4CAF50;
+            font-weight: bold;
+            border-color: #4CAF50 !important;
+            background-color: #E8F5E9 !important;
+        }
+        .incorrect {
+            color: #f44336;
+            border-color: #f44336 !important;
+            background-color: #FFEBEE !important;
+        }
+        .button {
+            background: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s ease;
+        }
+        .button:hover {
+            background: #1976D2;
+        }
+        .difficulty-section {
+            margin: 30px 0;
+            padding: 20px;
+            border-radius: 4px;
+        }
+        .easy { background: #E8F5E9; }
+        .medium { background: #FFF3E0; }
+        .hard { background: #FFEBEE; }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background: #E3F2FD;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+        }
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background: #F5F5F5;
+            border-radius: 4px;
+            border-left: 4px solid #2196F3;
+        }
+        .show-explanation {
+            display: block;
+        }
+        .test-mode {
+            margin: 20px 0;
+            padding: 20px;
+            background: #E3F2FD;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        select {
+            padding: 8px;
+            margin: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .code {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .difficulty-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            text-transform: capitalize;
+        }
+        .badge-easy { background: #E8F5E9; color: #2E7D32; }
+        .badge-medium { background: #FFF3E0; color: #E65100; }
+        .badge-hard { background: #FFEBEE; color: #C62828; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Question System Tests</h1>
-        <p>Please check the console for test results.</p>
-        <p>If you see no errors in the console, the tests are running successfully.</p>
-        <pre id="results">Running tests...</pre>
+        <h1>Java Question System</h1>
+        
+        <div class="section">
+            <h2>Question Bank Overview</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <h3>Question Counts</h3>
+                    <div id="counts"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Practice Mode</h2>
+            <div class="test-mode">
+                <select id="difficultySelect">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+                <button class="button" onclick="startTest()">Start Practice</button>
+                <div id="currentQuestion"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>All Questions</h2>
+            <div class="difficulty-section easy">
+                <h3>Easy Questions</h3>
+                <div id="easyQuestions"></div>
+            </div>
+            
+            <div class="difficulty-section medium">
+                <h3>Medium Questions</h3>
+                <div id="mediumQuestions"></div>
+            </div>
+            
+            <div class="difficulty-section hard">
+                <h3>Hard Questions</h3>
+                <div id="hardQuestions"></div>
+            </div>
+        </div>
     </div>
+
     <script type="module">
         import { QUESTIONS, getQuestionsByDifficulty, getRandomQuestion } from './js/questions.js';
-        
-        // Display test results in the page
-        const resultsElement = document.getElementById('results');
-        let output = '';
-        
-        try {
-            // Test 1: Count questions
-            const easyCount = getQuestionsByDifficulty('easy').length;
-            const mediumCount = getQuestionsByDifficulty('medium').length;
-            const hardCount = getQuestionsByDifficulty('hard').length;
+
+        window.currentTestQuestion = null;
+        window.testStats = {
+            correct: 0,
+            incorrect: 0,
+            total: 0
+        };
+
+        function displayQuestion(question, container, isTestMode = false) {
+            if (!question) return;
             
-            output += `Questions count:\n`;
-            output += `Easy: ${easyCount}\n`;
-            output += `Medium: ${mediumCount}\n`;
-            output += `Hard: ${hardCount}\n\n`;
+            let html = '<div class="question">';
+            html += '<div class="question-header">';
+            html += `<h4>Question</h4>`;
+            html += `<span class="difficulty-badge badge-${question.difficulty}">${question.difficulty}</span>`;
+            html += '</div>';
+            html += `<div class="question-content">${question.question}</div>`;
+            html += '<p><strong>Options:</strong></p><div class="options">';
             
-            // Test 2: Get random question
-            const randomQuestion = getRandomQuestion('easy');
-            output += `Random question loaded: ${randomQuestion ? 'Yes' : 'No'}\n`;
+            if (isTestMode) {
+                question.options.forEach((option, index) => {
+                    html += `<div class="option" data-index="${index}">${index + 1}) ${option}</div>`;
+                });
+                html += '</div>';
+                html += '<div class="explanation" id="explanation" style="display: none;">';
+                html += `<p><strong>Explanation:</strong> ${question.explanation}</p>`;
+                html += '</div>';
+            } else {
+                question.options.forEach((option, index) => {
+                    const isCorrect = index === question.correctAnswer;
+                    html += `<div class="option ${isCorrect ? 'correct' : ''}">${index + 1}) ${option}</div>`;
+                });
+                html += '</div>';
+                html += '<div class="explanation">';
+                html += `<p><strong>Explanation:</strong> ${question.explanation}</p>`;
+                html += '</div>';
+            }
             
-            resultsElement.textContent = output;
-        } catch (error) {
-            resultsElement.textContent = `Error: ${error.message}`;
-            console.error(error);
+            html += '</div>';
+            container.innerHTML = html;
+
+            if (isTestMode) {
+                setTimeout(() => {
+                    document.querySelectorAll('.option').forEach(option => {
+                        option.onclick = () => {
+                            const index = parseInt(option.dataset.index);
+                            selectAnswer(index);
+                        };
+                    });
+                }, 0);
+            }
         }
+
+        function displayAllQuestions() {
+            const difficulties = ['easy', 'medium', 'hard'];
+            difficulties.forEach(diff => {
+                const questions = getQuestionsByDifficulty(diff);
+                const container = document.getElementById(`${diff}Questions`);
+                let html = '';
+                questions.forEach(question => {
+                    html += '<div class="question">';
+                    html += '<div class="question-header">';
+                    html += `<h4>Question</h4>`;
+                    html += `<span class="difficulty-badge badge-${diff}">${diff}</span>`;
+                    html += '</div>';
+                    html += `<div class="question-content">${question.question}</div>`;
+                    html += '<p><strong>Options:</strong></p><div class="options">';
+                    question.options.forEach((option, index) => {
+                        const isCorrect = index === question.correctAnswer;
+                        html += `<div class="option ${isCorrect ? 'correct' : ''}">${index + 1}) ${option}</div>`;
+                    });
+                    html += '</div>';
+                    html += '<div class="explanation">';
+                    html += `<p><strong>Explanation:</strong> ${question.explanation}</p>`;
+                    html += '</div>';
+                    html += '</div>';
+                });
+                container.innerHTML = html;
+            });
+        }
+
+        function updateCounts() {
+            const counts = {
+                easy: getQuestionsByDifficulty('easy').length,
+                medium: getQuestionsByDifficulty('medium').length,
+                hard: getQuestionsByDifficulty('hard').length
+            };
+            
+            document.getElementById('counts').innerHTML = `
+                <p>Easy Questions: ${counts.easy}</p>
+                <p>Medium Questions: ${counts.medium}</p>
+                <p>Hard Questions: ${counts.hard}</p>
+                <p>Total Questions: ${counts.easy + counts.medium + counts.hard}</p>
+            `;
+        }
+
+        function startTest() {
+            const difficulty = document.getElementById('difficultySelect').value;
+            window.currentTestQuestion = getRandomQuestion(difficulty);
+            displayQuestion(window.currentTestQuestion, document.getElementById('currentQuestion'), true);
+            
+            // Remove any existing next button
+            const existingButton = document.querySelector('#currentQuestion .button');
+            if (existingButton) {
+                existingButton.remove();
+            }
+        }
+
+        function selectAnswer(index) {
+            if (!window.currentTestQuestion) return;
+            
+            const options = document.querySelectorAll('#currentQuestion .option');
+            options.forEach(opt => opt.classList.remove('selected', 'correct', 'incorrect'));
+            
+            const selectedOption = options[index];
+            selectedOption.classList.add('selected');
+            
+            const isCorrect = index === window.currentTestQuestion.correctAnswer;
+            
+            if (isCorrect) {
+                selectedOption.classList.add('correct');
+            } else {
+                selectedOption.classList.add('incorrect');
+                options[window.currentTestQuestion.correctAnswer].classList.add('correct');
+            }
+            
+            document.getElementById('explanation').style.display = 'block';
+
+            // Add a "Next Question" button after answering
+            const nextButton = document.createElement('button');
+            nextButton.className = 'button';
+            nextButton.textContent = 'Next Question';
+            nextButton.onclick = startTest;
+            
+            // Remove any existing next button before adding a new one
+            const existingButton = document.querySelector('#currentQuestion .button');
+            if (existingButton) {
+                existingButton.remove();
+            }
+            document.getElementById('currentQuestion').appendChild(nextButton);
+        }
+
+        // Make functions available globally
+        window.startTest = startTest;
+        window.selectAnswer = selectAnswer;
+
+        // Initial load
+        updateCounts();
+        displayAllQuestions();
     </script>
 </body>
 </html> 

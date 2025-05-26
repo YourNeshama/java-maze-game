@@ -34,27 +34,6 @@ const QUESTIONS = {
             "correctAnswer": 1,
             "explanation": "Post-increment (x++) uses the value first, then increments it. So x is 5 when printed first, then becomes 6.",
             "difficulty": "easy"
-        },
-        {
-            "question": "What will be printed by the following code?\n```java\nint[] numbers = {1, 2, 3};\nSystem.out.println(numbers.length);\n```",
-            "options": ["1", "2", "3", "Error"],
-            "correctAnswer": 2,
-            "explanation": "The length property returns the number of elements in the array.",
-            "difficulty": "easy"
-        },
-        {
-            "question": "What will be printed by the following code?\n```java\nString word = \"Java\";\nSystem.out.println(word.charAt(0));\n```",
-            "options": ["J", "a", "v", "Error"],
-            "correctAnswer": 0,
-            "explanation": "charAt(0) returns the first character of the string.",
-            "difficulty": "easy"
-        },
-        {
-            "question": "What will be printed by the following code?\n```java\nint num = 10;\nSystem.out.println(num > 5 ? \"Big\" : \"Small\");\n```",
-            "options": ["Big", "Small", "true", "false"],
-            "correctAnswer": 0,
-            "explanation": "The ternary operator returns 'Big' when the condition (num > 5) is true.",
-            "difficulty": "easy"
         }
     ],
     medium: [
@@ -91,20 +70,6 @@ const QUESTIONS = {
             "options": ["pro", "ogr", "rog", "gram"],
             "correctAnswer": 1,
             "explanation": "substring(start, end) returns characters from start (inclusive) to end (exclusive).",
-            "difficulty": "medium"
-        },
-        {
-            "question": "What will be printed by the following code?\n```java\nArrayList<Integer> list = new ArrayList<>();\nlist.add(1);\nlist.add(2);\nlist.add(1, 3);\nlist.remove(1);\nSystem.out.println(list);\n```",
-            "options": ["[1, 2]", "[1, 3]", "[3, 2]", "[2, 3]"],
-            "correctAnswer": 1,
-            "explanation": "After adding 3 at index 1 [1,3,2], removing element at index 1 results in [1,2].",
-            "difficulty": "medium"
-        },
-        {
-            "question": "What will be printed by the following code?\n```java\nString str = \"Hello\";\nString result = \"\";\nfor (int i = str.length() - 1; i >= 0; i--) {\n    result += str.charAt(i);\n}\nSystem.out.println(result);\n```",
-            "options": ["Hello", "olleH", "HELLO", "Error"],
-            "correctAnswer": 1,
-            "explanation": "The loop builds a new string by adding characters from the end of str, reversing it.",
             "difficulty": "medium"
         }
     ],
@@ -143,72 +108,28 @@ const QUESTIONS = {
             "correctAnswer": 1,
             "explanation": "Fibonacci sequence starts with 0, 1, and each subsequent number is the sum of the previous two.",
             "difficulty": "hard"
-        },
-        {
-            "question": "What will be printed by the following code?\n```java\npublic static int gcd(int a, int b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n// In main:\nSystem.out.println(gcd(48, 18));\n```",
-            "options": ["6", "9", "3", "2"],
-            "correctAnswer": 0,
-            "explanation": "This recursive implementation of Euclidean algorithm finds GCD. For 48 and 18: 48=2×18+12, 18=1×12+6, 12=2×6+0, so GCD is 6.",
-            "difficulty": "hard"
-        },
-        {
-            "question": "What will be printed by the following code?\n```java\npublic static void quickSort(int[] arr, int low, int high) {\n    if (low < high) {\n        int pivot = arr[high];\n        int i = low - 1;\n        for (int j = low; j < high; j++) {\n            if (arr[j] <= pivot) {\n                i++;\n                int temp = arr[i];\n                arr[i] = arr[j];\n                arr[j] = temp;\n            }\n        }\n        int temp = arr[i + 1];\n        arr[i + 1] = arr[high];\n        arr[high] = temp;\n        System.out.print(Arrays.toString(arr) + \" \");\n    }\n}\n// In main:\nint[] arr = {5, 2, 8, 1, 9};\nquickSort(arr, 0, arr.length - 1);\n```",
-            "options": ["[2, 5, 8, 1, 9] [2, 1, 8, 5, 9] [2, 1, 5, 8, 9]", "[1, 2, 5, 8, 9]", "[5, 2, 8, 1, 9] [2, 1, 5, 8, 9]", "[2, 1, 5, 8, 9]"],
-            "correctAnswer": 0,
-            "explanation": "QuickSort prints array after each partition. First partition around 9, then 5, then 8.",
-            "difficulty": "hard"
         }
     ]
 };
 
-    // Helper function to get questions by difficulty
+// Helper function to get questions by difficulty
 function getQuestionsByDifficulty(difficulty) {
     const normalizedDifficulty = difficulty.toLowerCase();
-    
-    // Get custom questions from localStorage
-    const customQuestions = JSON.parse(localStorage.getItem('customQuestions') || '[]');
-    const customQuestionsForDifficulty = customQuestions.filter(q => q.difficulty === normalizedDifficulty);
-    
-    // Combine built-in and custom questions
-    let allQuestions = [];
     if (QUESTIONS.hasOwnProperty(normalizedDifficulty)) {
-        // For built-in questions, ensure they all have 4 options
-        allQuestions = QUESTIONS[normalizedDifficulty].map(q => ({
-            ...q,
-            options: q.options.length === 4 ? q.options : [...q.options, ...Array(4 - q.options.length).fill("")]
-        }));
+        return QUESTIONS[normalizedDifficulty];
     }
-    
-    // For custom questions, pad with empty strings if less than 4 options
-    allQuestions = allQuestions.concat(
-        customQuestionsForDifficulty.map(q => ({
-            ...q,
-            options: [...q.options, ...Array(4 - q.options.length).fill("")]
-        }))
-    );
-    
-    if (allQuestions.length === 0) {
-        console.error(`No questions found for difficulty: ${difficulty}. Please choose 'easy', 'medium', or 'hard'.`);
-                return [];
-    }
-    
-    return allQuestions;
-    }
+    console.error(`Invalid difficulty: ${difficulty}. Please choose 'easy', 'medium', or 'hard'.`);
+    return [];
+}
 
-    // Helper function to get a random question from a specific difficulty
+// Helper function to get a random question from a specific difficulty
 function getRandomQuestion(difficulty) {
-        const questions = getQuestionsByDifficulty(difficulty);
+    const questions = getQuestionsByDifficulty(difficulty);
     if (questions.length === 0) {
-            return null;
-        }
-        const randomIndex = Math.floor(Math.random() * questions.length);
-        const question = questions[randomIndex];
-    
-    // Filter out empty options
-    return {
-        ...question,
-        options: question.options.filter(opt => opt !== "")
-    };
+        return null;
+    }
+    const randomIndex = Math.floor(Math.random() * questions.length);
+    return questions[randomIndex];
 }
 
 export { QUESTIONS, getQuestionsByDifficulty, getRandomQuestion }; 

@@ -120,11 +120,27 @@ class MazeGame {
         // Set start point as dead end and ensure second block is not
         this.maze[0][0] = DEAD_END;
         
-        // Ensure the path to second block
+        // Ensure the path to second block and make sure it's not a dead end
         if (this.maze[0][1] === PATH) {
             this.maze[0][1] = PATH; // Second block is always a path
+            // Make sure there's at least one more path connected to second block
+            if (this.maze[0][2] !== PATH && this.maze[1][1] !== PATH) {
+                if (Math.random() < 0.5) {
+                    this.maze[0][2] = PATH;
+                } else {
+                    this.maze[1][1] = PATH;
+                }
+            }
         } else if (this.maze[1][0] === PATH) {
             this.maze[1][0] = PATH; // Second block is always a path
+            // Make sure there's at least one more path connected to second block
+            if (this.maze[2][0] !== PATH && this.maze[1][1] !== PATH) {
+                if (Math.random() < 0.5) {
+                    this.maze[2][0] = PATH;
+                } else {
+                    this.maze[1][1] = PATH;
+                }
+            }
         }
         
         // Set end point
@@ -396,6 +412,7 @@ class MazeGame {
 
         console.log('Attempting to move to:', {newX, newY}); // Debug log
 
+        // First check if the move is valid
         if (newX >= 0 && newX < this.size && 
             newY >= 0 && newY < this.size && 
             this.maze[newY][newX] !== WALL) {
@@ -411,7 +428,16 @@ class MazeGame {
             }
             
             console.log('Selected question:', currentQuestion); // Debug log
-            const answer = prompt(currentQuestion.question);
+            
+            // Format the question with options if they exist
+            let questionText = currentQuestion.question + "\n\n";
+            if (currentQuestion.options) {
+                currentQuestion.options.forEach((option, index) => {
+                    questionText += `${index + 1}) ${option}\n`;
+                });
+            }
+            
+            const answer = prompt(questionText);
             
             if (answer === null) return; // User cancelled
             
@@ -420,31 +446,13 @@ class MazeGame {
             
             if (isCorrect) {
                 alert("Correct! " + currentQuestion.explanation);
+                // Move to the new position
                 this.playerX = newX;
                 this.playerY = newY;
                 this.stepsRemaining--;
                 this.updateStepCounter();
                 
-                // Special handling for third block
-                if (this.isThirdBlock(newX, newY)) {
-                    const deadEndQuestion = getRandomQuestion(this.difficulty);
-                    if (!deadEndQuestion) {
-                        console.error('No dead end questions available for difficulty:', this.difficulty);
-                        return;
-                    }
-                    
-                    const deadEndAnswer = prompt(deadEndQuestion.question);
-                    if (deadEndAnswer === null) return; // User cancelled
-                    
-                    if (!this.checkAnswer(deadEndQuestion, deadEndAnswer.trim())) {
-                        alert("Wrong! " + deadEndQuestion.explanation + "\nReturning to start!");
-                        this.playerX = 0;
-                        this.playerY = 0;
-                        this.stepsRemaining += 3;
-                        this.updateStepCounter();
-                    }
-                }
-                
+                // Check if player has reached the end
                 if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
                     alert("Congratulations! You've completed the maze!");
                     document.getElementById('newGameBtn').click();
@@ -454,11 +462,6 @@ class MazeGame {
                 if (this.playerX === 0 && this.playerY === 0) {
                     // If at starting point, stay there
                     alert("You're at the starting point. Try again!");
-                } else if (this.isThirdBlock(this.playerX, this.playerY)) {
-                    // If at third block, return to start
-                    alert("Returning to start!");
-                    this.playerX = 0;
-                    this.playerY = 0;
                 } else {
                     // Otherwise teleport to nearest dead end
                     alert("Teleporting to nearest dead end!");
@@ -481,6 +484,11 @@ class MazeGame {
     checkAnswer(question, userAnswer) {
         // For multiple choice questions (0-based index)
         if (typeof question.correctAnswer === 'number') {
+            // Try to match the actual answer value first
+            if (userAnswer === question.options[question.correctAnswer]) {
+                return true;
+            }
+            // Then try to match the option number
             const index = parseInt(userAnswer) - 1; // Convert 1-based to 0-based
             return index === question.correctAnswer;
         }
@@ -839,4 +847,77 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Could not find required DOM elements');
     }
-}); 
+});
+
+function showQuestion(question) {
+    if (!question) return;
+    
+    const options = question.options.filter(opt => opt !== "");
+    const optionsHtml = options.map((option, index) => 
+        `<button onclick="checkAnswer(${index})" class="option-button">${index + 1}) ${option}</button>`
+    ).join('');
+
+    const questionDialog = `
+        <div class="question-dialog">
+            <div class="question-content">
+                <p class="question-text">${question.question}</p>
+                <div class="options-container">
+                    ${optionsHtml}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add styles if they don't exist
+    if (!document.getElementById('questionStyles')) {
+        const styles = document.createElement('style');
+        styles.id = 'questionStyles';
+        styles.textContent = `
+            .question-dialog {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                max-width: 90%;
+                width: 500px;
+            }
+            .question-content {
+                text-align: left;
+            }
+            .question-text {
+                margin-bottom: 20px;
+                white-space: pre-wrap;
+                font-size: 16px;
+            }
+            .options-container {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .option-button {
+                padding: 10px 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                background: #f8f9fa;
+                cursor: pointer;
+                text-align: left;
+                font-size: 14px;
+                transition: all 0.2s;
+            }
+            .option-button:hover {
+                background: #e9ecef;
+            }
+        `;
+        document.head.appendChild(styles);
+    }
+
+    // Create and show dialog
+    const dialog = document.createElement('div');
+    dialog.innerHTML = questionDialog;
+    document.body.appendChild(dialog.firstElementChild);
+} 
