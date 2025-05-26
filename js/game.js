@@ -241,7 +241,7 @@ class MazeGame {
             const answer = prompt(currentQuestion.question);
             
             if (currentQuestion.checkAnswer(answer)) {
-                alert("Correct! " + currentQuestion.explanation);
+                alert("正确! " + currentQuestion.explanation);
                 this.playerX = newX;
                 this.playerY = newY;
                 this.questionsRemaining--;
@@ -252,22 +252,57 @@ class MazeGame {
                     const deadEndAnswer = prompt(deadEndQuestion.question);
                     
                     if (!deadEndQuestion.checkAnswer(deadEndAnswer)) {
-                        alert("Wrong! " + deadEndQuestion.explanation + "\nTeleporting to start!");
-                        this.playerX = 0;
-                        this.playerY = 0;
+                        alert("回答错误! " + deadEndQuestion.explanation + "\n传送到最近的死胡同!");
+                        // 找到最近的死胡同
+                        let nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
+                        if (nearestDeadEnd) {
+                            this.playerX = nearestDeadEnd.x;
+                            this.playerY = nearestDeadEnd.y;
+                        } else {
+                            // 如果找不到死胡同，就回到起点
+                            this.playerX = 0;
+                            this.playerY = 0;
+                        }
                     }
                 }
                 
                 if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
-                    alert("Congratulations! You've completed the maze!");
+                    alert("恭喜你完成了迷宫!");
                     document.getElementById('newGameBtn').click();
                 }
             } else {
-                alert("Wrong! " + currentQuestion.explanation);
+                alert("回答错误! " + currentQuestion.explanation);
+                // 找到最近的死胡同
+                let nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
+                if (nearestDeadEnd) {
+                    alert("传送到最近的死胡同!");
+                    this.playerX = nearestDeadEnd.x;
+                    this.playerY = nearestDeadEnd.y;
+                }
             }
             
             this.draw();
         }
+    }
+
+    findNearestDeadEnd(startX, startY) {
+        let nearestDeadEnd = null;
+        let minDistance = Infinity;
+
+        // 遍历迷宫找到最近的死胡同
+        for (let y = 0; y < this.size; y++) {
+            for (let x = 0; x < this.size; x++) {
+                if (this.maze[y][x] === DEAD_END) {
+                    const distance = Math.abs(x - startX) + Math.abs(y - startY);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestDeadEnd = { x, y };
+                    }
+                }
+            }
+        }
+
+        return nearestDeadEnd;
     }
 
     updateQuestionCounter() {
@@ -277,23 +312,23 @@ class MazeGame {
     initializeQuestions() {
         const questions = [];
         
-        // Basic Java questions
+        // 基础 Java 问题
         questions.push(new Question(
-            "What is the length of \"Hello\"?\nA) 4\nB) 5\nC) 6\nD) 0",
+            "String \"Hello\" 的长度是多少?\nA) 4\nB) 5\nC) 6\nD) 0",
             "B",
-            "String length counts all characters, 'Hello' has 5 characters"
+            "String 的长度包括所有字符，'Hello' 有 5 个字符"
         ));
         
         questions.push(new Question(
-            "Which is NOT a primitive type in Java?\nA) int\nB) String\nC) boolean\nD) char",
+            "下列哪个不是 Java 的基本数据类型?\nA) int\nB) String\nC) boolean\nD) char",
             "B",
-            "String is a class, not a primitive type"
+            "String 是一个类，不是基本数据类型"
         ));
 
         questions.push(new Question(
-            "What is the default value of an int?\nA) 0\nB) null\nC) 1\nD) undefined",
+            "int 类型的默认值是什么?\nA) 0\nB) null\nC) 1\nD) undefined",
             "A",
-            "Numeric primitive types default to 0"
+            "数值类型的默认值是 0"
         ));
 
         return questions;
@@ -303,15 +338,15 @@ class MazeGame {
         const questions = [];
         
         questions.push(new Question(
-            "What is JVM?\nA) Java Virtual Machine\nB) Java Variable Method\nC) Java Visual Monitor\nD) Java Version Manager",
+            "JVM 是什么?\nA) Java Virtual Machine\nB) Java Variable Method\nC) Java Visual Monitor\nD) Java Version Manager",
             "A",
-            "JVM (Java Virtual Machine) executes Java bytecode"
+            "JVM (Java Virtual Machine) 是 Java 虚拟机，用于执行 Java 字节码"
         ));
 
         questions.push(new Question(
-            "What is garbage collection?\nA) Cleaning computer\nB) Automatic memory management\nC) Removing files\nD) Code optimization",
+            "什么是垃圾回收?\nA) 清理电脑\nB) 自动内存管理\nC) 删除文件\nD) 代码优化",
             "B",
-            "Garbage collection automatically frees unused memory"
+            "垃圾回收是 Java 的自动内存管理机制，用于释放不再使用的内存"
         ));
 
         return questions;
