@@ -1,50 +1,57 @@
-# Java Learning Maze Game
+# Java Maze Game with Programming Questions
 
-A fun and interactive way to learn Java concepts while solving a maze! Test your Java knowledge with questions ranging from basic syntax to advanced JVM internals.
+An interactive educational game that combines maze solving with Java programming questions. Players navigate through a maze while answering Java-related questions to progress.
+
+## Features
+
+- 🎮 Interactive 2D maze with graphical interface
+- 📚 Educational Java programming questions
+- 🎯 Multiple difficulty levels (Easy, Medium, Hard)
+- 🎨 Visual feedback with colored paths
+- 🔄 Dynamic maze generation
+- ⌨️ Keyboard controls for navigation
 
 ## How to Play
 
-1. Choose your difficulty level:
-   - Easy: 5x5 maze with basic Java questions
-   - Medium: 7x7 maze with intermediate concepts
-   - Hard: 9x9 maze with advanced topics
+1. Use arrow keys to move through the maze
+2. Answer Java questions correctly to proceed
+3. Watch for:
+   - 🟢 Green path: Correct moves
+   - 🔴 Red path: Wrong moves/dead ends
+   - 'B' key: Backtrack option
 
-2. Use arrow keys to navigate through the maze:
-   - ↑ Up
-   - ↓ Down
-   - ← Left
-   - → Right
-   - B: Go back one step
+## Technical Details
 
-3. Answer Java questions correctly to move forward
-   - Wrong answers will teleport you to a dead end
-   - Each correct answer helps you progress
-   - Learn from the explanations provided
+- Built with Java Swing for GUI
+- Implements DFS algorithm for maze generation
+- Features comprehensive question bank with explanations
+- Supports multiple difficulty levels
 
-4. Features:
-   - Progressive difficulty levels
-   - Detailed explanations for each answer
-   - Visual feedback for correct/wrong paths
-   - Dead-end challenges with advanced questions
+## Installation
 
-## Play Online
+1. Clone the repository:
+```bash
+git clone https://github.com/YourNeshama/java-maze-game.git
+```
 
-Visit [https://yourneshama.github.io/java-maze-game](https://yourneshama.github.io/java-maze-game) to play the game!
+2. Compile the Java files:
+```bash
+javac *.java
+```
 
-## Local Development
-
-1. Clone the repository
-2. Open index.html in your browser
-3. Start learning Java concepts!
+3. Run the game:
+```bash
+java MazeGUI
+```
 
 ## Contributing
 
-Feel free to contribute by:
-1. Adding more questions
-2. Improving explanations
-3. Enhancing the UI
-4. Fixing bugs
+Contributions are welcome! Feel free to:
+- Add more programming questions
+- Improve maze generation algorithms
+- Enhance the user interface
+- Fix bugs
 
 ## License
 
-MIT License - feel free to use and modify! 
+This project is open source and available under the MIT License. 
