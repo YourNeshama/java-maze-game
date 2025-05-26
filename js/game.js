@@ -484,8 +484,8 @@ class MazeGame {
     checkAnswer(question, userAnswer) {
         // For multiple choice questions (0-based index)
         if (typeof question.correctAnswer === 'number') {
-            // Try to match the actual answer value first
-            if (userAnswer === question.options[question.correctAnswer]) {
+            // Try to match the actual answer value first (case-insensitive)
+            if (userAnswer.toLowerCase() === question.options[question.correctAnswer].toLowerCase()) {
                 return true;
             }
             // Then try to match the option number
