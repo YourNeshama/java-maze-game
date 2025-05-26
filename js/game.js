@@ -26,10 +26,9 @@ class MazeGame {
         
         // Initialize questions with proper difficulty
         this.initializeAllQuestions();
-        console.log(`Initialized ${this.questions.length} questions for ${this.difficulty} mode`);
-        console.log('Questions:', this.questions.map(q => q.question));
-        console.log(`Initialized ${this.deadEndQuestions.length} dead end questions for ${this.difficulty} mode`);
-        console.log('Dead end questions:', this.deadEndQuestions.map(q => q.question));
+        
+        // Display questions for debugging
+        this.displayQuestionsForDebugging();
         
         // Initialize canvas
         this.canvas = document.getElementById('mazeCanvas');
@@ -610,6 +609,54 @@ class MazeGame {
             default:
                 return easyDeadEndQuestions;
         }
+    }
+
+    displayQuestionsForDebugging() {
+        // Create debug info container
+        const debugDiv = document.createElement('div');
+        debugDiv.style.margin = '20px';
+        debugDiv.style.padding = '20px';
+        debugDiv.style.backgroundColor = '#f8f8f8';
+        debugDiv.style.borderRadius = '5px';
+        debugDiv.style.maxWidth = '800px';
+        debugDiv.style.margin = '20px auto';
+
+        // Add title
+        const title = document.createElement('h3');
+        title.textContent = `Questions for ${this.difficulty.toUpperCase()} mode:`;
+        debugDiv.appendChild(title);
+
+        // Add regular questions
+        const questionsList = document.createElement('ul');
+        this.questions.forEach((q, index) => {
+            const li = document.createElement('li');
+            li.textContent = `Question ${index + 1}: ${q.question}`;
+            questionsList.appendChild(li);
+        });
+        debugDiv.appendChild(questionsList);
+
+        // Add dead end questions
+        const deadEndTitle = document.createElement('h3');
+        deadEndTitle.textContent = 'Dead End Questions:';
+        debugDiv.appendChild(deadEndTitle);
+
+        const deadEndList = document.createElement('ul');
+        this.deadEndQuestions.forEach((q, index) => {
+            const li = document.createElement('li');
+            li.textContent = `Question ${index + 1}: ${q.question}`;
+            deadEndList.appendChild(li);
+        });
+        debugDiv.appendChild(deadEndList);
+
+        // Add close button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Hide Debug Info';
+        closeButton.onclick = () => debugDiv.style.display = 'none';
+        debugDiv.appendChild(closeButton);
+
+        // Insert debug info after game container
+        const gameContainer = document.getElementById('gameContainer');
+        gameContainer.parentNode.insertBefore(debugDiv, gameContainer.nextSibling);
     }
 }
 
