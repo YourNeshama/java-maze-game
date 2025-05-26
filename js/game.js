@@ -23,16 +23,14 @@ class MazeGame {
         console.log('Creating new MazeGame with difficulty:', difficulty);
         this.difficulty = difficulty;
         this.initializeGameSettings();
-        console.log('Initializing questions for difficulty:', this.difficulty);
-        this.questions = this.initializeQuestions();
-        console.log('Questions initialized:', this.questions.length, 'questions available');
-        this.deadEndQuestions = this.initializeDeadEndQuestions();
-        console.log('Dead end questions initialized:', this.deadEndQuestions.length, 'questions available');
-        this.playerPath = [];
-        this.moveQueue = [];
-        this.isMoving = false;
-        this.inDeadEnd = false;
-
+        
+        // Initialize questions with proper difficulty
+        this.initializeAllQuestions();
+        console.log(`Initialized ${this.questions.length} questions for ${this.difficulty} mode`);
+        console.log('Questions:', this.questions.map(q => q.question));
+        console.log(`Initialized ${this.deadEndQuestions.length} dead end questions for ${this.difficulty} mode`);
+        console.log('Dead end questions:', this.deadEndQuestions.map(q => q.question));
+        
         // Initialize canvas
         this.canvas = document.getElementById('mazeCanvas');
         console.log('Canvas element:', this.canvas);
@@ -49,6 +47,23 @@ class MazeGame {
         this.stepsRemaining = this.minPathLength;
         this.updateStepCounter();
         console.log('MazeGame initialization complete');
+    }
+
+    initializeAllQuestions() {
+        const questions = this.initializeQuestions();
+        const deadEndQuestions = this.initializeDeadEndQuestions();
+        
+        // Store questions based on difficulty
+        this.questions = questions;
+        this.deadEndQuestions = deadEndQuestions;
+        
+        // Verify questions are properly loaded
+        if (this.questions.length === 0) {
+            console.error('No questions loaded for difficulty:', this.difficulty);
+        }
+        if (this.deadEndQuestions.length === 0) {
+            console.error('No dead end questions loaded for difficulty:', this.difficulty);
+        }
     }
 
     findShortestPath() {
@@ -355,12 +370,10 @@ class MazeGame {
 
         if (newX >= 0 && newX < this.size && newY >= 0 && newY < this.size && this.maze[newY][newX] !== WALL) {
             // Get a random question based on current difficulty
-            console.log('Current difficulty:', this.difficulty);
-            console.log('Available questions:', this.questions.map(q => q.question.substring(0, 50) + '...'));
-            
-            const currentQuestions = this.questions;
-            const currentQuestion = currentQuestions[Math.floor(Math.random() * currentQuestions.length)];
-            console.log('Selected question:', currentQuestion.question.substring(0, 50) + '...');
+            console.log(`Selecting question for ${this.difficulty} mode from ${this.questions.length} questions`);
+            const questionIndex = Math.floor(Math.random() * this.questions.length);
+            const currentQuestion = this.questions[questionIndex];
+            console.log('Selected question:', currentQuestion.question);
             
             const answer = prompt(currentQuestion.question);
             
@@ -372,13 +385,11 @@ class MazeGame {
                 this.updateStepCounter();
                 
                 if (this.maze[newY][newX] === DEAD_END) {
-                    // Get a random dead end question based on current difficulty
-                    console.log('In dead end. Available dead end questions:', 
-                              this.deadEndQuestions.map(q => q.question.substring(0, 50) + '...'));
-                    
-                    const deadEndQuestions = this.deadEndQuestions;
-                    const deadEndQuestion = deadEndQuestions[Math.floor(Math.random() * deadEndQuestions.length)];
-                    console.log('Selected dead end question:', deadEndQuestion.question.substring(0, 50) + '...');
+                    // Get a random dead end question
+                    console.log(`Selecting dead end question for ${this.difficulty} mode from ${this.deadEndQuestions.length} questions`);
+                    const deadEndIndex = Math.floor(Math.random() * this.deadEndQuestions.length);
+                    const deadEndQuestion = this.deadEndQuestions[deadEndIndex];
+                    console.log('Selected dead end question:', deadEndQuestion.question);
                     
                     const deadEndAnswer = prompt(deadEndQuestion.question);
                     
@@ -388,7 +399,6 @@ class MazeGame {
                         if (nearestDeadEnd) {
                             this.playerX = nearestDeadEnd.x;
                             this.playerY = nearestDeadEnd.y;
-                            // Add penalty steps
                             this.stepsRemaining += 3;
                             this.updateStepCounter();
                         }
@@ -405,7 +415,6 @@ class MazeGame {
                 if (nearestDeadEnd) {
                     this.playerX = nearestDeadEnd.x;
                     this.playerY = nearestDeadEnd.y;
-                    // Add penalty steps
                     this.stepsRemaining += 3;
                     this.updateStepCounter();
                 }
@@ -441,8 +450,9 @@ class MazeGame {
     }
 
     initializeQuestions() {
-        console.log('Initializing questions for difficulty level:', this.difficulty);
-        // Questions are now organized by difficulty
+        console.log('Initializing questions for difficulty:', this.difficulty);
+        
+        // Questions organized by difficulty
         const easyQuestions = [
             new Question(
                 "What is the length of \"Hello\"?\nA) 4\nB) 5\nC) 6\nD) 0",
@@ -527,8 +537,8 @@ class MazeGame {
             )
         ];
 
+        // Select questions based on difficulty
         let selectedQuestions;
-        // Return questions based on difficulty
         switch(this.difficulty) {
             case 'easy':
                 selectedQuestions = easyQuestions;
@@ -540,10 +550,11 @@ class MazeGame {
                 selectedQuestions = hardQuestions;
                 break;
             default:
+                console.error('Invalid difficulty:', this.difficulty);
                 selectedQuestions = easyQuestions;
         }
-        console.log('Selected questions for difficulty', this.difficulty, ':', 
-                    selectedQuestions.map(q => q.question.substring(0, 50) + '...'));
+
+        console.log(`Selected ${selectedQuestions.length} questions for ${this.difficulty} mode`);
         return selectedQuestions;
     }
 
