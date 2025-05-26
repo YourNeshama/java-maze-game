@@ -9,9 +9,8 @@ const DEAD_END = 3;
 // Add debug logging
 console.log('Game script loaded');
 
-// Global game instance and event handler
+// Global game instance
 let currentGame = null;
-let globalKeyHandler = null;
 
 class Question {
     constructor(question, answer, explanation) {
@@ -43,9 +42,6 @@ class MazeGame {
         this.canvas.width = this.size * this.cellSize;
         this.canvas.height = this.size * this.cellSize;
 
-        // 立即设置事件监听器
-        this.setupEventListeners();
-        
         this.initializeMaze();
         
         // Calculate remaining steps to goal
@@ -321,14 +317,11 @@ class MazeGame {
     setupEventListeners() {
         console.log('Setting up event listeners...'); // Debug log
         
-        // 移除之前的全局事件监听器
-        if (globalKeyHandler) {
-            document.removeEventListener('keydown', globalKeyHandler);
-            window.removeEventListener('keydown', globalKeyHandler);
-        }
+        // 移除之前的事件监听器
+        document.removeEventListener('keydown', this._handleKeyDown);
         
-        // 创建新的事件处理函数
-        globalKeyHandler = (e) => {
+        // 创建绑定到当前实例的事件处理函数
+        this._handleKeyDown = (e) => {
             e.preventDefault(); // 防止按键滚动页面
             console.log('Key pressed:', e.key); // Debug log
             
@@ -362,9 +355,8 @@ class MazeGame {
             }
         };
 
-        // 同时在document和window上添加事件监听器
-        document.addEventListener('keydown', globalKeyHandler);
-        window.addEventListener('keydown', globalKeyHandler);
+        // 添加新的事件监听器到document
+        document.addEventListener('keydown', this._handleKeyDown);
 
         // Touch/click controls
         this.canvas.addEventListener('click', (e) => {
@@ -926,14 +918,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Starting game with difficulty:', difficulty);
             startScreen.style.display = 'none';
             gameContainer.style.display = 'block';
-            
-            // 清理旧的事件监听器
-            if (currentGame && globalKeyHandler) {
-                document.removeEventListener('keydown', globalKeyHandler);
-                window.removeEventListener('keydown', globalKeyHandler);
+            if (currentGame) {
+                // Clean up old event listeners
+                document.removeEventListener('keydown', currentGame._handleKeyDown);
             }
-            
             currentGame = new MazeGame(difficulty);
+            currentGame.setupEventListeners(); // 确保设置事件监听器
         }
 
         // Add click event listeners to difficulty buttons
@@ -956,10 +946,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('New game button clicked');
                 startScreen.style.display = 'flex';
                 gameContainer.style.display = 'none';
-                if (currentGame && globalKeyHandler) {
+                if (currentGame) {
                     // Clean up event listeners
-                    document.removeEventListener('keydown', globalKeyHandler);
-                    window.removeEventListener('keydown', globalKeyHandler);
+                    document.removeEventListener('keydown', currentGame._handleKeyDown);
                     currentGame = null;
                 }
             });

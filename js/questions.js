@@ -379,7 +379,7 @@ function getQuestionsByDifficulty(difficulty) {
     if (allQuestions.length === 0) {
         console.error(`No questions found for difficulty: ${difficulty}. Please choose 'easy', 'medium', or 'hard'.`);
                 return [];
-    }
+        }
     
     return allQuestions;
 }
