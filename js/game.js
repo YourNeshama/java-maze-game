@@ -52,7 +52,9 @@ class MazeGame {
         this.canvas = document.getElementById('mazeCanvas');
         console.log('Canvas element:', this.canvas);
         this.ctx = this.canvas.getContext('2d');
-        this.cellSize = Math.min(40, 600 / this.size);
+        
+        // 固定单元格大小为40像素
+        this.cellSize = 40;
         this.canvas.width = this.size * this.cellSize;
         this.canvas.height = this.size * this.cellSize;
 
