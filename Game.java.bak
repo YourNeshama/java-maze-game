@@ -1,0 +1,760 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+
+class Question {
+    private String question;
+    private String answer;
+    private String explanation;
+    private boolean used;
+
+    public Question(String question, String answer, String explanation) {
+        this.question = question;
+        this.answer = answer;
+        this.explanation = explanation;
+        this.used = false;
+    }
+
+    public String getQuestion() {
+        return question;
+    }
+
+    public String getExplanation() {
+        return explanation;
+    }
+
+    public boolean isUsed() {
+        return used;
+    }
+
+    public void markAsUsed() {
+        used = true;
+    }
+
+    public void reset() {
+        used = false;
+    }
+
+    public boolean checkAnswer(String userAnswer) {
+        return userAnswer != null && userAnswer.trim().equalsIgnoreCase(answer.trim());
+    }
+}
+
+class Maze {
+    public static final int WALL = 1;
+    public static final int PATH = 0;
+    public static final int CORRECT_PATH = 2;
+    public static final int DEAD_END = 3;
+
+    private int[][] maze;
+    private int size;
+    private int startX;
+    private int startY;
+    private int endX;
+    private int endY;
+    private Map<Point, Question> cellQuestions;
+    private java.util.List<Question> easyQuestions;
+    private java.util.List<Question> mediumQuestions;
+    private java.util.List<Question> hardQuestions;
+    private java.util.List<Question> deadEndQuestions;
+    private Random random;
+    private String difficulty;
+
+    public Maze(int size, String difficulty) {
+        this.size = size;
+        this.difficulty = difficulty;
+        this.random = new Random();
+        this.maze = new int[size][size];
+        this.cellQuestions = new HashMap<>();
+        initializeQuestions();
+        generateMaze();
+        assignQuestions();
+    }
+
+    private void initializeQuestions() {
+        easyQuestions = new ArrayList<>();
+        mediumQuestions = new ArrayList<>();
+        hardQuestions = new ArrayList<>();
+        deadEndQuestions = new ArrayList<>();
+
+        // EASY QUESTIONS - Focus on basic syntax and simple operations
+        
+        // Basic Data Types
+        easyQuestions.add(new Question(
+            "What is the size of int in bytes?\nA) 2\nB) 4\nC) 8\nD) 1",
+            "B",
+            "An int in Java is 4 bytes (32 bits)."
+        ));
+        easyQuestions.add(new Question(
+            "Which is the correct way to declare a variable?\nA) x = 5;\nB) int x = 5;\nC) 5 = x;\nD) variable x = 5;",
+            "B",
+            "Variables must be declared with their type in Java."
+        ));
+        easyQuestions.add(new Question(
+            "What is the default value of boolean?\nA) true\nB) false\nC) null\nD) 0",
+            "B",
+            "Boolean variables are initialized to false by default."
+        ));
+
+        // Basic Operators
+        easyQuestions.add(new Question(
+            "What is 15 + 3 * 2?\nA) 36\nB) 21\nC) 18\nD) 9",
+            "B",
+            "Multiplication has higher precedence than addition."
+        ));
+        easyQuestions.add(new Question(
+            "What is 8 % 3?\nA) 2\nB) 3\nC) 1\nD) 0",
+            "A",
+            "The modulus operator returns the remainder of division."
+        ));
+
+        // Simple String Operations
+        easyQuestions.add(new Question(
+            "What is the length of \"Hello\"?\nA) 4\nB) 5\nC) 6\nD) 0",
+            "B",
+            "The string \"Hello\" has 5 characters."
+        ));
+        easyQuestions.add(new Question(
+            "What is \"Java\" + 5?\nA) Java5\nB) Error\nC) 5Java\nD) Java 5",
+            "A",
+            "The + operator concatenates strings with other types."
+        ));
+
+        // Basic Array Operations
+        easyQuestions.add(new Question(
+            "How to create an array of size 5?\nA) int[5] arr\nB) int[] arr = 5\nC) int[] arr = new int[5]\nD) array(5)",
+            "C",
+            "Arrays are created using the new keyword and size in brackets."
+        ));
+        easyQuestions.add(new Question(
+            "What is the first index of an array?\nA) 1\nB) 0\nC) -1\nD) None of these",
+            "B",
+            "Array indices start at 0 in Java."
+        ));
+
+        // Simple Control Flow
+        easyQuestions.add(new Question(
+            "Which loop runs at least once?\nA) for\nB) while\nC) do-while\nD) foreach",
+            "C",
+            "do-while checks its condition after execution."
+        ));
+
+        // Additional EASY questions
+        easyQuestions.add(new Question(
+            "What is the result of 10 / 3?\nA) 3.33\nB) 3\nC) 4\nD) 3.0",
+            "B",
+            "Integer division in Java truncates the decimal part."
+        ));
+        easyQuestions.add(new Question(
+            "Which is a valid Java identifier?\nA) 2name\nB) my-var\nC) _count\nD) class",
+            "C",
+            "Identifiers can start with letter, underscore, or $."
+        ));
+        easyQuestions.add(new Question(
+            "What is the output?\nSystem.out.print(\"Hi\");\nSystem.out.print(\"Java\");\nA) Hi Java\nB) HiJava\nC) Hi\nJava\nD) Error",
+            "B",
+            "print() does not add a newline between outputs."
+        ));
+
+        // MEDIUM QUESTIONS - Focus on OOP and intermediate concepts
+
+        // Object-Oriented Programming
+        mediumQuestions.add(new Question(
+            "What is the difference between overloading and overriding?\nA) Same method, different class\nB) Different method, same class\nC) Same method, same class\nD) Different parameters, same name",
+            "D",
+            "Method overloading involves same name but different parameters."
+        ));
+        mediumQuestions.add(new Question(
+            "What is the purpose of 'super' keyword?\nA) Access static members\nB) Call parent class methods\nC) Create new instance\nD) Access private members",
+            "B",
+            "super is used to call parent class methods or constructors."
+        ));
+
+        // Collections
+        mediumQuestions.add(new Question(
+            "Which collection maintains insertion order?\nA) HashSet\nB) LinkedList\nC) TreeSet\nD) HashMap",
+            "B",
+            "LinkedList maintains the order of insertion."
+        ));
+        mediumQuestions.add(new Question(
+            "What is the time complexity of ArrayList.get()?\nA) O(1)\nB) O(n)\nC) O(log n)\nD) O(n^2)",
+            "A",
+            "ArrayList provides constant time access to elements."
+        ));
+
+        // Exception Handling
+        mediumQuestions.add(new Question(
+            "Which is a checked exception?\nA) NullPointerException\nB) IOException\nC) ArrayIndexOutOfBoundsException\nD) ArithmeticException",
+            "B",
+            "IOException must be declared or caught."
+        ));
+
+        // Additional MEDIUM questions
+        mediumQuestions.add(new Question(
+            "What is the output?\nString s = \"Hello\";\ns.concat(\"World\");\nSystem.out.println(s);\nA) Hello\nB) World\nC) HelloWorld\nD) null",
+            "A",
+            "String is immutable, concat() returns new String."
+        ));
+        mediumQuestions.add(new Question(
+            "Which interface is used for sorting objects?\nA) Sortable\nB) Comparable\nC) Comparator\nD) Both B and C",
+            "D",
+            "Both Comparable and Comparator can be used for sorting."
+        ));
+        mediumQuestions.add(new Question(
+            "What is the output?\nList<String> list = new ArrayList<>();\nlist.add(null);\nSystem.out.println(list.size());\nA) 0\nB) 1\nC) null\nD) Exception",
+            "B",
+            "ArrayList can store null values."
+        ));
+
+        // HARD QUESTIONS - Focus on advanced concepts
+
+        // Multithreading
+        hardQuestions.add(new Question(
+            "What is thread starvation?\nA) Thread termination\nB) Thread never gets CPU time\nC) Thread overflow\nD) Thread deadlock",
+            "B",
+            "Thread starvation occurs when a thread never gets CPU time."
+        ));
+        hardQuestions.add(new Question(
+            "What does volatile keyword guarantee?\nA) Thread safety\nB) Memory visibility\nC) Atomic operations\nD) Mutual exclusion",
+            "B",
+            "volatile ensures changes are visible to all threads."
+        ));
+
+        // JVM and Memory
+        hardQuestions.add(new Question(
+            "Which memory area stores class metadata?\nA) Heap\nB) Stack\nC) Metaspace\nD) Eden",
+            "C",
+            "Metaspace stores class metadata in Java 8+."
+        ));
+        hardQuestions.add(new Question(
+            "What is the purpose of JIT compiler?\nA) Compile source code\nB) Optimize bytecode\nC) Debug code\nD) Manage memory",
+            "B",
+            "JIT compiler optimizes bytecode for better performance."
+        ));
+
+        // Design Patterns
+        hardQuestions.add(new Question(
+            "Which pattern ensures only one instance?\nA) Factory\nB) Singleton\nC) Builder\nD) Prototype",
+            "B",
+            "Singleton pattern restricts instantiation to one instance."
+        ));
+
+        // Additional HARD questions
+        hardQuestions.add(new Question(
+            "What is the purpose of synchronized block?\nA) Speed up execution\nB) Prevent deadlock\nC) Ensure thread safety\nD) Improve performance",
+            "C",
+            "synchronized blocks ensure thread-safe access to shared resources."
+        ));
+        hardQuestions.add(new Question(
+            "Which best describes Java memory leak?\nA) Unreachable objects\nB) Objects still referenced\nC) Large objects\nD) Static objects",
+            "B",
+            "Memory leaks occur when objects are still referenced but no longer needed."
+        ));
+        hardQuestions.add(new Question(
+            "What is the difference between HashSet and TreeSet?\nA) Performance only\nB) Ordering guarantee\nC) Memory usage\nD) Thread safety",
+            "B",
+            "TreeSet maintains sorted order while HashSet does not."
+        ));
+
+        // DEAD END QUESTIONS - Very advanced topics
+        deadEndQuestions.add(new Question(
+            "What is the difference between G1 and CMS garbage collectors?\nA) G1 is generational\nB) G1 is regional\nC) G1 is single-threaded\nD) G1 is older",
+            "B",
+            "G1 divides heap into regions unlike CMS."
+        ));
+        deadEndQuestions.add(new Question(
+            "What is bytecode instrumentation?\nA) Code compilation\nB) Runtime code modification\nC) Code optimization\nD) Code execution",
+            "B",
+            "Bytecode instrumentation modifies classes at runtime."
+        ));
+
+        // Additional DEAD END questions
+        deadEndQuestions.add(new Question(
+            "What is the purpose of Java agent?\nA) Security scanning\nB) Bytecode manipulation\nC) Performance monitoring\nD) All of above",
+            "D",
+            "Java agents can perform various runtime tasks including all mentioned."
+        ));
+        deadEndQuestions.add(new Question(
+            "Which garbage collector is best for low latency?\nA) Serial GC\nB) Parallel GC\nC) CMS\nD) ZGC",
+            "D",
+            "ZGC is designed for extremely low pause times."
+        ));
+        deadEndQuestions.add(new Question(
+            "What is the purpose of -XX:+UseCompressedOops?\nA) Reduce CPU usage\nB) Reduce memory usage\nC) Improve GC\nD) Reduce disk IO",
+            "B",
+            "Compressed OOPs reduce memory usage in 64-bit JVMs."
+        ));
+
+        // More EASY questions focusing on fundamentals
+        easyQuestions.add(new Question(
+            "What is the value of x?\nint x = 5;\nx += 2;\nA) 5\nB) 2\nC) 7\nD) 52",
+            "C",
+            "The += operator adds and assigns the value."
+        ));
+        easyQuestions.add(new Question(
+            "Which creates a single character?\nA) \"A\"\nB) 'A'\nC) A\nD) \"A\" ",
+            "B",
+            "Single quotes are used for char literals."
+        ));
+
+        // More MEDIUM questions focusing on Java features
+        mediumQuestions.add(new Question(
+            "What is autoboxing?\nA) Type casting\nB) Automatic primitive to wrapper conversion\nC) Array boxing\nD) Method wrapping",
+            "B",
+            "Autoboxing automatically converts primitives to their wrapper types."
+        ));
+        mediumQuestions.add(new Question(
+            "Which collection allows duplicates?\nA) HashSet\nB) ArrayList\nC) TreeSet\nD) HashMap",
+            "B",
+            "ArrayList allows duplicate elements while Sets do not."
+        ));
+
+        // More HARD questions focusing on advanced concepts
+        hardQuestions.add(new Question(
+            "What is the purpose of WeakHashMap?\nA) Thread-safe map\nB) Sorted map\nC) Memory-sensitive map\nD) High-performance map",
+            "C",
+            "WeakHashMap allows keys to be garbage collected when no longer referenced."
+        ));
+        hardQuestions.add(new Question(
+            "Which is true about Java memory model?\nA) Single memory space\nB) Shared memory only\nC) Thread-local memory\nD) Both shared and thread-local",
+            "D",
+            "Java memory model includes both shared memory and thread-local caches."
+        ));
+
+        // More DEAD END questions for extreme challenge
+        deadEndQuestions.add(new Question(
+            "What is escape analysis in JVM?\nA) Security check\nB) Memory optimization\nC) Thread escape\nD) Exception handling",
+            "B",
+            "Escape analysis optimizes object allocation in memory."
+        ));
+        deadEndQuestions.add(new Question(
+            "Which describes JIT compilation threshold?\nA) Memory limit\nB) Execution count\nC) Code size\nD) Thread count",
+            "B",
+            "JIT compilation is triggered when method execution count reaches a threshold."
+        ));
+
+        // Additional MEDIUM difficulty questions
+        mediumQuestions.add(new Question(
+            "Which is NOT an access modifier in Java?\nA) public\nB) private\nC) friendly\nD) protected",
+            "C",
+            "Java access modifiers are public, private, protected, and default (package-private)"
+        ));
+        mediumQuestions.add(new Question(
+            "Is HashMap thread-safe in Java?\nA) Yes\nB) No\nC) Only for get operations\nD) Depends on JVM",
+            "B",
+            "HashMap is not thread-safe, use ConcurrentHashMap or Collections.synchronizedMap() instead"
+        ));
+        mediumQuestions.add(new Question(
+            "Which collection maintains sorted order?\nA) HashSet\nB) HashMap\nC) TreeSet\nD) LinkedHashMap",
+            "C",
+            "TreeSet uses Red-Black tree implementation and maintains sorted order"
+        ));
+        mediumQuestions.add(new Question(
+            "Where are String literals stored in Java?\nA) Heap\nB) Stack\nC) String Pool\nD) Method Area",
+            "C",
+            "String literals are stored in String Pool, while new String() objects are stored in heap"
+        ));
+        mediumQuestions.add(new Question(
+            "Which method is NOT from Object class?\nA) wait()\nB) notify()\nC) notifyAll()\nD) sleep()",
+            "D",
+            "sleep() is a static method of Thread class, not from Object class"
+        ));
+        mediumQuestions.add(new Question(
+            "How to achieve multiple inheritance in Java?\nA) Extend multiple classes\nB) Implement multiple interfaces\nC) Use extends and implements\nD) Use annotations",
+            "B",
+            "Java supports multiple inheritance through interfaces"
+        ));
+        mediumQuestions.add(new Question(
+            "Which is a checked exception?\nA) NullPointerException\nB) ArrayIndexOutOfBoundsException\nC) IOException\nD) RuntimeException",
+            "C",
+            "IOException is a checked exception that must be handled or declared"
+        ));
+        mediumQuestions.add(new Question(
+            "What is type erasure in Java?\nA) Compile-time removal\nB) Runtime removal\nC) JVM optimization\nD) Code obfuscation",
+            "B",
+            "Generic types are erased at runtime for backward compatibility"
+        ));
+
+        // Additional HARD difficulty questions
+        hardQuestions.add(new Question(
+            "Which is NOT a Java garbage collector?\nA) G1\nB) CMS\nC) V8\nD) ZGC",
+            "C",
+            "V8 is a JavaScript engine, not a Java garbage collector"
+        ));
+        hardQuestions.add(new Question(
+            "What does volatile guarantee in Java?\nA) Atomicity\nB) Visibility\nC) Ordering\nD) B and C",
+            "D",
+            "volatile guarantees visibility and ordering but not atomicity"
+        ));
+        hardQuestions.add(new Question(
+            "Which collection is NOT thread-safe?\nA) Vector\nB) ConcurrentHashMap\nC) ArrayList\nD) Hashtable",
+            "C",
+            "ArrayList is not thread-safe, use Collections.synchronizedList() or CopyOnWriteArrayList"
+        ));
+        hardQuestions.add(new Question(
+            "What problem does ThreadLocal solve?\nA) Thread synchronization\nB) Thread communication\nC) Thread isolation\nD) Thread pooling",
+            "C",
+            "ThreadLocal provides thread-local variables for data isolation"
+        ));
+        hardQuestions.add(new Question(
+            "What is the Parent Delegation Model in Java?\nA) Class loading mechanism\nB) Thread model\nC) Memory model\nD) Exception handling model",
+            "A",
+            "Parent Delegation is the class loader's working mechanism"
+        ));
+        hardQuestions.add(new Question(
+            "Which does NOT cause memory leaks in Java?\nA) Static collections\nB) Unclosed resources\nC) Inner class references\nD) Using final keyword",
+            "D",
+            "final keyword is for constants and doesn't cause memory leaks"
+        ));
+        hardQuestions.add(new Question(
+            "How many lock states are there in Java?\nA) 1\nB) 2\nC) 3\nD) 4",
+            "D",
+            "Java has 4 lock states: no-lock, biased, lightweight, and heavyweight"
+        ));
+        hardQuestions.add(new Question(
+            "Which is NOT a runtime data area in JVM?\nA) Heap\nB) Stack\nC) Registers\nD) Method Area",
+            "C",
+            "Registers are part of CPU, not JVM runtime data areas"
+        ));
+
+        // Additional DEAD END questions
+        deadEndQuestions.add(new Question(
+            "Can Method Area cause OutOfMemoryError?\nA) No\nB) Yes\nC) Depends on JVM version\nD) Only in 32-bit JVM",
+            "C",
+            "Before JDK8 PermGen could overflow, after JDK8 Metaspace can grow with native memory"
+        ));
+        deadEndQuestions.add(new Question(
+            "Which command shows Java process memory usage?\nA) jps\nB) jmap\nC) jstack\nD) jstat",
+            "B",
+            "jmap can generate heap dumps and show memory usage"
+        ));
+        deadEndQuestions.add(new Question(
+            "What is Unsafe class used for in Java?\nA) Security enhancement\nB) Low-level memory access\nC) Encryption\nD) Network communication",
+            "B",
+            "Unsafe provides low-level memory operations"
+        ));
+        deadEndQuestions.add(new Question(
+            "Which is NOT a JIT optimization?\nA) Method inlining\nB) Escape analysis\nC) Garbage collection\nD) Loop optimization",
+            "C",
+            "Garbage collection is GC's job, not JIT optimization"
+        ));
+        deadEndQuestions.add(new Question(
+            "What comprises Java object layout?\nA) Header and instance data\nB) Header, instance data, and padding\nC) Instance data and padding\nD) Header only",
+            "B",
+            "Java objects consist of header, instance data, and padding (if needed)"
+        ));
+        deadEndQuestions.add(new Question(
+            "Which does NOT cause Stop-The-World?\nA) GC\nB) Class loading\nC) JIT compilation\nD) Thread synchronization",
+            "D",
+            "Thread synchronization doesn't cause Stop-The-World, but GC, class loading, and JIT do"
+        ));
+        deadEndQuestions.add(new Question(
+            "What is a Safepoint in Java?\nA) Security checkpoint\nB) Thread sync point\nC) GC safe point\nD) Program breakpoint",
+            "C",
+            "Safepoint is where threads must stop for GC"
+        ));
+        deadEndQuestions.add(new Question(
+            "Which is NOT a reference type in Java?\nA) Strong reference\nB) Weak reference\nC) Soft reference\nD) Temporary reference",
+            "D",
+            "Java has strong, weak, soft, and phantom references, but no temporary reference"
+        ));
+
+        // Add more questions for each category...
+        // Will continue with more questions in subsequent edits
+    }
+
+    private void assignQuestions() {
+        java.util.List<Question> availableQuestions;
+        // 根据难度选择题库
+        switch(difficulty.toLowerCase()) {
+            case "medium": 
+                availableQuestions = new ArrayList<>(mediumQuestions); 
+                System.out.println("Using medium questions, count: " + mediumQuestions.size());
+                break;
+            case "hard": 
+                availableQuestions = new ArrayList<>(hardQuestions); 
+                System.out.println("Using hard questions, count: " + hardQuestions.size());
+                break;
+            default: 
+                availableQuestions = new ArrayList<>(easyQuestions);
+                System.out.println("Using easy questions, count: " + easyQuestions.size());
+        }
+
+        // Reset all questions
+        availableQuestions.forEach(Question::reset);
+        deadEndQuestions.forEach(Question::reset);
+
+        // Find all valid cells (paths)
+        java.util.List<Point> pathCells = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (maze[i][j] == PATH && !(i == 0 && j == 0)) {  // Only exclude start point
+                    pathCells.add(new Point(i, j));
+                }
+            }
+        }
+
+        // Create separate lists for regular and dead end cells
+        java.util.List<Point> regularCells = new ArrayList<>();
+        java.util.List<Point> deadEndCells = new ArrayList<>();
+        
+        for (Point cell : pathCells) {
+            if (isDeadEnd(cell.x, cell.y)) {
+                deadEndCells.add(cell);
+                System.out.println("Found dead end at: " + cell.x + "," + cell.y);
+            } else {
+                regularCells.add(cell);
+            }
+        }
+
+        // Assign questions to regular cells
+        cellQuestions.clear();  // Clear existing questions
+        Collections.shuffle(availableQuestions);
+        int questionIndex = 0;
+
+        for (Point cell : regularCells) {
+            if (questionIndex >= availableQuestions.size()) {
+                // If we run out of questions, reset the list
+                Collections.shuffle(availableQuestions);
+                questionIndex = 0;
+            }
+            cellQuestions.put(cell, availableQuestions.get(questionIndex++));
+        }
+
+        // Assign dead end questions
+        Collections.shuffle(deadEndQuestions);
+        questionIndex = 0;
+        
+        for (Point cell : deadEndCells) {
+            if (questionIndex >= deadEndQuestions.size()) {
+                Collections.shuffle(deadEndQuestions);
+                questionIndex = 0;
+            }
+            cellQuestions.put(cell, deadEndQuestions.get(questionIndex++));
+            System.out.println("Assigned dead end question at: " + cell.x + "," + cell.y);
+        }
+    }
+
+    private java.util.Set<Question> usedQuestions = new HashSet<>();
+
+    public Question getQuestionForCell(int x, int y) {
+        Point p = new Point(x, y);
+        Question q = cellQuestions.get(p);
+        
+        if (q != null) {
+            System.out.println("Getting question for cell " + x + "," + y + 
+                (isDeadEnd(x, y) ? " (Dead End)" : "") + 
+                " in difficulty mode: " + difficulty);
+            return q;
+        }
+        return null;
+    }
+
+    public void resetQuestionsAroundPoint(int x, int y) {
+        // When leaving a dead end, clear used questions to allow reuse
+        if (isDeadEnd(x, y)) {
+            usedQuestions.clear();
+            assignQuestions();  // Reassign all questions
+        }
+    }
+
+    private void generateMaze() {
+        // Fill with walls
+        for (int i = 0; i < size; i++) {
+            Arrays.fill(maze[i], WALL);
+        }
+
+        // Generate paths using recursive backtracking
+        generatePath(0, 0);
+        maze[0][0] = PATH;
+        maze[size-1][size-1] = PATH;
+        
+        // Create some dead ends
+        createDeadEnds();
+    }
+
+    private void generatePath(int x, int y) {
+        int[] directions = {0, 1, 2, 3};
+        shuffleArray(directions);
+
+        for (int dir : directions) {
+            int nextX = x + (dir == 0 ? 2 : (dir == 1 ? -2 : 0));
+            int nextY = y + (dir == 2 ? 2 : (dir == 3 ? -2 : 0));
+
+            if (isValidCell(nextX, nextY) && maze[nextX][nextY] == WALL) {
+                maze[x + (nextX - x)/2][y + (nextY - y)/2] = PATH;
+                maze[nextX][nextY] = PATH;
+                generatePath(nextX, nextY);
+            }
+        }
+    }
+
+    private void createDeadEnds() {
+        // 增加死胡同数量
+        int deadEndsToCreate = Math.max(size / 2, 3); // 确保至少有3个死胡同
+        System.out.println("Attempting to create " + deadEndsToCreate + " dead ends");
+        
+        int attempts = 0;
+        int maxAttempts = size * size;
+        
+        while (deadEndsToCreate > 0 && attempts < maxAttempts) {
+            int i = random.nextInt(size);
+            int j = random.nextInt(size);
+            
+            // 避免在起点和终点附近创建死胡同
+            if ((i < 2 && j < 2) || (i > size-3 && j > size-3)) {
+                attempts++;
+                continue;
+            }
+            
+            if (maze[i][j] == WALL && isValidDeadEndLocation(i, j)) {
+                maze[i][j] = PATH;
+                System.out.println("Created dead end at: " + i + "," + j);
+                deadEndsToCreate--;
+            }
+            attempts++;
+        }
+    }
+
+    private boolean isValidDeadEndLocation(int x, int y) {
+        if (!isValidCell(x, y)) return false;
+        
+        int pathCount = 0;
+        if (isValidCell(x-1, y) && maze[x-1][y] == PATH) pathCount++;
+        if (isValidCell(x+1, y) && maze[x+1][y] == PATH) pathCount++;
+        if (isValidCell(x, y-1) && maze[x][y-1] == PATH) pathCount++;
+        if (isValidCell(x, y+1) && maze[x][y+1] == PATH) pathCount++;
+        
+        return pathCount == 1;
+    }
+
+    private void shuffleArray(int[] array) {
+        for (int i = array.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            int temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+
+    private boolean isValidCell(int x, int y) {
+        return x >= 0 && x < size && y >= 0 && y < size;
+    }
+
+    public boolean isDeadEnd(int x, int y) {
+        if (!isValidCell(x, y) || maze[x][y] == WALL) return false;
+        
+        // 检查周围的墙
+        int wallCount = 0;
+        if (!isValidCell(x-1, y) || maze[x-1][y] == WALL) wallCount++;
+        if (!isValidCell(x+1, y) || maze[x+1][y] == WALL) wallCount++;
+        if (!isValidCell(x, y-1) || maze[x][y-1] == WALL) wallCount++;
+        if (!isValidCell(x, y+1) || maze[x][y+1] == WALL) wallCount++;
+        
+        boolean isDead = wallCount >= 3;
+        if (isDead) {
+            System.out.println("Confirmed dead end at: " + x + "," + y + " with " + wallCount + " walls");
+        }
+        return isDead;
+    }
+
+    public Point findNearestDeadEnd(int x, int y) {
+        Queue<Point> queue = new LinkedList<>();
+        Set<Point> visited = new HashSet<>();
+        Point start = new Point(x, y);
+        queue.offer(start);
+        visited.add(start);
+        
+        while (!queue.isEmpty()) {
+            Point current = queue.poll();
+            
+            // 检查当前位置是否是死胡同
+            if (isDeadEnd(current.x, current.y)) {
+                System.out.println("Found nearest dead end at: " + current.x + "," + current.y);
+                return current;
+            }
+            
+            // 检查四个方向
+            int[][] directions = {{-1,0}, {1,0}, {0,-1}, {0,1}};
+            for (int[] dir : directions) {
+                int newX = current.x + dir[0];
+                int newY = current.y + dir[1];
+                Point next = new Point(newX, newY);
+                
+                if (isValidCell(newX, newY) && maze[newX][newY] != WALL && !visited.contains(next)) {
+                    queue.offer(next);
+                    visited.add(next);
+                }
+            }
+        }
+        
+        System.out.println("No dead end found!");
+        return null;
+    }
+
+    public int[][] getMaze() {
+        return maze;
+    }
+
+    public int getMazeSize() {
+        return size;
+    }
+
+    public boolean isValidMove(int x, int y) {
+        return isValidCell(x, y) && maze[x][y] != WALL;
+    }
+
+    public boolean isGoal(int x, int y) {
+        return x == size-1 && y == size-1;
+    }
+
+    public void markPath(int x, int y, int pathType) {
+        if (isValidCell(x, y)) {
+            maze[x][y] = pathType;
+        }
+    }
+}
+
+public class Game {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Choose Difficulty");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setLayout(new FlowLayout());
+            
+            JButton easyButton = new JButton("Easy");
+            JButton mediumButton = new JButton("Medium");
+            JButton hardButton = new JButton("Hard");
+            
+            ActionListener buttonListener = e -> {
+                String difficulty = e.getActionCommand().toLowerCase();
+                int mazeSize;
+                switch(difficulty) {
+                    case "easy": mazeSize = 5; break;
+                    case "medium": mazeSize = 7; break;
+                    case "hard": mazeSize = 9; break;
+                    default: mazeSize = 5;
+                }
+                
+                Maze maze = new Maze(mazeSize, difficulty);  // 确保传递正确的难度参数
+                System.out.println("Starting new game with difficulty: " + difficulty);
+                MazeGUI gui = new MazeGUI(maze);
+                gui.setVisible(true);
+                frame.dispose();
+            };
+            
+            easyButton.addActionListener(buttonListener);
+            mediumButton.addActionListener(buttonListener);
+            hardButton.addActionListener(buttonListener);
+            
+            frame.add(easyButton);
+            frame.add(mediumButton);
+            frame.add(hardButton);
+            
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+        });
+    }
+} 
