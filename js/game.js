@@ -1,5 +1,5 @@
 // Import questions module
-import { getRandomQuestion } from './questions.js';
+import { QUESTIONS, getQuestionsByDifficulty } from './questions.js';
 
 const WALL = 1;
 const PATH = 0;
@@ -8,6 +8,9 @@ const DEAD_END = 3;
 
 // Add debug logging
 console.log('Game script loaded');
+
+// Global game instance
+let currentGame = null;
 
 class Question {
     constructor(question, answer, explanation) {
@@ -40,7 +43,6 @@ class MazeGame {
         this.canvas.height = this.size * this.cellSize;
 
         this.initializeMaze();
-        this.setupEventListeners();
         
         // Calculate remaining steps to goal
         this.stepsRemaining = this.calculateRemainingSteps();
@@ -313,14 +315,20 @@ class MazeGame {
     }
 
     setupEventListeners() {
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => {
+        console.log('Setting up event listeners...'); // Debug log
+        
+        // 移除之前的事件监听器
+        document.removeEventListener('keydown', this._handleKeyDown);
+        
+        // 创建绑定到当前实例的事件处理函数
+        this._handleKeyDown = (e) => {
             e.preventDefault(); // 防止按键滚动页面
             console.log('Key pressed:', e.key); // Debug log
+            
             let dx = 0;
             let dy = 0;
 
-            switch(e.key.toLowerCase()) { // 转换为小写以匹配所有情况
+            switch(e.key.toLowerCase()) {
                 case 'arrowup':
                 case 'w':
                     dy = -1;
@@ -345,7 +353,10 @@ class MazeGame {
                 console.log('Moving:', {dx, dy}); // Debug log
                 this.tryMove(dx, dy);
             }
-        });
+        };
+
+        // 添加新的事件监听器到document
+        document.addEventListener('keydown', this._handleKeyDown);
 
         // Touch/click controls
         this.canvas.addEventListener('click', (e) => {
@@ -406,6 +417,8 @@ class MazeGame {
                 this.draw();
             });
         }
+
+        console.log('Event listeners setup complete'); // Debug log
     }
 
     tryMove(dx, dy) {
@@ -895,7 +908,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameContainer = document.getElementById('gameContainer');
     console.log('Start screen:', startScreen);
     console.log('Game container:', gameContainer);
-    let currentGame = null;
 
     // Show start screen, hide game container initially
     if (startScreen && gameContainer) {
@@ -906,7 +918,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Starting game with difficulty:', difficulty);
             startScreen.style.display = 'none';
             gameContainer.style.display = 'block';
+            if (currentGame) {
+                // Clean up old event listeners
+                document.removeEventListener('keydown', currentGame._handleKeyDown);
+            }
             currentGame = new MazeGame(difficulty);
+            currentGame.setupEventListeners(); // 确保设置事件监听器
         }
 
         // Add click event listeners to difficulty buttons
@@ -916,26 +933,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log('Difficulty buttons:', { easyBtn, mediumBtn, hardBtn });
 
-        if (easyBtn) {
-            easyBtn.addEventListener('click', () => {
-                console.log('Easy button clicked');
-                startGame('easy');
-            });
-        }
-        
-        if (mediumBtn) {
-            mediumBtn.addEventListener('click', () => {
-                console.log('Medium button clicked');
-                startGame('medium');
-            });
-        }
-        
-        if (hardBtn) {
-            hardBtn.addEventListener('click', () => {
-                console.log('Hard button clicked');
-                startGame('hard');
-            });
-        }
+        if (easyBtn) easyBtn.addEventListener('click', () => startGame('easy'));
+        if (mediumBtn) mediumBtn.addEventListener('click', () => startGame('medium'));
+        if (hardBtn) hardBtn.addEventListener('click', () => startGame('hard'));
 
         // Add click event listener to new game button
         const newGameBtn = document.getElementById('newGameBtn');
@@ -947,7 +947,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 startScreen.style.display = 'flex';
                 gameContainer.style.display = 'none';
                 if (currentGame) {
-                    // Clean up any existing game resources
+                    // Clean up event listeners
+                    document.removeEventListener('keydown', currentGame._handleKeyDown);
                     currentGame = null;
                 }
             });
