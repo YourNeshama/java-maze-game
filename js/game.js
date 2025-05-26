@@ -3,6 +3,9 @@ const PATH = 0;
 const CORRECT_PATH = 2;
 const DEAD_END = 3;
 
+// Add debug logging
+console.log('Game script loaded');
+
 class Question {
     constructor(question, answer, explanation) {
         this.question = question;
@@ -17,6 +20,7 @@ class Question {
 
 class MazeGame {
     constructor(difficulty) {
+        console.log('Creating new MazeGame with difficulty:', difficulty);
         this.difficulty = difficulty;
         this.initializeGameSettings();
         this.questions = this.initializeQuestions();
@@ -29,6 +33,7 @@ class MazeGame {
 
         // Initialize canvas
         this.canvas = document.getElementById('mazeCanvas');
+        console.log('Canvas element:', this.canvas);
         this.ctx = this.canvas.getContext('2d');
         this.cellSize = Math.min(40, 600 / this.size);
         this.canvas.width = this.size * this.cellSize;
@@ -37,6 +42,7 @@ class MazeGame {
         this.initializeMaze();
         this.setupEventListeners();
         this.updateQuestionCounter();
+        console.log('MazeGame initialization complete');
     }
 
     initializeGameSettings() {
@@ -302,8 +308,11 @@ class MazeGame {
 
 // Game initialization
 window.onload = () => {
+    console.log('Window loaded');
     const startScreen = document.getElementById('startScreen');
     const gameContainer = document.getElementById('gameContainer');
+    console.log('Start screen:', startScreen);
+    console.log('Game container:', gameContainer);
     let currentGame = null;
 
     // Show start screen, hide game container initially
@@ -311,18 +320,38 @@ window.onload = () => {
     gameContainer.style.display = 'none';
 
     function startGame(difficulty) {
+        console.log('Starting game with difficulty:', difficulty);
         startScreen.style.display = 'none';
         gameContainer.style.display = 'block';
         currentGame = new MazeGame(difficulty);
     }
 
     // Add click event listeners to difficulty buttons
-    document.getElementById('easyBtn').addEventListener('click', () => startGame('easy'));
-    document.getElementById('mediumBtn').addEventListener('click', () => startGame('medium'));
-    document.getElementById('hardBtn').addEventListener('click', () => startGame('hard'));
+    const easyBtn = document.getElementById('easyBtn');
+    const mediumBtn = document.getElementById('mediumBtn');
+    const hardBtn = document.getElementById('hardBtn');
+    
+    console.log('Difficulty buttons:', { easyBtn, mediumBtn, hardBtn });
+
+    easyBtn.addEventListener('click', () => {
+        console.log('Easy button clicked');
+        startGame('easy');
+    });
+    mediumBtn.addEventListener('click', () => {
+        console.log('Medium button clicked');
+        startGame('medium');
+    });
+    hardBtn.addEventListener('click', () => {
+        console.log('Hard button clicked');
+        startGame('hard');
+    });
 
     // Add click event listener to new game button
-    document.getElementById('newGameBtn').addEventListener('click', () => {
+    const newGameBtn = document.getElementById('newGameBtn');
+    console.log('New game button:', newGameBtn);
+    
+    newGameBtn.addEventListener('click', () => {
+        console.log('New game button clicked');
         startScreen.style.display = 'flex';
         gameContainer.style.display = 'none';
         if (currentGame) {
@@ -330,4 +359,6 @@ window.onload = () => {
             currentGame = null;
         }
     });
+
+    console.log('All event listeners set up');
 }; 
