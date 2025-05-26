@@ -172,43 +172,28 @@ function getQuestionsByDifficulty(difficulty) {
     // Combine built-in and custom questions
     let allQuestions = [];
     if (QUESTIONS.hasOwnProperty(normalizedDifficulty)) {
-        // For built-in questions, ensure they all have 4 options
-        allQuestions = QUESTIONS[normalizedDifficulty].map(q => ({
-            ...q,
-            options: q.options.length === 4 ? q.options : [...q.options, ...Array(4 - q.options.length).fill("")]
-        }));
+        allQuestions = QUESTIONS[normalizedDifficulty];
     }
     
-    // For custom questions, pad with empty strings if less than 4 options
-    allQuestions = allQuestions.concat(
-        customQuestionsForDifficulty.map(q => ({
-            ...q,
-            options: [...q.options, ...Array(4 - q.options.length).fill("")]
-        }))
-    );
+    // Add custom questions
+    allQuestions = allQuestions.concat(customQuestionsForDifficulty);
     
     if (allQuestions.length === 0) {
         console.error(`No questions found for difficulty: ${difficulty}. Please choose 'easy', 'medium', or 'hard'.`);
-                return [];
+        return [];
     }
     
     return allQuestions;
-    }
+}
 
     // Helper function to get a random question from a specific difficulty
 function getRandomQuestion(difficulty) {
-        const questions = getQuestionsByDifficulty(difficulty);
+    const questions = getQuestionsByDifficulty(difficulty);
     if (questions.length === 0) {
-            return null;
-        }
-        const randomIndex = Math.floor(Math.random() * questions.length);
-        const question = questions[randomIndex];
-    
-    // Filter out empty options
-    return {
-        ...question,
-        options: question.options.filter(opt => opt !== "")
-    };
+        return null;
+    }
+    const randomIndex = Math.floor(Math.random() * questions.length);
+    return questions[randomIndex];
 }
 
 export { QUESTIONS, getQuestionsByDifficulty, getRandomQuestion }; 
