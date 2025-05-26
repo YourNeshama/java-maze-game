@@ -247,7 +247,7 @@ const QUESTIONS = {
     ]
 };
 
-    // Helper function to get questions by difficulty
+// Helper function to get questions by difficulty
 function getQuestionsByDifficulty(difficulty) {
     const normalizedDifficulty = difficulty.toLowerCase();
     
@@ -272,14 +272,57 @@ function getQuestionsByDifficulty(difficulty) {
     return allQuestions;
 }
 
-    // Helper function to get a random question from a specific difficulty
+// Helper function to generate wrong answers for multiple choice questions
+function generateWrongAnswers(correctAnswer, questionType) {
+    const wrongAnswers = [];
+    
+    // Different types of wrong answers based on question type
+    const numberAnswers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '-1'];
+    const booleanAnswers = ['true', 'false', '1', '0', 'yes', 'no'];
+    const dataStructureAnswers = ['Array', 'LinkedList', 'Stack', 'Queue', 'Tree', 'HashMap', 'Set'];
+    const methodAnswers = ['length()', 'size()', 'isEmpty()', 'clear()', 'remove()', 'add()', 'get()'];
+    const keywordAnswers = ['public', 'private', 'static', 'final', 'abstract', 'synchronized', 'volatile'];
+    const commonWrongAnswers = ['Error', 'null', 'undefined', 'NaN', 'Exception'];
+
+    // Combine all possible answers
+    let possibleAnswers = [...numberAnswers, ...booleanAnswers, ...dataStructureAnswers, 
+                          ...methodAnswers, ...keywordAnswers, ...commonWrongAnswers];
+    
+    // Remove the correct answer from possible answers
+    possibleAnswers = possibleAnswers.filter(answer => answer !== correctAnswer);
+    
+    // Shuffle the array
+    possibleAnswers.sort(() => Math.random() - 0.5);
+    
+    // Take first 3 answers
+    return possibleAnswers.slice(0, 3);
+}
+
+// Helper function to get a random question from a specific difficulty
 function getRandomQuestion(difficulty) {
     const questions = getQuestionsByDifficulty(difficulty);
     if (questions.length === 0) {
         return null;
     }
     const randomIndex = Math.floor(Math.random() * questions.length);
-    return questions[randomIndex];
+    const question = questions[randomIndex];
+
+    // If the question doesn't have options, generate them
+    if (!question.options || question.options.length === 0) {
+        const correctAnswer = question.correctAnswer;
+        const wrongAnswers = generateWrongAnswers(correctAnswer, question.type);
+        
+        // Create options array with correct answer and wrong answers
+        const options = [...wrongAnswers];
+        // Insert correct answer at random position
+        const correctPosition = Math.floor(Math.random() * 4);
+        options.splice(correctPosition, 0, correctAnswer);
+        
+        question.options = options;
+        question.correctAnswer = correctPosition;
+    }
+
+    return question;
 }
 
 export { QUESTIONS, getQuestionsByDifficulty, getRandomQuestion }; 
