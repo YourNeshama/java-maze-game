@@ -852,8 +852,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function showQuestion(question) {
     if (!question) return;
     
-    const options = question.options.filter(opt => opt !== "");
-    const optionsHtml = options.map((option, index) => 
+    const optionsHtml = question.options.map((option, index) => 
         `<button onclick="checkAnswer(${index})" class="option-button">${index + 1}) ${option}</button>`
     ).join('');
 
