@@ -27,6 +27,9 @@ class MazeGame {
         this.difficulty = difficulty;
         this.initializeGameSettings();
         
+        // 添加已回答问题的跟踪
+        this.answeredQuestions = new Set();
+        
         // Initialize canvas
         this.canvas = document.getElementById('mazeCanvas');
         console.log('Canvas element:', this.canvas);
@@ -183,14 +186,16 @@ class MazeGame {
     }
 
     addDeadEnds() {
-        // Reduce number of dead ends based on maze size
-        const deadEndCount = Math.floor(this.size / 2); // Reduced from this.size * 1.5
+        // 增加死胡同的数量，使其与问题数量相匹配
+        const deadEndCount = Math.min(8, Math.floor(this.size * 1.5)); // 增加到8个死胡同
         let added = 0;
         
         // Priority areas for dead ends (near start and end)
         const priorityAreas = [
             {x: 1, y: 0},  // Near start
-            {x: this.size-2, y: this.size-1}  // Near end
+            {x: 0, y: 1},  // Near start
+            {x: this.size-2, y: this.size-1},  // Near end
+            {x: this.size-1, y: this.size-2}   // Near end
         ];
 
         // First try to add dead ends in priority areas
@@ -201,9 +206,9 @@ class MazeGame {
             }
         }
 
-        // Then add remaining dead ends randomly, but with more restrictions
+        // Then add remaining dead ends randomly
         let attempts = 0;
-        while (added < deadEndCount && attempts < 50) { // Reduced max attempts
+        while (added < deadEndCount && attempts < 100) { // 增加尝试次数
             const x = Math.floor(Math.random() * this.size);
             const y = Math.floor(Math.random() * this.size);
 
@@ -411,14 +416,13 @@ class MazeGame {
 
         console.log('Attempting to move to:', {newX, newY}); // Debug log
 
-        // First check if the move is valid
         if (newX >= 0 && newX < this.size && 
             newY >= 0 && newY < this.size && 
             this.maze[newY][newX] !== WALL) {
             
             console.log('Valid move, getting question...'); // Debug log
-            // Get a random question based on current difficulty
-            const currentQuestion = getRandomQuestion(this.difficulty);
+            // 使用新的getRandomQuestion方法
+            const currentQuestion = this.getRandomQuestion(this.difficulty);
             
             if (!currentQuestion) {
                 console.error('No questions available for difficulty:', this.difficulty);
@@ -861,6 +865,32 @@ class MazeGame {
         // Insert debug info after game container
         const gameContainer = document.getElementById('gameContainer');
         gameContainer.parentNode.insertBefore(debugDiv, gameContainer.nextSibling);
+    }
+
+    getRandomQuestion(difficulty) {
+        const questions = getQuestionsByDifficulty(difficulty);
+        if (questions.length === 0) {
+            return null;
+        }
+
+        // 过滤掉已回答的问题
+        const availableQuestions = questions.filter(q => 
+            !this.answeredQuestions.has(q.question)
+        );
+
+        if (availableQuestions.length === 0) {
+            // 如果所有问题都回答过了，重置已回答问题集合
+            this.answeredQuestions.clear();
+            return this.getRandomQuestion(difficulty);
+        }
+
+        const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+        const question = availableQuestions[randomIndex];
+        
+        // 将问题标记为已回答
+        this.answeredQuestions.add(question.question);
+        
+        return question;
     }
 }
 

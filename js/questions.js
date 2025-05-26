@@ -55,6 +55,118 @@ const QUESTIONS = {
             "correctAnswer": 0,
             "explanation": "The ternary operator returns 'Big' when the condition (num > 5) is true.",
             "difficulty": "easy"
+        },
+        {
+            "question": "What will be printed by the following code?\n```java\nint x = 10;\nint y = 3;\nSystem.out.println(x / y);\n```",
+            "options": ["3", "3.33", "4", "Error"],
+            "correctAnswer": 0,
+            "explanation": "Integer division in Java truncates the decimal part, so 10/3 = 3",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What will be printed by the following code?\n```java\nString str = \"Hello\";\nSystem.out.println(str.length());\n```",
+            "options": ["4", "5", "6", "Error"],
+            "correctAnswer": 1,
+            "explanation": "The length() method returns the number of characters in the string",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What will be printed by the following code?\n```java\nint x = 5;\nSystem.out.println(++x);\n```",
+            "options": ["5", "6", "4", "Error"],
+            "correctAnswer": 1,
+            "explanation": "Pre-increment (++x) increments the value before using it",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What is the correct way to create an integer array of size 5?",
+            "options": ["int[5] arr;", "int arr[5];", "int[] arr = new int[5];", "array int[5];"],
+            "correctAnswer": 2,
+            "explanation": "In Java, arrays are created using the new keyword and size in square brackets",
+            "difficulty": "easy"
+        },
+        {
+            "question": "Which of these is a valid Java variable name?",
+            "options": ["123var", "my-var", "_myVar", "class"],
+            "correctAnswer": 2,
+            "explanation": "Variable names can start with underscore or letter, but not with numbers or special characters",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What is the default value of an int variable in Java?",
+            "options": ["0", "1", "null", "undefined"],
+            "correctAnswer": 0,
+            "explanation": "The default value for int type variables in Java is 0",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What will be printed by the following code?\n```java\nboolean x = true;\nSystem.out.println(!x);\n```",
+            "options": ["true", "false", "1", "0"],
+            "correctAnswer": 1,
+            "explanation": "The ! operator negates a boolean value",
+            "difficulty": "easy"
+        },
+        {
+            "question": "Which keyword is used to define a class in Java?",
+            "options": ["define", "class", "struct", "object"],
+            "correctAnswer": 1,
+            "explanation": "The 'class' keyword is used to define a class in Java",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What will be printed by the following code?\n```java\nString str = \"Hello\" + 123;\nSystem.out.println(str);\n```",
+            "options": ["Hello123", "Hello 123", "Error", "123Hello"],
+            "correctAnswer": 0,
+            "explanation": "The + operator concatenates strings with other types",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What is the correct way to declare a constant in Java?",
+            "options": ["const int x = 10;", "final int X = 10;", "static int x = 10;", "#define x 10"],
+            "correctAnswer": 1,
+            "explanation": "The final keyword is used to declare constants in Java, typically with uppercase names",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What will be printed by the following code?\n```java\nint x = 10;\nSystem.out.println(x > 5 && x < 15);\n```",
+            "options": ["1", "0", "true", "false"],
+            "correctAnswer": 2,
+            "explanation": "The expression evaluates to true because 10 is between 5 and 15",
+            "difficulty": "easy"
+        },
+        {
+            "question": "Which package is automatically imported in all Java programs?",
+            "options": ["java.util", "java.lang", "java.io", "java.net"],
+            "correctAnswer": 1,
+            "explanation": "java.lang package is automatically imported and contains fundamental classes",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What will be printed by the following code?\n```java\nchar ch = 'A';\nSystem.out.println((int)ch);\n```",
+            "options": ["A", "1", "65", "97"],
+            "correctAnswer": 2,
+            "explanation": "Casting char 'A' to int gives its ASCII value, which is 65",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What is the size of int data type in Java?",
+            "options": ["16 bits", "32 bits", "64 bits", "8 bits"],
+            "correctAnswer": 1,
+            "explanation": "In Java, int is a 32-bit signed integer type",
+            "difficulty": "easy"
+        },
+        {
+            "question": "What will be printed by the following code?\n```java\nString str = \"Java\";\nSystem.out.println(str.indexOf('a'));\n```",
+            "options": ["0", "1", "2", "-1"],
+            "correctAnswer": 1,
+            "explanation": "indexOf returns the first occurrence of the character, 'a' is at index 1",
+            "difficulty": "easy"
+        },
+        {
+            "question": "Which operator is used for string equality in Java?",
+            "options": ["==", "===", ".equals()", "="],
+            "correctAnswer": 2,
+            "explanation": "The equals() method is used to compare string contents in Java",
+            "difficulty": "easy"
         }
     ],
     medium: [
@@ -247,7 +359,7 @@ const QUESTIONS = {
     ]
 };
 
-// Helper function to get questions by difficulty
+    // Helper function to get questions by difficulty
 function getQuestionsByDifficulty(difficulty) {
     const normalizedDifficulty = difficulty.toLowerCase();
     
@@ -266,7 +378,7 @@ function getQuestionsByDifficulty(difficulty) {
     
     if (allQuestions.length === 0) {
         console.error(`No questions found for difficulty: ${difficulty}. Please choose 'easy', 'medium', or 'hard'.`);
-        return [];
+                return [];
     }
     
     return allQuestions;
@@ -296,16 +408,16 @@ function generateWrongAnswers(correctAnswer, questionType) {
     
     // Take first 3 answers
     return possibleAnswers.slice(0, 3);
-}
-
-// Helper function to get a random question from a specific difficulty
-function getRandomQuestion(difficulty) {
-    const questions = getQuestionsByDifficulty(difficulty);
-    if (questions.length === 0) {
-        return null;
     }
-    const randomIndex = Math.floor(Math.random() * questions.length);
-    const question = questions[randomIndex];
+
+    // Helper function to get a random question from a specific difficulty
+function getRandomQuestion(difficulty) {
+        const questions = getQuestionsByDifficulty(difficulty);
+    if (questions.length === 0) {
+            return null;
+        }
+        const randomIndex = Math.floor(Math.random() * questions.length);
+        const question = questions[randomIndex];
 
     // If the question doesn't have options, generate them
     if (!question.options || question.options.length === 0) {
