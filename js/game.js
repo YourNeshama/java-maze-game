@@ -149,6 +149,7 @@ class MazeGame {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+        // Draw maze
         for (let y = 0; y < this.size; y++) {
             for (let x = 0; x < this.size; x++) {
                 const cell = this.maze[y][x];
@@ -172,8 +173,18 @@ class MazeGame {
             }
         }
 
-        // Draw player
+        // Draw endpoint (only at the bottom right corner)
+        const endX = this.size - 1;
+        const endY = this.size - 1;
+        this.ctx.fillStyle = '#FFD700'; // Gold color for endpoint
+        this.ctx.fillRect(endX * this.cellSize, endY * this.cellSize, this.cellSize, this.cellSize);
+        this.ctx.strokeStyle = '#999';
+        this.ctx.strokeRect(endX * this.cellSize, endY * this.cellSize, this.cellSize, this.cellSize);
+
+        // Draw player as a circle with a border
         this.ctx.fillStyle = '#4CAF50';
+        this.ctx.strokeStyle = '#333';
+        this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         this.ctx.arc(
             (this.playerX + 0.5) * this.cellSize,
@@ -183,6 +194,7 @@ class MazeGame {
             Math.PI * 2
         );
         this.ctx.fill();
+        this.ctx.stroke();
     }
 
     setupEventListeners() {
