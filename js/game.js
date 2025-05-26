@@ -29,6 +29,7 @@ class MazeGame {
         
         // 添加已回答问题的跟踪
         this.answeredQuestions = new Set();
+        this.allQuestions = getQuestionsByDifficulty(difficulty);
         
         // Initialize canvas
         this.canvas = document.getElementById('mazeCanvas');
@@ -314,29 +315,26 @@ class MazeGame {
     setupEventListeners() {
         // Keyboard controls
         document.addEventListener('keydown', (e) => {
+            e.preventDefault(); // 防止按键滚动页面
             console.log('Key pressed:', e.key); // Debug log
             let dx = 0;
             let dy = 0;
 
-            switch(e.key) {
-                case 'ArrowUp':
+            switch(e.key.toLowerCase()) { // 转换为小写以匹配所有情况
+                case 'arrowup':
                 case 'w':
-                case 'W':
                     dy = -1;
                     break;
-                case 'ArrowDown':
+                case 'arrowdown':
                 case 's':
-                case 'S':
                     dy = 1;
                     break;
-                case 'ArrowLeft':
+                case 'arrowleft':
                 case 'a':
-                case 'A':
                     dx = -1;
                     break;
-                case 'ArrowRight':
+                case 'arrowright':
                 case 'd':
-                case 'D':
                     dx = 1;
                     break;
                 default:
@@ -422,7 +420,7 @@ class MazeGame {
             
             console.log('Valid move, getting question...'); // Debug log
             // 使用新的getRandomQuestion方法
-            const currentQuestion = this.getRandomQuestion(this.difficulty);
+            const currentQuestion = this.getRandomQuestion();
             
             if (!currentQuestion) {
                 console.error('No questions available for difficulty:', this.difficulty);
@@ -867,23 +865,19 @@ class MazeGame {
         gameContainer.parentNode.insertBefore(debugDiv, gameContainer.nextSibling);
     }
 
-    getRandomQuestion(difficulty) {
-        const questions = getQuestionsByDifficulty(difficulty);
-        if (questions.length === 0) {
-            return null;
-        }
-
+    getRandomQuestion() {
         // 过滤掉已回答的问题
-        const availableQuestions = questions.filter(q => 
+        const availableQuestions = this.allQuestions.filter(q => 
             !this.answeredQuestions.has(q.question)
         );
 
+        // 如果所有问题都回答过了，重置已回答问题集合
         if (availableQuestions.length === 0) {
-            // 如果所有问题都回答过了，重置已回答问题集合
             this.answeredQuestions.clear();
-            return this.getRandomQuestion(difficulty);
+            return this.getRandomQuestion();
         }
 
+        // 随机选择一个未回答的问题
         const randomIndex = Math.floor(Math.random() * availableQuestions.length);
         const question = availableQuestions[randomIndex];
         
