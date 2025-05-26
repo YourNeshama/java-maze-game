@@ -28,7 +28,21 @@ class MazeGame {
     constructor(difficulty) {
         console.log('Creating new MazeGame with difficulty:', difficulty);
         this.difficulty = difficulty;
-        this.size = 5;
+        
+        // Set maze size based on difficulty
+        switch(difficulty) {
+            case 'easy':
+                this.size = 5;
+                break;
+            case 'medium':
+                this.size = 7;
+                break;
+            case 'hard':
+                this.size = 9;
+                break;
+            default:
+                this.size = 5;
+        }
         
         // 添加已回答问题的跟踪
         this.answeredQuestions = new Set();
@@ -275,15 +289,11 @@ class MazeGame {
         
         // Draw goal
         this.ctx.fillStyle = '#0f0';
-        this.ctx.beginPath();
-        this.ctx.arc(
-            (this.size - 0.5) * this.cellSize,
-            (this.size - 0.5) * this.cellSize,
-            this.cellSize * 0.4,
-            0,
-            Math.PI * 2
-        );
-        this.ctx.fill();
+        // Draw goal as a square
+        const goalSize = this.cellSize * 0.8; // Make the square slightly smaller than the cell
+        const goalX = (this.size - 1) * this.cellSize + (this.cellSize - goalSize) / 2;
+        const goalY = (this.size - 1) * this.cellSize + (this.cellSize - goalSize) / 2;
+        this.ctx.fillRect(goalX, goalY, goalSize, goalSize);
     }
 
     setupEventListeners() {
