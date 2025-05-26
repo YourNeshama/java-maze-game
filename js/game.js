@@ -1,5 +1,5 @@
 // Import questions module
-import { QUESTIONS, getQuestionsByDifficulty } from './questions.js';
+import { QUESTIONS, getQuestionsByDifficulty, getRandomQuestion } from './questions.js';
 
 const WALL = 1;
 const PATH = 0;
@@ -28,7 +28,7 @@ class MazeGame {
     constructor(difficulty) {
         console.log('Creating new MazeGame with difficulty:', difficulty);
         this.difficulty = difficulty;
-        this.initializeGameSettings();
+        this.size = 5;
         
         // 添加已回答问题的跟踪
         this.answeredQuestions = new Set();
@@ -42,11 +42,22 @@ class MazeGame {
         this.canvas.width = this.size * this.cellSize;
         this.canvas.height = this.size * this.cellSize;
 
+        // Initialize player position
+        this.playerX = 0;
+        this.playerY = 0;
+
+        // 添加问题锁定状态
+        this.isQuestionActive = false;
+
         this.initializeMaze();
         
         // Calculate remaining steps to goal
         this.stepsRemaining = this.calculateRemainingSteps();
         this.updateStepCounter();
+        
+        // Setup event listeners
+        this.setupEventListeners();
+        
         console.log('MazeGame initialization complete');
     }
 
@@ -96,92 +107,47 @@ class MazeGame {
         return Infinity;
     }
 
-    initializeGameSettings() {
-        switch(this.difficulty) {
-            case 'easy':
-                this.size = 5;
-                break;
-            case 'medium':
-                this.size = 7;
-                break;
-            case 'hard':
-                this.size = 9;
-                break;
-            default:
-                this.size = 5;
-        }
-        this.playerX = 0;
-        this.playerY = 0;
-    }
-
     initializeMaze() {
-        // Create empty maze
+        // Initialize maze with walls
         this.maze = Array(this.size).fill().map(() => Array(this.size).fill(WALL));
-        this.visited = Array(this.size).fill().map(() => Array(this.size).fill(false));
         
-        // Generate maze using recursive backtracking
+        // Create paths using recursive backtracking
         this.generateMaze(0, 0);
         
-        // Set start point as dead end
-        this.maze[0][0] = DEAD_END;
+        // Ensure there's a path to the end
+        this.maze[this.size - 1][this.size - 1] = PATH;
         
-        // Ensure the second block is a path and has at least two connections
-        if (this.maze[0][1] === PATH) {
-            this.maze[0][1] = PATH;
-            // Make sure there's at least one more path connected to second block
-            if (this.maze[0][2] !== PATH && this.maze[1][1] !== PATH) {
-                if (Math.random() < 0.5) {
-                    this.maze[0][2] = PATH;
-                } else {
-                    this.maze[1][1] = PATH;
-                }
-            }
-        } else if (this.maze[1][0] === PATH) {
-            this.maze[1][0] = PATH;
-            // Make sure there's at least one more path connected to second block
-            if (this.maze[2][0] !== PATH && this.maze[1][1] !== PATH) {
-                if (Math.random() < 0.5) {
-                    this.maze[2][0] = PATH;
-                } else {
-                    this.maze[1][1] = PATH;
-                }
-            }
-        }
-        
-        // Set end point
-        this.maze[this.size-1][this.size-1] = PATH;
-        
-        // Add dead ends near start and end
-        this.addDeadEnds();
-        
+        // Draw the initial state
         this.draw();
     }
 
     generateMaze(x, y) {
-        this.visited[y][x] = true;
         this.maze[y][x] = PATH;
-
-        // Define possible directions: [dx, dy]
+        
+        // Define possible directions
         const directions = [
             [0, -2], // Up
             [2, 0],  // Right
             [0, 2],  // Down
             [-2, 0]  // Left
         ];
-
+        
         // Shuffle directions
         for (let i = directions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [directions[i], directions[j]] = [directions[j], directions[i]];
         }
-
+        
         // Try each direction
         for (const [dx, dy] of directions) {
             const newX = x + dx;
             const newY = y + dy;
-
-            if (newX >= 0 && newX < this.size && newY >= 0 && newY < this.size && !this.visited[newY][newX]) {
-                // Carve path by making the wall between current and new cell a path
+            
+            if (newX >= 0 && newX < this.size && 
+                newY >= 0 && newY < this.size && 
+                this.maze[newY][newX] === WALL) {
+                
+                // Create path between cells
                 this.maze[y + dy/2][x + dx/2] = PATH;
                 this.generateMaze(newX, newY);
             }
@@ -261,47 +227,42 @@ class MazeGame {
 
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
+        
         // Draw maze
         for (let y = 0; y < this.size; y++) {
             for (let x = 0; x < this.size; x++) {
                 const cell = this.maze[y][x];
-                switch(cell) {
-                    case WALL:
-                        this.ctx.fillStyle = '#333';
-                        break;
-                    case PATH:
-                    case DEAD_END:  // Dead ends now look like normal paths
-                        this.ctx.fillStyle = '#fff';
-                        break;
-                    case CORRECT_PATH:
-                        this.ctx.fillStyle = '#90EE90';
-                        break;
+                
+                if (cell === WALL) {
+                    this.ctx.fillStyle = '#666';
+                } else if (cell === PATH) {
+                    this.ctx.fillStyle = '#fff';
+                } else if (cell === CORRECT_PATH) {
+                    this.ctx.fillStyle = '#afa';
+                } else if (cell === DEAD_END) {
+                    this.ctx.fillStyle = '#faa';
                 }
-                this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
-                this.ctx.strokeStyle = '#999';
-                this.ctx.strokeRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+                
+                this.ctx.fillRect(
+                    x * this.cellSize,
+                    y * this.cellSize,
+                    this.cellSize,
+                    this.cellSize
+                );
+                
+                // Draw cell border
+                this.ctx.strokeStyle = '#000';
+                this.ctx.strokeRect(
+                    x * this.cellSize,
+                    y * this.cellSize,
+                    this.cellSize,
+                    this.cellSize
+                );
             }
         }
-
-        // Draw endpoint (only at the bottom right corner)
-        const endX = this.size - 1;
-        const endY = this.size - 1;
-        this.ctx.fillStyle = '#FFD700'; // Gold color for endpoint
-        this.ctx.fillRect(endX * this.cellSize, endY * this.cellSize, this.cellSize, this.cellSize);
-        this.ctx.strokeStyle = '#999';
-        this.ctx.strokeRect(endX * this.cellSize, endY * this.cellSize, this.cellSize, this.cellSize);
-
-        // Draw player's current cell with a highlight
-        this.ctx.fillStyle = '#4CAF50';
-        this.ctx.globalAlpha = 0.3;
-        this.ctx.fillRect(this.playerX * this.cellSize, this.playerY * this.cellSize, this.cellSize, this.cellSize);
-        this.ctx.globalAlpha = 1.0;
-
-        // Draw player as a circle with a border
-        this.ctx.fillStyle = '#4CAF50';
-        this.ctx.strokeStyle = '#333';
-        this.ctx.lineWidth = 2;
+        
+        // Draw player
+        this.ctx.fillStyle = '#00f';
         this.ctx.beginPath();
         this.ctx.arc(
             (this.playerX + 0.5) * this.cellSize,
@@ -311,7 +272,18 @@ class MazeGame {
             Math.PI * 2
         );
         this.ctx.fill();
-        this.ctx.stroke();
+        
+        // Draw goal
+        this.ctx.fillStyle = '#0f0';
+        this.ctx.beginPath();
+        this.ctx.arc(
+            (this.size - 0.5) * this.cellSize,
+            (this.size - 0.5) * this.cellSize,
+            this.cellSize * 0.4,
+            0,
+            Math.PI * 2
+        );
+        this.ctx.fill();
     }
 
     setupEventListeners() {
@@ -320,9 +292,25 @@ class MazeGame {
         // 移除之前的事件监听器
         document.removeEventListener('keydown', this._handleKeyDown);
         
+        // 添加移动冷却时间变量
+        this.lastMoveTime = 0;
+        const MOVE_COOLDOWN = 500; // 500ms冷却时间
+        
         // 创建绑定到当前实例的事件处理函数
         this._handleKeyDown = (e) => {
             e.preventDefault(); // 防止按键滚动页面
+            
+            // 如果当前有问题正在显示，忽略移动
+            if (this.isQuestionActive) {
+                return;
+            }
+            
+            // 检查是否在冷却时间内
+            const currentTime = Date.now();
+            if (currentTime - this.lastMoveTime < MOVE_COOLDOWN) {
+                return; // 如果在冷却时间内,忽略这次按键
+            }
+            
             console.log('Key pressed:', e.key); // Debug log
             
             let dx = 0;
@@ -351,6 +339,7 @@ class MazeGame {
 
             if (dx !== 0 || dy !== 0) {
                 console.log('Moving:', {dx, dy}); // Debug log
+                this.lastMoveTime = currentTime; // 更新最后移动时间
                 this.tryMove(dx, dy);
             }
         };
@@ -358,8 +347,18 @@ class MazeGame {
         // 添加新的事件监听器到document
         document.addEventListener('keydown', this._handleKeyDown);
 
-        // Touch/click controls
+        // Touch/click controls也需要添加冷却时间
         this.canvas.addEventListener('click', (e) => {
+            // 如果当前有问题正在显示，忽略点击
+            if (this.isQuestionActive) {
+                return;
+            }
+            
+            const currentTime = Date.now();
+            if (currentTime - this.lastMoveTime < MOVE_COOLDOWN) {
+                return;
+            }
+            
             const rect = this.canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -374,21 +373,37 @@ class MazeGame {
             
             // Only move if clicked adjacent cell
             if (Math.abs(dx) + Math.abs(dy) === 1) {
+                this.lastMoveTime = currentTime;
                 this.tryMove(dx, dy);
             }
         });
 
-        // Add touch controls
+        // Add touch controls with cooldown
         let touchStartX = 0;
         let touchStartY = 0;
         
         this.canvas.addEventListener('touchstart', (e) => {
+            // 如果当前有问题正在显示，忽略触摸
+            if (this.isQuestionActive) {
+                return;
+            }
+            
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
             e.preventDefault();
         }, { passive: false });
 
         this.canvas.addEventListener('touchend', (e) => {
+            // 如果当前有问题正在显示，忽略触摸
+            if (this.isQuestionActive) {
+                return;
+            }
+            
+            const currentTime = Date.now();
+            if (currentTime - this.lastMoveTime < MOVE_COOLDOWN) {
+                return;
+            }
+            
             const touchEndX = e.changedTouches[0].clientX;
             const touchEndY = e.changedTouches[0].clientY;
             
@@ -398,9 +413,11 @@ class MazeGame {
             // Determine swipe direction
             if (Math.abs(dx) > Math.abs(dy)) {
                 // Horizontal swipe
+                this.lastMoveTime = currentTime;
                 this.tryMove(Math.sign(dx), 0);
             } else {
                 // Vertical swipe
+                this.lastMoveTime = currentTime;
                 this.tryMove(0, Math.sign(dy));
             }
             
@@ -422,6 +439,11 @@ class MazeGame {
     }
 
     tryMove(dx, dy) {
+        // 如果当前有问题正在显示，不允许移动
+        if (this.isQuestionActive) {
+            return;
+        }
+        
         const newX = this.playerX + dx;
         const newY = this.playerY + dy;
 
@@ -432,12 +454,17 @@ class MazeGame {
             this.maze[newY][newX] !== WALL) {
             
             console.log('Valid move, getting question...'); // Debug log
+            
+            // 设置问题锁定状态
+            this.isQuestionActive = true;
+            
             // 使用新的getRandomQuestion方法
-            const currentQuestion = this.getRandomQuestion();
+            const currentQuestion = getRandomQuestion(this.difficulty);
             
             if (!currentQuestion) {
                 console.error('No questions available for difficulty:', this.difficulty);
                 alert('Error: No questions available for this difficulty level');
+                this.isQuestionActive = false;
                 return;
             }
             
@@ -522,25 +549,39 @@ class MazeGame {
                             alert("Congratulations! You've completed the maze!");
                             document.getElementById('newGameBtn').click();
                         }
+                        this.draw();
+                        // 重置问题锁定状态
+                        this.isQuestionActive = false;
                     } else {
                         alert("Wrong! " + currentQuestion.explanation);
                         if (this.playerX === 0 && this.playerY === 0) {
                             // If at starting point, stay there
                             alert("You're at the starting point. Try again!");
+                            this.draw();
+                            // 重置问题锁定状态
+                            this.isQuestionActive = false;
                         } else {
                             // Otherwise teleport to nearest dead end
                             alert("Teleporting to nearest dead end!");
                             const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
                             if (nearestDeadEnd) {
-                                this.playerX = nearestDeadEnd.x;
-                                this.playerY = nearestDeadEnd.y;
-                                // Recalculate remaining steps after teleporting
-                                this.stepsRemaining = this.calculateRemainingSteps();
-                                this.updateStepCounter();
+                                // Add a delay before teleporting to prevent immediate new question
+                                setTimeout(() => {
+                                    this.playerX = nearestDeadEnd.x;
+                                    this.playerY = nearestDeadEnd.y;
+                                    // Recalculate remaining steps after teleporting
+                                    this.stepsRemaining = this.calculateRemainingSteps();
+                                    this.updateStepCounter();
+                                    this.draw();
+                                    // 重置问题锁定状态
+                                    this.isQuestionActive = false;
+                                }, 500); // 500ms delay
+                            } else {
+                                // 如果找不到死胡同，也要重置问题锁定状态
+                                this.isQuestionActive = false;
                             }
                         }
                     }
-                    this.draw();
                 });
                 optionsContainer.appendChild(button);
             });
@@ -550,6 +591,58 @@ class MazeGame {
         } else {
             console.log('Invalid move - wall or out of bounds'); // Debug log
         }
+    }
+
+    findNearestDeadEnd(x, y) {
+        const visited = Array(this.size).fill().map(() => Array(this.size).fill(false));
+        const queue = [{x, y, steps: 0}];
+        visited[y][x] = true;
+        
+        while (queue.length > 0) {
+            const current = queue.shift();
+            
+            // Check if current position is a dead end
+            if (this.isDeadEnd(current.x, current.y)) {
+                return current;
+            }
+            
+            // Try all four directions
+            const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+            for (const [dx, dy] of directions) {
+                const newX = current.x + dx;
+                const newY = current.y + dy;
+                
+                if (newX >= 0 && newX < this.size && 
+                    newY >= 0 && newY < this.size && 
+                    !visited[newY][newX] && 
+                    this.maze[newY][newX] !== WALL) {
+                    visited[newY][newX] = true;
+                    queue.push({x: newX, y: newY, steps: current.steps + 1});
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    isDeadEnd(x, y) {
+        if (this.maze[y][x] === WALL) return false;
+        
+        let wallCount = 0;
+        const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+        
+        for (const [dx, dy] of directions) {
+            const newX = x + dx;
+            const newY = y + dy;
+            
+            if (newX < 0 || newX >= this.size || 
+                newY < 0 || newY >= this.size || 
+                this.maze[newY][newX] === WALL) {
+                wallCount++;
+            }
+        }
+        
+        return wallCount >= 3;
     }
 
     calculateRemainingSteps() {
@@ -582,60 +675,11 @@ class MazeGame {
         return Infinity;
     }
 
-    checkAnswer(question, userAnswer) {
-        // For multiple choice questions (0-based index)
-        if (typeof question.correctAnswer === 'number') {
-            // Try to match the actual answer value first (case-insensitive)
-            if (userAnswer.toLowerCase() === question.options[question.correctAnswer].toLowerCase()) {
-                return true;
-            }
-            // Then try to match the option number
-            const index = parseInt(userAnswer) - 1; // Convert 1-based to 0-based
-            return index === question.correctAnswer;
-        }
-        // For text answers
-        return userAnswer.toLowerCase() === question.correctAnswer.toLowerCase();
-    }
-
-    isThirdBlock(x, y) {
-        // Check if the current position is the third block from start
-        if ((x === 0 && y === 2) || (x === 2 && y === 0) || 
-            (x === 1 && y === 1)) {
-            return true;
-        }
-        return false;
-    }
-
-    findNearestDeadEnd(startX, startY) {
-        let nearestDeadEnd = null;
-        let minDistance = Infinity;
-
-        // Consider starting point (0,0) as a dead end
-        const distanceToStart = Math.abs(startX) + Math.abs(startY);
-        if (distanceToStart < minDistance) {
-            minDistance = distanceToStart;
-            nearestDeadEnd = { x: 0, y: 0 };
-        }
-
-        // Traverse the maze to find the nearest dead end
-        for (let y = 0; y < this.size; y++) {
-            for (let x = 0; x < this.size; x++) {
-                if (this.maze[y][x] === DEAD_END) {
-                    const distance = Math.abs(x - startX) + Math.abs(y - startY);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        nearestDeadEnd = { x, y };
-                    }
-                }
-            }
-        }
-
-        return nearestDeadEnd;
-    }
-
     updateStepCounter() {
-        document.getElementById('questionCounter').textContent = 
-            `Steps Remaining: ${this.stepsRemaining}`;
+        const counter = document.getElementById('stepCounter');
+        if (counter) {
+            counter.textContent = `Steps to goal: ${this.stepsRemaining}`;
+        }
     }
 
     initializeQuestions() {
@@ -1030,4 +1074,17 @@ function showQuestion(question) {
     const dialog = document.createElement('div');
     dialog.innerHTML = questionDialog;
     document.body.appendChild(dialog.firstElementChild);
-} 
+}
+
+// Function to start a new game
+function startNewGame(difficulty) {
+    console.log('Starting new game with difficulty:', difficulty);
+    if (currentGame) {
+        // Clean up old event listeners
+        document.removeEventListener('keydown', currentGame._handleKeyDown);
+    }
+    currentGame = new MazeGame(difficulty);
+}
+
+// Export the startNewGame function
+export { startNewGame }; 
