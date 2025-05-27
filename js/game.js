@@ -44,7 +44,7 @@ class MazeGame {
                 this.size = 5;
         }
         
-        // 添加已回答问题的跟踪
+        // Track answered questions
         this.answeredQuestions = new Set();
         this.allQuestions = getQuestionsByDifficulty(difficulty);
         
@@ -53,7 +53,7 @@ class MazeGame {
         console.log('Canvas element:', this.canvas);
         this.ctx = this.canvas.getContext('2d');
         
-        // 固定单元格大小为40像素
+        // Set cell size to 40 pixels
         this.cellSize = 40;
         this.canvas.width = this.size * this.cellSize;
         this.canvas.height = this.size * this.cellSize;
@@ -62,7 +62,7 @@ class MazeGame {
         this.playerX = 0;
         this.playerY = 0;
 
-        // 添加问题锁定状态
+        // Add question lock state
         this.isQuestionActive = false;
 
         this.initializeMaze();
@@ -193,8 +193,8 @@ class MazeGame {
     }
 
     addDeadEnds() {
-        // 增加死胡同的数量，使其与问题数量相匹配
-        const deadEndCount = Math.min(8, Math.floor(this.size * 1.5)); // 增加到8个死胡同
+        // Increase dead end count to match question count
+        const deadEndCount = Math.min(8, Math.floor(this.size * 1.5)); // Increase to 8 dead ends
         let added = 0;
         
         // Priority areas for dead ends (near start and end)
@@ -215,7 +215,7 @@ class MazeGame {
 
         // Then add remaining dead ends randomly
         let attempts = 0;
-        while (added < deadEndCount && attempts < 100) { // 增加尝试次数
+        while (added < deadEndCount && attempts < 100) { // Increase attempt count
             const x = Math.floor(Math.random() * this.size);
             const y = Math.floor(Math.random() * this.size);
 
@@ -274,7 +274,7 @@ class MazeGame {
                 if (cell === WALL) {
                     this.ctx.fillStyle = '#666';
                 } else if (cell === PATH) {
-                        this.ctx.fillStyle = '#fff';
+                    this.ctx.fillStyle = '#fff';
                 } else if (cell === CORRECT_PATH) {
                     this.ctx.fillStyle = '#afa';
                 } else if (cell === DEAD_END) {
@@ -311,37 +311,39 @@ class MazeGame {
         );
         this.ctx.fill();
         
-        // Draw goal as a square
+        // Draw goal as a square with same size as other cells
         this.ctx.fillStyle = '#0f0';
-        const goalSize = this.cellSize * 0.8; // Make the square slightly smaller than the cell
-        const goalX = (this.size - 1) * this.cellSize + (this.cellSize - goalSize) / 2;
-        const goalY = (this.size - 1) * this.cellSize + (this.cellSize - goalSize) / 2;
-        this.ctx.fillRect(goalX, goalY, goalSize, goalSize);
+        this.ctx.fillRect(
+            (this.size - 1) * this.cellSize,
+            (this.size - 1) * this.cellSize,
+            this.cellSize,
+            this.cellSize
+        );
     }
 
     setupEventListeners() {
         console.log('Setting up event listeners...'); // Debug log
         
-        // 移除之前的事件监听器
+        // Remove previous event listeners
         document.removeEventListener('keydown', this._handleKeyDown);
         
-        // 添加移动冷却时间变量
+        // Add move cooldown variable
         this.lastMoveTime = 0;
-        const MOVE_COOLDOWN = 500; // 500ms冷却时间
+        const MOVE_COOLDOWN = 500; // 500ms cooldown time
         
-        // 创建绑定到当前实例的事件处理函数
+        // Create binding to current instance event handler
         this._handleKeyDown = (e) => {
-            e.preventDefault(); // 防止按键滚动页面
+            e.preventDefault(); // Prevent key scrolling
             
-            // 如果当前有问题正在显示，忽略移动
+            // If current question is active, ignore move
             if (this.isQuestionActive) {
                 return;
             }
             
-            // 检查是否在冷却时间内
+            // Check if in cooldown time
             const currentTime = Date.now();
             if (currentTime - this.lastMoveTime < MOVE_COOLDOWN) {
-                return; // 如果在冷却时间内,忽略这次按键
+                return; // If in cooldown time, ignore this key press
             }
             
             console.log('Key pressed:', e.key); // Debug log
@@ -372,17 +374,17 @@ class MazeGame {
 
             if (dx !== 0 || dy !== 0) {
                 console.log('Moving:', {dx, dy}); // Debug log
-                this.lastMoveTime = currentTime; // 更新最后移动时间
+                this.lastMoveTime = currentTime; // Update last move time
                 this.tryMove(dx, dy);
             }
         };
 
-        // 添加新的事件监听器到document
+        // Add new event listener to document
         document.addEventListener('keydown', this._handleKeyDown);
 
-        // Touch/click controls也需要添加冷却时间
+        // Touch/click controls also need cooldown
         this.canvas.addEventListener('click', (e) => {
-            // 如果当前有问题正在显示，忽略点击
+            // If current question is active, ignore click
             if (this.isQuestionActive) {
                 return;
             }
@@ -416,23 +418,23 @@ class MazeGame {
         let touchStartY = 0;
         
         this.canvas.addEventListener('touchstart', (e) => {
-            // 如果当前有问题正在显示，忽略触摸
+            // If current question is active, ignore touch
             if (this.isQuestionActive) {
                 return;
             }
             
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
-            e.preventDefault(); // 防止页面滚动
+            e.preventDefault(); // Prevent page scrolling
         }, { passive: false });
 
         this.canvas.addEventListener('touchmove', (e) => {
-            // 防止页面滚动
+            // Prevent page scrolling
             e.preventDefault();
         }, { passive: false });
 
         this.canvas.addEventListener('touchend', (e) => {
-            // 如果当前有问题正在显示，忽略触摸
+            // If current question is active, ignore touch
             if (this.isQuestionActive) {
                 return;
             }
@@ -448,27 +450,27 @@ class MazeGame {
             const dx = touchEndX - touchStartX;
             const dy = touchEndY - touchStartY;
             
-            // 设置最小滑动距离阈值，防止误触
+            // Set minimum swipe distance threshold to prevent accidental touch
             const minSwipeDistance = 30;
             
-            // 只有当滑动距离超过阈值时才触发移动
+            // Only trigger move when swipe distance exceeds threshold
             if (Math.abs(dx) > minSwipeDistance || Math.abs(dy) > minSwipeDistance) {
-                // 确定主要的滑动方向
-            if (Math.abs(dx) > Math.abs(dy)) {
-                    // 水平滑动
+                // Determine primary swipe direction
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    // Horizontal swipe
                     this.lastMoveTime = currentTime;
-                this.tryMove(Math.sign(dx), 0);
-            } else {
-                    // 垂直滑动
+                    this.tryMove(Math.sign(dx), 0);
+                } else {
+                    // Vertical swipe
                     this.lastMoveTime = currentTime;
-                this.tryMove(0, Math.sign(dy));
+                    this.tryMove(0, Math.sign(dy));
                 }
             }
             
             e.preventDefault();
         }, { passive: false });
 
-        // 添加移动设备的视觉反馈
+        // Add mobile device visual feedback
         this.canvas.addEventListener('touchstart', (e) => {
             this.canvas.style.opacity = '0.7';
         });
@@ -477,7 +479,7 @@ class MazeGame {
             this.canvas.style.opacity = '1';
         });
 
-        // 添加移动设备的方向控制按钮
+        // Add mobile device direction control buttons
         if ('ontouchstart' in window) {
             const controlsContainer = document.createElement('div');
             controlsContainer.style.cssText = `
@@ -515,22 +517,22 @@ class MazeGame {
                 return button;
             };
 
-            // 创建方向按钮
+            // Create direction buttons
             const upButton = createButton('↑', 0, -1);
             const leftButton = createButton('←', -1, 0);
             const downButton = createButton('↓', 0, 1);
             const rightButton = createButton('→', 1, 0);
 
-            // 布局方向按钮
-            controlsContainer.appendChild(document.createElement('div')); // 空白格
+            // Layout direction buttons
+            controlsContainer.appendChild(document.createElement('div')); // Blank space
             controlsContainer.appendChild(upButton);
-            controlsContainer.appendChild(document.createElement('div')); // 空白格
+            controlsContainer.appendChild(document.createElement('div')); // Blank space
             controlsContainer.appendChild(leftButton);
-            controlsContainer.appendChild(document.createElement('div')); // 空白格
+            controlsContainer.appendChild(document.createElement('div')); // Blank space
             controlsContainer.appendChild(rightButton);
-            controlsContainer.appendChild(document.createElement('div')); // 空白格
+            controlsContainer.appendChild(document.createElement('div')); // Blank space
             controlsContainer.appendChild(downButton);
-            controlsContainer.appendChild(document.createElement('div')); // 空白格
+            controlsContainer.appendChild(document.createElement('div')); // Blank space
 
             document.body.appendChild(controlsContainer);
         }
@@ -550,7 +552,7 @@ class MazeGame {
     }
 
     tryMove(dx, dy) {
-        // 如果当前有问题正在显示，不允许移动
+        // If current question is active, do not move
         if (this.isQuestionActive) {
             return;
         }
@@ -566,13 +568,13 @@ class MazeGame {
             
             console.log('Valid move, getting question...'); // Debug log
             
-            // 设置问题锁定状态
+            // Set question lock state
             this.isQuestionActive = true;
             
-            // 保存目标位置
+            // Save target position
             this._pendingMove = {x: newX, y: newY};
             
-            // 使用新的getRandomQuestion方法
+            // Use new getRandomQuestion method
             const currentQuestion = getRandomQuestion(this.difficulty);
             
             if (!currentQuestion) {
@@ -649,7 +651,7 @@ class MazeGame {
                     -webkit-tap-highlight-color: transparent;
                 `;
 
-                // 添加触摸反馈效果
+                // Add touch feedback effect
                 button.addEventListener('touchstart', () => {
                     button.style.background = '#e9ecef';
                 });
@@ -660,7 +662,7 @@ class MazeGame {
                 button.addEventListener('click', () => {
                     const isCorrect = index === currentQuestion.correctAnswer;
                     
-                    // 创建结果对话框
+                    // Create result dialog
                     const resultDialog = document.createElement('div');
                     resultDialog.style.cssText = dialog.style.cssText;
                     resultDialog.style.background = isCorrect ? '#e8f5e9' : '#ffebee';
@@ -673,7 +675,7 @@ class MazeGame {
                         text-align: center;
                         font-weight: bold;
                     `;
-                    resultText.textContent = isCorrect ? "正确!" : "错误!";
+                    resultText.textContent = isCorrect ? "Correct!" : "Incorrect!";
                     
                     const explanationText = document.createElement('p');
                     explanationText.style.cssText = `
@@ -685,7 +687,7 @@ class MazeGame {
                     explanationText.textContent = currentQuestion.explanation;
                     
                     const continueButton = document.createElement('button');
-                    continueButton.textContent = "继续";
+                    continueButton.textContent = "Continue";
                     continueButton.style.cssText = `
                         width: 100%;
                         padding: 12px;
@@ -701,45 +703,45 @@ class MazeGame {
                     
                     continueButton.addEventListener('click', () => {
                         resultDialog.remove();
-            if (isCorrect) {
-                            // 确保在状态更新之前更新位置
+                        if (isCorrect) {
+                            // Ensure position is updated before state update
                             const updatedX = newX;
                             const updatedY = newY;
                             
-                            // 立即更新位置
+                            // Immediately update position
                             this.playerX = updatedX;
                             this.playerY = updatedY;
                             
-                            // 强制重绘
+                            // Force redraw
                             this.draw();
                             
-                            // 更新其他状态
+                            // Update other state
                             this.stepsRemaining = this.calculateRemainingSteps();
-                        this.updateStepCounter();
+                            this.updateStepCounter();
                 
-                            // 检查是否到达终点
-                if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
+                            // Check if reached goal
+                            if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
                                 setTimeout(() => {
-                                    alert("恭喜你完成迷宫!");
-                    document.getElementById('newGameBtn').click();
+                                    alert("Congratulations! You completed the maze!");
+                                    document.getElementById('newGameBtn').click();
                                 }, 100);
-                }
-            } else {
-                if (this.playerX === 0 && this.playerY === 0) {
-                                alert("你在起点位置。再试一次!");
+                            }
+                        } else {
+                            if (this.playerX === 0 && this.playerY === 0) {
+                                alert("You're at the starting point. Try again!");
                                 this.draw();
-                } else {
-                    const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
-                    if (nearestDeadEnd) {
-                        this.playerX = nearestDeadEnd.x;
-                        this.playerY = nearestDeadEnd.y;
+                            } else {
+                                const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
+                                if (nearestDeadEnd) {
+                                    this.playerX = nearestDeadEnd.x;
+                                    this.playerY = nearestDeadEnd.y;
                                     this.stepsRemaining = this.calculateRemainingSteps();
-                        this.updateStepCounter();
+                                    this.updateStepCounter();
                                     this.draw();
                                 }
                             }
                         }
-                        // 重置问题锁定状态
+                        // Reset question lock state
                         this.isQuestionActive = false;
                     });
                     
@@ -1091,22 +1093,22 @@ class MazeGame {
     }
 
     getRandomQuestion() {
-        // 过滤掉已回答的问题
+        // Filter out answered questions
         const availableQuestions = this.allQuestions.filter(q => 
             !this.answeredQuestions.has(q.question)
         );
 
-        // 如果所有问题都回答过了，重置已回答问题集合
+        // If all questions are answered, reset answered questions set
         if (availableQuestions.length === 0) {
             this.answeredQuestions.clear();
             return this.getRandomQuestion();
         }
 
-        // 随机选择一个未回答的问题
+        // Randomly select an unanswered question
         const randomIndex = Math.floor(Math.random() * availableQuestions.length);
         const question = availableQuestions[randomIndex];
         
-        // 将问题标记为已回答
+        // Mark question as answered
         this.answeredQuestions.add(question.question);
         
         return question;
@@ -1135,7 +1137,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.removeEventListener('keydown', currentGame._handleKeyDown);
             }
             currentGame = new MazeGame(difficulty);
-            currentGame.setupEventListeners(); // 确保设置事件监听器
+            currentGame.setupEventListeners(); // Ensure setting event listeners
         }
 
         // Add click event listeners to difficulty buttons
