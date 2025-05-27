@@ -382,7 +382,7 @@ class MazeGame {
 
         // Touch/click controls也需要添加冷却时间
         this.canvas.addEventListener('click', (e) => {
-            // 如果当前有问题正在显示，忽略点击
+            // If there's an active question, ignore clicks
             if (this.isQuestionActive) {
                 return;
             }
@@ -404,35 +404,42 @@ class MazeGame {
             const dx = Math.sign(cellX - this.playerX);
             const dy = Math.sign(cellY - this.playerY);
             
-            // Only move if clicked adjacent cell
-            if (Math.abs(dx) + Math.abs(dy) === 1) {
+            // Only move if clicked adjacent cell and it's not a wall
+            if (Math.abs(dx) + Math.abs(dy) === 1 && 
+                cellX >= 0 && cellX < this.size && 
+                cellY >= 0 && cellY < this.size && 
+                this.maze[cellY][cellX] !== WALL) {
                 this.lastMoveTime = currentTime;
                 this.tryMove(dx, dy);
             }
         });
 
-        // Add touch controls with cooldown
+        // Add touch controls
         let touchStartX = 0;
         let touchStartY = 0;
         
         this.canvas.addEventListener('touchstart', (e) => {
-            // 如果当前有问题正在显示，忽略触摸
+            // If there's an active question, ignore touches
             if (this.isQuestionActive) {
                 return;
             }
             
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            e.preventDefault(); // 防止页面滚动
-        }, { passive: false });
-
-        this.canvas.addEventListener('touchmove', (e) => {
-            // 防止页面滚动
+            const rect = this.canvas.getBoundingClientRect();
+            touchStartX = e.touches[0].clientX - rect.left;
+            touchStartY = e.touches[0].clientY - rect.top;
+            
+            // Calculate cell coordinates
+            const cellX = Math.floor(touchStartX / this.cellSize);
+            const cellY = Math.floor(touchStartY / this.cellSize);
+            
+            // Highlight touched cell for visual feedback
+            this.highlightCell(cellX, cellY);
+            
             e.preventDefault();
         }, { passive: false });
 
         this.canvas.addEventListener('touchend', (e) => {
-            // 如果当前有问题正在显示，忽略触摸
+            // If there's an active question, ignore touches
             if (this.isQuestionActive) {
                 return;
             }
@@ -442,98 +449,54 @@ class MazeGame {
                 return;
             }
             
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
+            const rect = this.canvas.getBoundingClientRect();
+            const touchEndX = e.changedTouches[0].clientX - rect.left;
+            const touchEndY = e.changedTouches[0].clientY - rect.top;
             
-            const dx = touchEndX - touchStartX;
-            const dy = touchEndY - touchStartY;
+            // Calculate cell coordinates
+            const cellX = Math.floor(touchEndX / this.cellSize);
+            const cellY = Math.floor(touchEndY / this.cellSize);
             
-            // 设置最小滑动距离阈值，防止误触
-            const minSwipeDistance = 30;
+            // Calculate direction based on touched cell relative to player
+            const dx = Math.sign(cellX - this.playerX);
+            const dy = Math.sign(cellY - this.playerY);
             
-            // 只有当滑动距离超过阈值时才触发移动
-            if (Math.abs(dx) > minSwipeDistance || Math.abs(dy) > minSwipeDistance) {
-                // 确定主要的滑动方向
-            if (Math.abs(dx) > Math.abs(dy)) {
-                    // 水平滑动
-                    this.lastMoveTime = currentTime;
-                this.tryMove(Math.sign(dx), 0);
-            } else {
-                    // 垂直滑动
-                    this.lastMoveTime = currentTime;
-                this.tryMove(0, Math.sign(dy));
-                }
+            // Only move if touched adjacent cell and it's not a wall
+            if (Math.abs(dx) + Math.abs(dy) === 1 && 
+                cellX >= 0 && cellX < this.size && 
+                cellY >= 0 && cellY < this.size && 
+                this.maze[cellY][cellX] !== WALL) {
+                this.lastMoveTime = currentTime;
+                this.tryMove(dx, dy);
             }
+            
+            // Remove cell highlight
+            this.draw();
             
             e.preventDefault();
         }, { passive: false });
 
-        // 添加移动设备的视觉反馈
-        this.canvas.addEventListener('touchstart', (e) => {
-            this.canvas.style.opacity = '0.7';
-        });
-
-        this.canvas.addEventListener('touchend', (e) => {
-            this.canvas.style.opacity = '1';
-        });
-
-        // 添加移动设备的方向控制按钮
-        if ('ontouchstart' in window) {
-            const controlsContainer = document.createElement('div');
-            controlsContainer.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
-                z-index: 1000;
-            `;
-
-            const createButton = (text, dx, dy) => {
-                const button = document.createElement('button');
-                button.textContent = text;
-                button.style.cssText = `
-                    padding: 15px;
-                    background: rgba(255, 255, 255, 0.8);
-                    border: 1px solid #ccc;
-                    border-radius: 5px;
-                    font-size: 20px;
-                    touch-action: manipulation;
-                `;
-                button.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    if (!this.isQuestionActive) {
-                        const currentTime = Date.now();
-                        if (currentTime - this.lastMoveTime >= MOVE_COOLDOWN) {
-                            this.lastMoveTime = currentTime;
-                            this.tryMove(dx, dy);
-                        }
-                    }
-                });
-                return button;
-            };
-
-            // 创建方向按钮
-            const upButton = createButton('↑', 0, -1);
-            const leftButton = createButton('←', -1, 0);
-            const downButton = createButton('↓', 0, 1);
-            const rightButton = createButton('→', 1, 0);
-
-            // 布局方向按钮
-            controlsContainer.appendChild(document.createElement('div')); // 空白格
-            controlsContainer.appendChild(upButton);
-            controlsContainer.appendChild(document.createElement('div')); // 空白格
-            controlsContainer.appendChild(leftButton);
-            controlsContainer.appendChild(document.createElement('div')); // 空白格
-            controlsContainer.appendChild(rightButton);
-            controlsContainer.appendChild(document.createElement('div')); // 空白格
-            controlsContainer.appendChild(downButton);
-            controlsContainer.appendChild(document.createElement('div')); // 空白格
-
-            document.body.appendChild(controlsContainer);
-        }
+        // Add method to highlight cell
+        this.highlightCell = (cellX, cellY) => {
+            if (cellX >= 0 && cellX < this.size && 
+                cellY >= 0 && cellY < this.size && 
+                this.maze[cellY][cellX] !== WALL) {
+                // Save current state
+                const originalFillStyle = this.ctx.fillStyle;
+                
+                // Draw highlight
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.fillRect(
+                    cellX * this.cellSize,
+                    cellY * this.cellSize,
+                    this.cellSize,
+                    this.cellSize
+                );
+                
+                // Restore state
+                this.ctx.fillStyle = originalFillStyle;
+            }
+        };
 
         // Add regenerate maze button listener
         const regenerateBtn = document.getElementById('regenerateMazeBtn');
