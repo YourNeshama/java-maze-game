@@ -550,7 +550,7 @@ class MazeGame {
     }
 
     tryMove(dx, dy) {
-        // 如果当前有问题正在显示，不允许移动
+        // If there's an active question, don't allow movement
         if (this.isQuestionActive) {
             return;
         }
@@ -566,13 +566,13 @@ class MazeGame {
             
             console.log('Valid move, getting question...'); // Debug log
             
-            // 设置问题锁定状态
+            // Set question lock state
             this.isQuestionActive = true;
             
-            // 保存目标位置
+            // Save target position
             this._pendingMove = {x: newX, y: newY};
             
-            // 使用新的getRandomQuestion方法
+            // Get a random question
             const currentQuestion = getRandomQuestion(this.difficulty);
             
             if (!currentQuestion) {
@@ -673,7 +673,7 @@ class MazeGame {
                         text-align: center;
                         font-weight: bold;
                     `;
-                    resultText.textContent = isCorrect ? "正确!" : "错误!";
+                    resultText.textContent = isCorrect ? "Correct!" : "Wrong!";
                     
                     const explanationText = document.createElement('p');
                     explanationText.style.cssText = `
@@ -685,7 +685,7 @@ class MazeGame {
                     explanationText.textContent = currentQuestion.explanation;
                     
                     const continueButton = document.createElement('button');
-                    continueButton.textContent = "继续";
+                    continueButton.textContent = "Continue";
                     continueButton.style.cssText = `
                         width: 100%;
                         padding: 12px;
@@ -701,45 +701,45 @@ class MazeGame {
                     
                     continueButton.addEventListener('click', () => {
                         resultDialog.remove();
-            if (isCorrect) {
-                            // 确保在状态更新之前更新位置
+                        if (isCorrect) {
+                            // Update position immediately
                             const updatedX = newX;
                             const updatedY = newY;
                             
-                            // 立即更新位置
+                            // Update player position
                             this.playerX = updatedX;
                             this.playerY = updatedY;
                             
-                            // 强制重绘
+                            // Force redraw
                             this.draw();
                             
-                            // 更新其他状态
+                            // Update other states
                             this.stepsRemaining = this.calculateRemainingSteps();
-                        this.updateStepCounter();
-                
-                            // 检查是否到达终点
-                if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
+                            this.updateStepCounter();
+                            
+                            // Check if reached the goal
+                            if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
                                 setTimeout(() => {
-                                    alert("恭喜你完成迷宫!");
-                    document.getElementById('newGameBtn').click();
+                                    alert("Congratulations! You've completed the maze!");
+                                    document.getElementById('newGameBtn').click();
                                 }, 100);
-                }
-            } else {
-                if (this.playerX === 0 && this.playerY === 0) {
-                                alert("你在起点位置。再试一次!");
+                            }
+                        } else {
+                            if (this.playerX === 0 && this.playerY === 0) {
+                                alert("You're at the starting point. Try again!");
                                 this.draw();
-                } else {
-                    const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
-                    if (nearestDeadEnd) {
-                        this.playerX = nearestDeadEnd.x;
-                        this.playerY = nearestDeadEnd.y;
+                            } else {
+                                const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
+                                if (nearestDeadEnd) {
+                                    this.playerX = nearestDeadEnd.x;
+                                    this.playerY = nearestDeadEnd.y;
                                     this.stepsRemaining = this.calculateRemainingSteps();
-                        this.updateStepCounter();
+                                    this.updateStepCounter();
                                     this.draw();
                                 }
                             }
                         }
-                        // 重置问题锁定状态
+                        // Reset question lock state
                         this.isQuestionActive = false;
                     });
                     
