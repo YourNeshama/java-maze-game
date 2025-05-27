@@ -1,8 +1,33 @@
-# Compiled class file
-*.class
+# IDE files
+.idea/
+.vscode/
+*.iml
 
-# Log file
+# Compiled files
+*.class
+target/
+build/
+out/
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Logs
 *.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node modules if any
+node_modules/
 
 # BlueJ files
 *.ctxt
@@ -11,10 +36,6 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
-*.war
-*.nar
-*.ear
 *.zip
 *.tar.gz
 *.rar
@@ -23,14 +44,10 @@
 hs_err_pid*
 replay_pid*
 
-# IDE specific files
-.idea/
-.vscode/
-*.iml
+# Project files
 .project
 .classpath
 .settings/
 
 # OS specific files
-.DS_Store
 Thumbs.db 

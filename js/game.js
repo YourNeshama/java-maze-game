@@ -125,7 +125,7 @@ class MazeGame {
 
     generateMaze(x, y) {
         this.maze[y][x] = PATH;
-        
+
         // Define possible directions
         const directions = [
             [0, -2], // Up
@@ -133,18 +133,18 @@ class MazeGame {
             [0, 2],  // Down
             [-2, 0]  // Left
         ];
-        
+
         // Shuffle directions
         for (let i = directions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [directions[i], directions[j]] = [directions[j], directions[i]];
         }
-        
+
         // Try each direction
         for (const [dx, dy] of directions) {
             const newX = x + dx;
             const newY = y + dy;
-            
+
             if (newX >= 0 && newX < this.size && 
                 newY >= 0 && newY < this.size && 
                 this.maze[newY][newX] === WALL) {
@@ -265,7 +265,7 @@ class MazeGame {
 
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
+
         // Draw maze
         for (let y = 0; y < this.size; y++) {
             for (let x = 0; x < this.size; x++) {
@@ -274,7 +274,7 @@ class MazeGame {
                 if (cell === WALL) {
                     this.ctx.fillStyle = '#666';
                 } else if (cell === PATH) {
-                    this.ctx.fillStyle = '#fff';
+                        this.ctx.fillStyle = '#fff';
                 } else if (cell === CORRECT_PATH) {
                     this.ctx.fillStyle = '#afa';
                 } else if (cell === DEAD_END) {
@@ -313,12 +313,10 @@ class MazeGame {
         
         // Draw goal as a square
         this.ctx.fillStyle = '#0f0';
-        this.ctx.fillRect(
-            (this.size - 1) * this.cellSize,
-            (this.size - 1) * this.cellSize,
-            this.cellSize,
-            this.cellSize
-        );
+        const goalSize = this.cellSize * 0.8; // Make the square slightly smaller than the cell
+        const goalX = (this.size - 1) * this.cellSize + (this.cellSize - goalSize) / 2;
+        const goalY = (this.size - 1) * this.cellSize + (this.cellSize - goalSize) / 2;
+        this.ctx.fillRect(goalX, goalY, goalSize, goalSize);
     }
 
     setupEventListeners() {
@@ -425,6 +423,11 @@ class MazeGame {
             
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
+            e.preventDefault(); // 防止页面滚动
+        }, { passive: false });
+
+        this.canvas.addEventListener('touchmove', (e) => {
+            // 防止页面滚动
             e.preventDefault();
         }, { passive: false });
 
@@ -445,19 +448,92 @@ class MazeGame {
             const dx = touchEndX - touchStartX;
             const dy = touchEndY - touchStartY;
             
-            // Determine swipe direction
+            // 设置最小滑动距离阈值，防止误触
+            const minSwipeDistance = 30;
+            
+            // 只有当滑动距离超过阈值时才触发移动
+            if (Math.abs(dx) > minSwipeDistance || Math.abs(dy) > minSwipeDistance) {
+                // 确定主要的滑动方向
             if (Math.abs(dx) > Math.abs(dy)) {
-                // Horizontal swipe
-                this.lastMoveTime = currentTime;
+                    // 水平滑动
+                    this.lastMoveTime = currentTime;
                 this.tryMove(Math.sign(dx), 0);
             } else {
-                // Vertical swipe
-                this.lastMoveTime = currentTime;
+                    // 垂直滑动
+                    this.lastMoveTime = currentTime;
                 this.tryMove(0, Math.sign(dy));
+                }
             }
             
             e.preventDefault();
         }, { passive: false });
+
+        // 添加移动设备的视觉反馈
+        this.canvas.addEventListener('touchstart', (e) => {
+            this.canvas.style.opacity = '0.7';
+        });
+
+        this.canvas.addEventListener('touchend', (e) => {
+            this.canvas.style.opacity = '1';
+        });
+
+        // 添加移动设备的方向控制按钮
+        if ('ontouchstart' in window) {
+            const controlsContainer = document.createElement('div');
+            controlsContainer.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                z-index: 1000;
+            `;
+
+            const createButton = (text, dx, dy) => {
+                const button = document.createElement('button');
+                button.textContent = text;
+                button.style.cssText = `
+                    padding: 15px;
+                    background: rgba(255, 255, 255, 0.8);
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    font-size: 20px;
+                    touch-action: manipulation;
+                `;
+                button.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (!this.isQuestionActive) {
+                        const currentTime = Date.now();
+                        if (currentTime - this.lastMoveTime >= MOVE_COOLDOWN) {
+                            this.lastMoveTime = currentTime;
+                            this.tryMove(dx, dy);
+                        }
+                    }
+                });
+                return button;
+            };
+
+            // 创建方向按钮
+            const upButton = createButton('↑', 0, -1);
+            const leftButton = createButton('←', -1, 0);
+            const downButton = createButton('↓', 0, 1);
+            const rightButton = createButton('→', 1, 0);
+
+            // 布局方向按钮
+            controlsContainer.appendChild(document.createElement('div')); // 空白格
+            controlsContainer.appendChild(upButton);
+            controlsContainer.appendChild(document.createElement('div')); // 空白格
+            controlsContainer.appendChild(leftButton);
+            controlsContainer.appendChild(document.createElement('div')); // 空白格
+            controlsContainer.appendChild(rightButton);
+            controlsContainer.appendChild(document.createElement('div')); // 空白格
+            controlsContainer.appendChild(downButton);
+            controlsContainer.appendChild(document.createElement('div')); // 空白格
+
+            document.body.appendChild(controlsContainer);
+        }
 
         // Add regenerate maze button listener
         const regenerateBtn = document.getElementById('regenerateMazeBtn');
@@ -493,6 +569,9 @@ class MazeGame {
             // 设置问题锁定状态
             this.isQuestionActive = true;
             
+            // 保存目标位置
+            this._pendingMove = {x: newX, y: newY};
+            
             // 使用新的getRandomQuestion方法
             const currentQuestion = getRandomQuestion(this.difficulty);
             
@@ -519,7 +598,10 @@ class MazeGame {
                 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                 z-index: 1000;
                 max-width: 90%;
-                width: 500px;
+                width: ${window.innerWidth > 768 ? '500px' : '85%'};
+                max-height: 80vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
                 font-family: Arial, sans-serif;
             `;
 
@@ -529,7 +611,7 @@ class MazeGame {
             questionText.style.cssText = `
                 margin-bottom: 20px;
                 white-space: pre-wrap;
-                font-size: 16px;
+                font-size: ${window.innerWidth > 768 ? '16px' : '14px'};
                 line-height: 1.5;
                 color: #333;
             `;
@@ -540,7 +622,8 @@ class MazeGame {
             optionsContainer.style.cssText = `
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
+                gap: ${window.innerWidth > 768 ? '10px' : '15px'};
+                margin-bottom: 15px;
                 color: #333;
             `;
 
@@ -549,75 +632,125 @@ class MazeGame {
                 const button = document.createElement('button');
                 button.textContent = `${index + 1}) ${option}`;
                 button.style.cssText = `
-                    padding: 10px 15px;
+                    padding: ${window.innerWidth > 768 ? '10px 15px' : '15px'};
                     border: 1px solid #ddd;
-                    border-radius: 4px;
+                    border-radius: 8px;
                     background: #f8f9fa;
                     cursor: pointer;
                     text-align: left;
-                    font-size: 14px;
+                    font-size: ${window.innerWidth > 768 ? '14px' : '16px'};
                     transition: all 0.2s;
                     width: 100%;
                     color: #333;
+                    min-height: ${window.innerWidth > 768 ? '44px' : '48px'};
+                    display: flex;
+                    align-items: center;
+                    touch-action: manipulation;
+                    -webkit-tap-highlight-color: transparent;
                 `;
-                button.addEventListener('mouseover', () => {
+
+                // 添加触摸反馈效果
+                button.addEventListener('touchstart', () => {
                     button.style.background = '#e9ecef';
                 });
-                button.addEventListener('mouseout', () => {
+                button.addEventListener('touchend', () => {
                     button.style.background = '#f8f9fa';
                 });
+
                 button.addEventListener('click', () => {
                     const isCorrect = index === currentQuestion.correctAnswer;
-                    dialog.remove();
                     
-                    if (isCorrect) {
-                        alert("Correct! " + currentQuestion.explanation);
-                        // Move to the new position
-                        this.playerX = newX;
-                        this.playerY = newY;
-                        // Calculate remaining steps to goal
-                        this.stepsRemaining = this.calculateRemainingSteps();
-                        this.updateStepCounter();
-                        
-                        // Check if player has reached the end
-                        if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
-                            alert("Congratulations! You've completed the maze!");
-                            document.getElementById('newGameBtn').click();
-                        }
-                        this.draw();
-                        // 重置问题锁定状态
-                        this.isQuestionActive = false;
-                    } else {
-                        alert("Wrong! " + currentQuestion.explanation);
-                        if (this.playerX === 0 && this.playerY === 0) {
-                            // If at starting point, stay there
-                            alert("You're at the starting point. Try again!");
+                    // 创建结果对话框
+                    const resultDialog = document.createElement('div');
+                    resultDialog.style.cssText = dialog.style.cssText;
+                    resultDialog.style.background = isCorrect ? '#e8f5e9' : '#ffebee';
+                    
+                    const resultText = document.createElement('p');
+                    resultText.style.cssText = `
+                        margin-bottom: 20px;
+                        font-size: ${window.innerWidth > 768 ? '16px' : '14px'};
+                        color: ${isCorrect ? '#2e7d32' : '#c62828'};
+                        text-align: center;
+                        font-weight: bold;
+                    `;
+                    resultText.textContent = isCorrect ? "正确!" : "错误!";
+                    
+                    const explanationText = document.createElement('p');
+                    explanationText.style.cssText = `
+                        margin-bottom: 20px;
+                        font-size: ${window.innerWidth > 768 ? '14px' : '13px'};
+                        color: #333;
+                        line-height: 1.5;
+                    `;
+                    explanationText.textContent = currentQuestion.explanation;
+                    
+                    const continueButton = document.createElement('button');
+                    continueButton.textContent = "继续";
+                    continueButton.style.cssText = `
+                        width: 100%;
+                        padding: 12px;
+                        background: ${isCorrect ? '#4caf50' : '#f44336'};
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        cursor: pointer;
+                        touch-action: manipulation;
+                        -webkit-tap-highlight-color: transparent;
+                    `;
+                    
+                    continueButton.addEventListener('click', () => {
+                        resultDialog.remove();
+            if (isCorrect) {
+                            // 确保在状态更新之前更新位置
+                            const updatedX = newX;
+                            const updatedY = newY;
+                            
+                            // 立即更新位置
+                            this.playerX = updatedX;
+                            this.playerY = updatedY;
+                            
+                            // 强制重绘
                             this.draw();
-                            // 重置问题锁定状态
-                            this.isQuestionActive = false;
-                        } else {
-                            // Otherwise teleport to nearest dead end
-                            alert("Teleporting to nearest dead end!");
-                            const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
-                            if (nearestDeadEnd) {
-                                // Add a delay before teleporting to prevent immediate new question
+                            
+                            // 更新其他状态
+                            this.stepsRemaining = this.calculateRemainingSteps();
+                        this.updateStepCounter();
+                
+                            // 检查是否到达终点
+                if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
                                 setTimeout(() => {
-                                    this.playerX = nearestDeadEnd.x;
-                                    this.playerY = nearestDeadEnd.y;
-                                    // Recalculate remaining steps after teleporting
+                                    alert("恭喜你完成迷宫!");
+                    document.getElementById('newGameBtn').click();
+                                }, 100);
+                }
+            } else {
+                if (this.playerX === 0 && this.playerY === 0) {
+                                alert("你在起点位置。再试一次!");
+                                this.draw();
+                } else {
+                    const nearestDeadEnd = this.findNearestDeadEnd(this.playerX, this.playerY);
+                    if (nearestDeadEnd) {
+                        this.playerX = nearestDeadEnd.x;
+                        this.playerY = nearestDeadEnd.y;
                                     this.stepsRemaining = this.calculateRemainingSteps();
-                                    this.updateStepCounter();
+                        this.updateStepCounter();
                                     this.draw();
-                                    // 重置问题锁定状态
-                                    this.isQuestionActive = false;
-                                }, 500); // 500ms delay
-                            } else {
-                                // 如果找不到死胡同，也要重置问题锁定状态
-                                this.isQuestionActive = false;
+                                }
                             }
                         }
-                    }
+                        // 重置问题锁定状态
+                        this.isQuestionActive = false;
+                    });
+                    
+                    resultDialog.appendChild(resultText);
+                    resultDialog.appendChild(explanationText);
+                    resultDialog.appendChild(continueButton);
+                    
+                    dialog.remove();
+                    document.body.appendChild(resultDialog);
                 });
+                
                 optionsContainer.appendChild(button);
             });
 
@@ -1037,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Could not find required DOM elements');
     }
-});
+}); 
 
 function showQuestion(question) {
     if (!question) return;
