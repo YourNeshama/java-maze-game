@@ -84,6 +84,22 @@
             color: #333;
             margin: 10px 0;
         }
+        #coinCounter {
+            font-size: 18px;
+            color: #FFD700;
+            margin: 10px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        #coinTip {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0;
+            font-style: italic;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 5px 10px;
+            border-radius: 10px;
+            border-left: 3px solid #FFD700;
+        }
         button {
             margin: 10px;
             padding: 10px 20px;
@@ -121,14 +137,181 @@
         #github-link:hover {
             background-color: #f0f0f0;
         }
+        #totalCoins {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            padding: 15px 25px;
+            border-radius: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 2px solid #DAA520;
+        }
+        .coin-icon {
+            font-size: 24px;
+            animation: coinSpin 2s linear infinite;
+        }
+        @keyframes coinSpin {
+            0%, 100% { transform: rotateY(0deg); }
+            50% { transform: rotateY(180deg); }
+        }
+        #totalCoinCount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #8B4513;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .total-label {
+            font-size: 14px;
+            color: #8B4513;
+            font-weight: 600;
+        }
+        #resetCoinsBtn {
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid #DAA520;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 10px;
+        }
+        #resetCoinsBtn:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: rotate(90deg);
+        }
+        #help-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1002;
+        }
+        #help-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(33, 150, 243, 0.5);
+        }
+        /* Help Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1003;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+        }
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .help-section {
+            margin-bottom: 20px;
+        }
+        .help-section h3 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .help-section p {
+            color: #666;
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+        .email-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .email-btn:hover {
+            background-color: #1976D2;
+        }
     </style>
 </head>
 <body>
     <a id="github-link" href="https://github.com/YourNeshama/java-maze-game" target="_blank">View on GitHub</a>
     
+    <button id="help-btn" title="Report Bug / Contact Developer">💬</button>
+    
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>💬 Contact Developer</h2>
+            
+            <div class="help-section">
+                <h3>🐛 Found a Bug?</h3>
+                <p>If you've encountered any issues while playing the game, please let me know!</p>
+                <button id="emailBtn" class="email-btn">📧 Send Bug Report</button>
+            </div>
+            
+            <div class="help-section">
+                <h3>💡 Suggestions & Feedback</h3>
+                <p>Have ideas for new features or improvements? I'd love to hear from you!</p>
+                <button id="feedbackBtn" class="email-btn">💭 Send Feedback</button>
+            </div>
+            
+            <div class="help-section">
+                <h3>📝 What to Include</h3>
+                <p>• Describe what happened</p>
+                <p>• What you expected to happen</p>
+                <p>• Steps to reproduce the issue</p>
+                <p>• Your browser and device info</p>
+                <p>• Screenshots if helpful</p>
+            </div>
+            
+            <div class="help-section">
+                <h3>🔗 Other Ways to Contact</h3>
+                <p>You can also create an issue on the <a href="https://github.com/YourNeshama/java-maze-game/issues" target="_blank">GitHub repository</a></p>
+            </div>
+        </div>
+    </div>
+    
     <div id="startScreen">
         <div id="startContent">
             <h1>Java Learning Maze Game</h1>
+            <div id="totalCoins">
+                <span class="coin-icon">🪙</span>
+                <span id="totalCoinCount">0</span>
+                <span class="total-label">Total Coins Earned</span>
+                <button id="resetCoinsBtn" title="Reset total coins">🔄</button>
+            </div>
             <p>Test your Java knowledge while solving a maze!</p>
             <p>Select your difficulty level to start:</p>
             <div>
@@ -150,6 +333,8 @@
         <h1>Java Learning Maze Game</h1>
         <div id="gameStats">
             <div id="questionCounter">Questions Remaining: 5</div>
+            <div id="coinCounter">Coins: 0</div>
+            <div id="coinTip">💡 Tip: Spend 5 coins to avoid going back on wrong answers!</div>
         </div>
         <canvas id="mazeCanvas"></canvas>
         <br>
@@ -157,6 +342,6 @@
         <button id="newGameBtn">New Game</button>
     </div>
 
-    <script src="js/game.js"></script>
+    <script src="game.js"></script>
 </body>
 </html> 
