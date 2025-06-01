@@ -94,18 +94,59 @@ class MazeGame {
     }
 
     initializeQuestions() {
-        return [
-            new Question("What is the main entry point method in Java?", "public static void main(String[] args)", "The main method is the entry point of a Java program"),
-            new Question("What keyword is used to create a class in Java?", "class", "The class keyword defines a new class"),
-            new Question("What is the primitive data type for whole numbers in Java?", "int", "int is used for integer values"),
-            new Question("What keyword is used to create an object?", "new", "The new keyword instantiates objects"),
-            new Question("What is the parent class of all classes in Java?", "Object", "Object is the root class"),
-            new Question("What keyword is used for inheritance?", "extends", "extends is used to inherit from a class"),
-            new Question("What access modifier makes a member visible only within its class?", "private", "private restricts access"),
-            new Question("What keyword is used to define a constant?", "final", "final makes variables unchangeable"),
-            new Question("What is the correct way to declare a string?", "String", "String is a class in Java"),
-            new Question("What keyword is used to handle exceptions?", "try", "try begins exception handling")
-        ];
+        // Get all available questions from question bank
+        const allQuestions = this.getAvailableGameQuestions();
+        
+        // Convert to Question objects for the game
+        return allQuestions.map(q => new Question(q.question, q.answer, q.explanation));
+    }
+
+    getAvailableGameQuestions() {
+        const defaultQuestions = getDefaultQuestions();
+        const customQuestions = getCustomQuestions();
+        const disabledQuestions = JSON.parse(localStorage.getItem('javaMazeDisabledQuestions') || '[]');
+        
+        // Filter out disabled default questions
+        const enabledDefaultQuestions = defaultQuestions.filter(q => !disabledQuestions.includes(q.id));
+        
+        // Combine enabled default questions with all custom questions
+        const allQuestions = [...enabledDefaultQuestions, ...customQuestions];
+        
+        // Filter questions based on maze difficulty
+        let availableQuestions = allQuestions;
+        
+        // Add default difficulty to custom questions if not set
+        const questionsWithDifficulty = allQuestions.map(q => ({
+            ...q,
+            difficulty: q.difficulty || 'easy'
+        }));
+        
+        switch(this.difficulty) {
+            case 'easy':
+                availableQuestions = questionsWithDifficulty.filter(q => q.difficulty === 'easy');
+                break;
+            case 'medium':
+                availableQuestions = questionsWithDifficulty.filter(q => 
+                    q.difficulty === 'easy' || q.difficulty === 'medium'
+                );
+                break;
+            case 'hard':
+                availableQuestions = questionsWithDifficulty; // All difficulties
+                break;
+            default:
+                availableQuestions = questionsWithDifficulty.filter(q => q.difficulty === 'easy');
+        }
+        
+        // Ensure we have enough questions for the game
+        if (availableQuestions.length === 0) {
+            console.warn(`No questions available for ${this.difficulty} difficulty. Using easy questions as fallback.`);
+            availableQuestions = questionsWithDifficulty.filter(q => q.difficulty === 'easy');
+        }
+        
+        console.log(`Selected ${availableQuestions.length} questions for ${this.difficulty} difficulty:`, 
+                   availableQuestions.map(q => `${q.difficulty}: ${q.question.substring(0, 50)}...`));
+        
+        return availableQuestions;
     }
 
     initializeDeadEndQuestions() {
@@ -517,6 +558,9 @@ window.onload = () => {
 
     // Initialize total coins display
     updateTotalCoinsDisplay();
+    
+    // Initialize question bank
+    initializeQuestionBank();
 
     // Help modal functionality
     const helpBtn = document.getElementById('help-btn');
@@ -539,6 +583,132 @@ window.onload = () => {
             helpModal.style.display = 'none';
         }
     });
+
+    // Question Bank modal functionality
+    const questionBankBtn = document.getElementById('questionBankBtn');
+    const questionBankModal = document.getElementById('questionBankModal');
+    const questionBankClose = document.getElementsByClassName('question-bank-close')[0];
+
+    questionBankBtn.addEventListener('click', () => {
+        console.log('Question Bank button clicked');
+        questionBankModal.style.display = 'block';
+        loadQuestionBank();
+    });
+
+    questionBankClose.addEventListener('click', () => {
+        console.log('Question Bank close button clicked');
+        questionBankModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === questionBankModal) {
+            console.log('Question Bank modal background clicked');
+            questionBankModal.style.display = 'none';
+        }
+    });
+
+    // Question Bank tabs functionality
+    const viewQuestionsTab = document.getElementById('viewQuestionsTab');
+    const addQuestionTab = document.getElementById('addQuestionTab');
+    const viewQuestionsContent = document.getElementById('viewQuestionsContent');
+    const addQuestionContent = document.getElementById('addQuestionContent');
+
+    viewQuestionsTab.addEventListener('click', () => {
+        switchTab('view');
+    });
+
+    addQuestionTab.addEventListener('click', () => {
+        switchTab('add');
+    });
+
+    function switchTab(tab) {
+        if (tab === 'view') {
+            viewQuestionsTab.classList.add('active');
+            addQuestionTab.classList.remove('active');
+            viewQuestionsContent.classList.add('active');
+            addQuestionContent.classList.remove('active');
+            loadQuestionBank();
+        } else {
+            viewQuestionsTab.classList.remove('active');
+            addQuestionTab.classList.add('active');
+            viewQuestionsContent.classList.remove('active');
+            addQuestionContent.classList.add('active');
+        }
+    }
+
+    // Question filter functionality
+    const showAllBtn = document.getElementById('showAllBtn');
+    const showDefaultBtn = document.getElementById('showDefaultBtn');
+    const showCustomBtn = document.getElementById('showCustomBtn');
+    
+    // Difficulty filter functionality
+    const showAllDiffBtn = document.getElementById('showAllDiffBtn');
+    const showEasyBtn = document.getElementById('showEasyBtn');
+    const showMediumBtn = document.getElementById('showMediumBtn');
+    const showHardBtn = document.getElementById('showHardBtn');
+
+    showAllBtn.addEventListener('click', () => filterQuestions('all', currentDifficultyFilter));
+    showDefaultBtn.addEventListener('click', () => filterQuestions('default', currentDifficultyFilter));
+    showCustomBtn.addEventListener('click', () => filterQuestions('custom', currentDifficultyFilter));
+    
+    showAllDiffBtn.addEventListener('click', () => filterQuestions(currentTypeFilter, 'all'));
+    showEasyBtn.addEventListener('click', () => filterQuestions(currentTypeFilter, 'easy'));
+    showMediumBtn.addEventListener('click', () => filterQuestions(currentTypeFilter, 'medium'));
+    showHardBtn.addEventListener('click', () => filterQuestions(currentTypeFilter, 'hard'));
+
+    // Current filter state
+    let currentTypeFilter = 'all';
+    let currentDifficultyFilter = 'all';
+
+    function filterQuestions(typeFilter, difficultyFilter) {
+        currentTypeFilter = typeFilter;
+        currentDifficultyFilter = difficultyFilter;
+        
+        // Update type filter button states
+        document.querySelectorAll('.filter-btn:not(.difficulty-filter)').forEach(btn => btn.classList.remove('active'));
+        if (typeFilter === 'all') showAllBtn.classList.add('active');
+        else if (typeFilter === 'default') showDefaultBtn.classList.add('active');
+        else if (typeFilter === 'custom') showCustomBtn.classList.add('active');
+        
+        // Update difficulty filter button states
+        document.querySelectorAll('.difficulty-filter').forEach(btn => btn.classList.remove('active'));
+        if (difficultyFilter === 'all') showAllDiffBtn.classList.add('active');
+        else if (difficultyFilter === 'easy') showEasyBtn.classList.add('active');
+        else if (difficultyFilter === 'medium') showMediumBtn.classList.add('active');
+        else if (difficultyFilter === 'hard') showHardBtn.classList.add('active');
+        
+        // Filter and display questions
+        displayQuestions(typeFilter, difficultyFilter);
+    }
+
+    // Add question form functionality
+    const addQuestionForm = document.getElementById('addQuestionForm');
+    const clearFormBtn = document.getElementById('clearFormBtn');
+
+    addQuestionForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        addCustomQuestion();
+    });
+
+    clearFormBtn.addEventListener('click', () => {
+        clearQuestionForm();
+    });
+
+    // Make switchTab globally accessible
+    window.switchTab = function(tab) {
+        if (tab === 'view') {
+            viewQuestionsTab.classList.add('active');
+            addQuestionTab.classList.remove('active');
+            viewQuestionsContent.classList.add('active');
+            addQuestionContent.classList.remove('active');
+            loadQuestionBank();
+        } else {
+            viewQuestionsTab.classList.remove('active');
+            addQuestionTab.classList.add('active');
+            viewQuestionsContent.classList.remove('active');
+            addQuestionContent.classList.add('active');
+        }
+    };
 
     // Email functionality - attach event listeners after DOM is ready
     const emailBtn = document.getElementById('emailBtn');
@@ -664,4 +834,437 @@ function updateTotalCoinsDisplay() {
     if (totalCoinsElement) {
         totalCoinsElement.textContent = getTotalCoins();
     }
+}
+
+// Question Bank Management System
+function initializeQuestionBank() {
+    // Initialize custom questions in localStorage if not exists
+    if (!localStorage.getItem('javaMazeCustomQuestions')) {
+        localStorage.setItem('javaMazeCustomQuestions', JSON.stringify([]));
+    }
+}
+
+function getCustomQuestions() {
+    return JSON.parse(localStorage.getItem('javaMazeCustomQuestions') || '[]');
+}
+
+function saveCustomQuestions(questions) {
+    localStorage.setItem('javaMazeCustomQuestions', JSON.stringify(questions));
+}
+
+function getDefaultQuestions() {
+    return [
+        // EASY LEVEL QUESTIONS
+        {
+            id: 'default_1',
+            question: "What keyword is used to create a class in Java?",
+            answer: "class",
+            explanation: "The class keyword defines a new class",
+            type: 'default',
+            difficulty: 'easy'
+        },
+        {
+            id: 'default_2',
+            question: "What is the primitive data type for whole numbers in Java?",
+            answer: "int",
+            explanation: "int is used for integer values",
+            type: 'default',
+            difficulty: 'easy'
+        },
+        {
+            id: 'default_3',
+            question: "What keyword is used to create an object?",
+            answer: "new",
+            explanation: "The new keyword instantiates objects",
+            type: 'default',
+            difficulty: 'easy'
+        },
+        {
+            id: 'default_4',
+            question: "What is the correct way to declare a string?",
+            answer: "String",
+            explanation: "String is a class in Java",
+            type: 'default',
+            difficulty: 'easy'
+        },
+        {
+            id: 'default_5',
+            question: "What does 'public' mean in Java?",
+            answer: "public",
+            explanation: "public means accessible from anywhere",
+            type: 'default',
+            difficulty: 'easy'
+        },
+        {
+            id: 'default_6',
+            question: "What symbol is used to end a statement in Java?",
+            answer: ";",
+            explanation: "Semicolon (;) ends statements in Java",
+            type: 'default',
+            difficulty: 'easy'
+        },
+        
+        // MEDIUM LEVEL QUESTIONS
+        {
+            id: 'default_7',
+            question: "What is the main entry point method in Java?",
+            answer: "public static void main(String[] args)",
+            explanation: "The main method is the entry point of a Java program",
+            type: 'default',
+            difficulty: 'medium'
+        },
+        {
+            id: 'default_8',
+            question: "What is the parent class of all classes in Java?",
+            answer: "Object",
+            explanation: "Object is the root class",
+            type: 'default',
+            difficulty: 'medium'
+        },
+        {
+            id: 'default_9',
+            question: "What keyword is used for inheritance?",
+            answer: "extends",
+            explanation: "extends is used to inherit from a class",
+            type: 'default',
+            difficulty: 'medium'
+        },
+        {
+            id: 'default_10',
+            question: "What access modifier makes a member visible only within its class?",
+            answer: "private",
+            explanation: "private restricts access",
+            type: 'default',
+            difficulty: 'medium'
+        },
+        {
+            id: 'default_11',
+            question: "What keyword is used to define a constant?",
+            answer: "final",
+            explanation: "final makes variables unchangeable",
+            type: 'default',
+            difficulty: 'medium'
+        },
+        {
+            id: 'default_12',
+            question: "What keyword is used to handle exceptions?",
+            answer: "try",
+            explanation: "try begins exception handling",
+            type: 'default',
+            difficulty: 'medium'
+        },
+        {
+            id: 'default_13',
+            question: "What is method overloading?",
+            answer: "same method name with different parameters",
+            explanation: "Method overloading allows multiple methods with same name but different signatures",
+            type: 'default',
+            difficulty: 'medium'
+        },
+        
+        // HARD LEVEL QUESTIONS
+        {
+            id: 'default_14',
+            question: "What is the difference between abstract class and interface?",
+            answer: "abstract class can have implementation, interface cannot",
+            explanation: "Abstract classes can have concrete methods, interfaces only have abstract methods (before Java 8)",
+            type: 'default',
+            difficulty: 'hard'
+        },
+        {
+            id: 'default_15',
+            question: "What is a lambda expression in Java?",
+            answer: "anonymous function",
+            explanation: "Lambda expressions provide a concise way to represent anonymous functions",
+            type: 'default',
+            difficulty: 'hard'
+        },
+        {
+            id: 'default_16',
+            question: "What is the difference between == and .equals()?",
+            answer: "== compares references, .equals() compares values",
+            explanation: "== checks if two references point to same object, .equals() checks logical equality",
+            type: 'default',
+            difficulty: 'hard'
+        },
+        {
+            id: 'default_17',
+            question: "What is generics in Java?",
+            answer: "type parameters for classes and methods",
+            explanation: "Generics enable types to be parameters when defining classes, interfaces and methods",
+            type: 'default',
+            difficulty: 'hard'
+        },
+        {
+            id: 'default_18',
+            question: "What is the purpose of synchronized keyword?",
+            answer: "thread synchronization",
+            explanation: "synchronized ensures that only one thread can access a method or block at a time",
+            type: 'default',
+            difficulty: 'hard'
+        },
+        {
+            id: 'default_19',
+            question: "What is dependency injection?",
+            answer: "providing dependencies from external source",
+            explanation: "Dependency injection is a technique for providing object dependencies rather than creating them internally",
+            type: 'default',
+            difficulty: 'hard'
+        }
+    ];
+}
+
+function getAllQuestions() {
+    const defaultQuestions = getDefaultQuestions();
+    const customQuestions = getCustomQuestions().map(q => ({...q, type: 'custom'}));
+    return [...defaultQuestions, ...customQuestions];
+}
+
+function loadQuestionBank() {
+    currentTypeFilter = 'all';
+    currentDifficultyFilter = 'all';
+    displayQuestions('all', 'all');
+    updateQuestionStats();
+    
+    // Reset filter button states
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('showAllBtn').classList.add('active');
+    document.getElementById('showAllDiffBtn').classList.add('active');
+}
+
+function updateQuestionStats() {
+    const defaultQuestions = getDefaultQuestions();
+    const customQuestions = getCustomQuestions();
+    
+    // Count by difficulty
+    const easyCount = [...defaultQuestions, ...customQuestions].filter(q => (q.difficulty || 'easy') === 'easy').length;
+    const mediumCount = [...defaultQuestions, ...customQuestions].filter(q => q.difficulty === 'medium').length;
+    const hardCount = [...defaultQuestions, ...customQuestions].filter(q => q.difficulty === 'hard').length;
+    
+    const defaultCount = defaultQuestions.length;
+    const customCount = customQuestions.length;
+    const totalCount = defaultCount + customCount;
+    
+    const questionsList = document.getElementById('questionsList');
+    const statsHtml = `
+        <div class="stats-bar">
+            <span class="stats-item">📊 Total: ${totalCount}</span>
+            <span class="stats-item">🔧 Default: ${defaultCount}</span>
+            <span class="stats-item">👤 Custom: ${customCount}</span>
+            <span class="stats-item">🟢 Easy: ${easyCount}</span>
+            <span class="stats-item">🟡 Medium: ${mediumCount}</span>
+            <span class="stats-item">🔴 Hard: ${hardCount}</span>
+        </div>
+    `;
+    
+    questionsList.innerHTML = statsHtml + questionsList.innerHTML;
+}
+
+function displayQuestions(typeFilter = 'all', difficultyFilter = 'all') {
+    const questionsList = document.getElementById('questionsList');
+    const allQuestions = getAllQuestions();
+    
+    let filteredQuestions = allQuestions;
+    
+    // Filter by type
+    if (typeFilter === 'default') {
+        filteredQuestions = filteredQuestions.filter(q => q.type === 'default');
+    } else if (typeFilter === 'custom') {
+        filteredQuestions = filteredQuestions.filter(q => q.type === 'custom');
+    }
+    
+    // Filter by difficulty
+    if (difficultyFilter !== 'all') {
+        filteredQuestions = filteredQuestions.filter(q => q.difficulty === difficultyFilter);
+    }
+    
+    if (filteredQuestions.length === 0) {
+        questionsList.innerHTML = `
+            <div class="empty-state">
+                ${typeFilter === 'custom' ? 
+                    '📝 No custom questions yet. Click "➕ Add Question" to create your first one!' : 
+                    'No questions found for the selected filters.'}
+            </div>
+        `;
+        return;
+    }
+    
+    const questionsHtml = filteredQuestions.map(q => `
+        <div class="question-item ${q.type}" data-id="${q.id}">
+            <div class="question-text">${q.question}</div>
+            <div class="question-answer"><strong>Answer:</strong> ${q.answer}</div>
+            <div class="question-explanation"><strong>Explanation:</strong> ${q.explanation || 'No explanation provided'}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <div>
+                    <span class="question-type ${q.type}">${q.type}</span>
+                    <span class="question-difficulty ${q.difficulty || 'easy'}">${getDifficultyIcon(q.difficulty)} ${q.difficulty || 'easy'}</span>
+                </div>
+                <div class="question-actions">
+                    ${q.type === 'custom' ? `
+                        <button class="edit-btn" onclick="editQuestion('${q.id}')">✏️ Edit</button>
+                        <button class="delete-btn" onclick="deleteQuestion('${q.id}')">🗑️ Delete</button>
+                    ` : `
+                        <button class="delete-btn" onclick="deleteDefaultQuestion('${q.id}')">🚫 Remove</button>
+                    `}
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    questionsList.innerHTML = questionsHtml;
+    updateQuestionStats();
+}
+
+function getDifficultyIcon(difficulty) {
+    switch(difficulty) {
+        case 'easy': return '🟢';
+        case 'medium': return '🟡';
+        case 'hard': return '🔴';
+        default: return '🟢';
+    }
+}
+
+function addCustomQuestion() {
+    const questionText = document.getElementById('newQuestion').value.trim();
+    const answerText = document.getElementById('newAnswer').value.trim();
+    const explanationText = document.getElementById('newExplanation').value.trim();
+    const difficultyLevel = document.getElementById('newDifficulty').value;
+    
+    if (!questionText || !answerText || !difficultyLevel) {
+        alert('Please fill in question, answer, and difficulty level!');
+        return;
+    }
+    
+    const customQuestions = getCustomQuestions();
+    const newQuestion = {
+        id: 'custom_' + Date.now(),
+        question: questionText,
+        answer: answerText,
+        explanation: explanationText || 'No explanation provided',
+        difficulty: difficultyLevel,
+        type: 'custom'
+    };
+    
+    customQuestions.push(newQuestion);
+    saveCustomQuestions(customQuestions);
+    
+    // Clear form and switch to view tab
+    clearQuestionForm();
+    switchTab('view');
+    loadQuestionBank();
+    
+    alert(`✅ ${getDifficultyIcon(difficultyLevel)} ${difficultyLevel.toUpperCase()} question added successfully!`);
+}
+
+function editQuestion(questionId) {
+    const customQuestions = getCustomQuestions();
+    const question = customQuestions.find(q => q.id === questionId);
+    
+    if (!question) {
+        alert('Question not found!');
+        return;
+    }
+    
+    // Fill form with question data
+    document.getElementById('newQuestion').value = question.question;
+    document.getElementById('newAnswer').value = question.answer;
+    document.getElementById('newExplanation').value = question.explanation;
+    document.getElementById('newDifficulty').value = question.difficulty || 'easy';
+    
+    // Switch to add tab and change button text
+    const switchTabFunction = () => switchTab('add');
+    switchTabFunction();
+    
+    // Change form to edit mode
+    const form = document.getElementById('addQuestionForm');
+    const submitBtn = form.querySelector('.submit-btn');
+    submitBtn.textContent = '💾 Update Question';
+    submitBtn.onclick = (e) => {
+        e.preventDefault();
+        updateQuestion(questionId);
+    };
+}
+
+function updateQuestion(questionId) {
+    const questionText = document.getElementById('newQuestion').value.trim();
+    const answerText = document.getElementById('newAnswer').value.trim();
+    const explanationText = document.getElementById('newExplanation').value.trim();
+    const difficultyLevel = document.getElementById('newDifficulty').value;
+    
+    if (!questionText || !answerText || !difficultyLevel) {
+        alert('Please fill in question, answer, and difficulty level!');
+        return;
+    }
+    
+    const customQuestions = getCustomQuestions();
+    const questionIndex = customQuestions.findIndex(q => q.id === questionId);
+    
+    if (questionIndex === -1) {
+        alert('Question not found!');
+        return;
+    }
+    
+    // Update the question
+    customQuestions[questionIndex] = {
+        ...customQuestions[questionIndex],
+        question: questionText,
+        answer: answerText,
+        explanation: explanationText || 'No explanation provided',
+        difficulty: difficultyLevel
+    };
+    
+    saveCustomQuestions(customQuestions);
+    
+    // Reset form
+    clearQuestionForm();
+    resetFormToAddMode();
+    switchTab('view');
+    loadQuestionBank();
+    
+    alert(`✅ ${getDifficultyIcon(difficultyLevel)} Question updated successfully!`);
+}
+
+function deleteQuestion(questionId) {
+    if (!confirm('Are you sure you want to delete this question?')) {
+        return;
+    }
+    
+    const customQuestions = getCustomQuestions();
+    const filteredQuestions = customQuestions.filter(q => q.id !== questionId);
+    
+    saveCustomQuestions(filteredQuestions);
+    loadQuestionBank();
+    
+    alert('🗑️ Question deleted successfully!');
+}
+
+function deleteDefaultQuestion(questionId) {
+    if (!confirm('Are you sure you want to remove this default question from the game? You can add it back by refreshing the page.')) {
+        return;
+    }
+    
+    // Add to a "disabled default questions" list
+    const disabledQuestions = JSON.parse(localStorage.getItem('javaMazeDisabledQuestions') || '[]');
+    if (!disabledQuestions.includes(questionId)) {
+        disabledQuestions.push(questionId);
+        localStorage.setItem('javaMazeDisabledQuestions', JSON.stringify(disabledQuestions));
+    }
+    
+    loadQuestionBank();
+    alert('🚫 Default question removed from game!');
+}
+
+function clearQuestionForm() {
+    document.getElementById('newQuestion').value = '';
+    document.getElementById('newAnswer').value = '';
+    document.getElementById('newExplanation').value = '';
+    document.getElementById('newDifficulty').value = '';
+    resetFormToAddMode();
+}
+
+function resetFormToAddMode() {
+    const form = document.getElementById('addQuestionForm');
+    const submitBtn = form.querySelector('.submit-btn');
+    submitBtn.textContent = '💾 Save Question';
+    submitBtn.onclick = null;
 } 
