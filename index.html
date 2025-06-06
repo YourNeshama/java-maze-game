@@ -882,6 +882,279 @@
             25% { transform: translateX(-5px); }
             75% { transform: translateX(5px); }
         }
+        
+        /* 小猪Q的样式 */
+        .pig-q-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            animation: pigFloat 3s ease-in-out infinite;
+        }
+        
+        .pig-q {
+            position: relative;
+            transform: scale(0.8);
+        }
+        
+        .pig-body {
+            position: relative;
+            width: 120px;
+            height: 140px;
+        }
+        
+        .pig-head {
+            position: absolute;
+            top: 0;
+            left: 10px;
+            width: 100px;
+            height: 90px;
+            background: linear-gradient(145deg, #ffb6c1, #ffc0cb);
+            border-radius: 50px;
+            border: 3px solid #ff69b4;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+        }
+        
+        .pig-ear {
+            position: absolute;
+            width: 25px;
+            height: 35px;
+            background: linear-gradient(145deg, #ff69b4, #ffb6c1);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            border: 2px solid #ff1493;
+        }
+        
+        .pig-ear-left {
+            top: -15px;
+            left: 15px;
+            transform: rotate(-30deg);
+            animation: earWiggle 2s ease-in-out infinite;
+        }
+        
+        .pig-ear-right {
+            top: -15px;
+            right: 15px;
+            transform: rotate(30deg);
+            animation: earWiggle 2s ease-in-out infinite 0.5s;
+        }
+        
+        .pig-ear::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 15px;
+            height: 20px;
+            background: #dc143c;
+            border-radius: 50%;
+        }
+        
+        .pig-eye {
+            position: absolute;
+            width: 20px;
+            height: 25px;
+            background: white;
+            border-radius: 50%;
+            border: 2px solid #333;
+            top: 25px;
+        }
+        
+        .pig-eye-left {
+            left: 20px;
+        }
+        
+        .pig-eye-right {
+            right: 20px;
+        }
+        
+        .pig-pupil {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 15px;
+            background: #8b0000;
+            border-radius: 50%;
+            animation: eyeBlink 4s ease-in-out infinite;
+        }
+        
+        .pig-snout {
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px;
+            height: 25px;
+            background: linear-gradient(145deg, #ff69b4, #dc143c);
+            border-radius: 50%;
+            border: 2px solid #8b0000;
+        }
+        
+        .pig-nostril {
+            position: absolute;
+            top: 8px;
+            width: 4px;
+            height: 6px;
+            background: #8b0000;
+            border-radius: 50%;
+        }
+        
+        .pig-nostril-left {
+            left: 8px;
+        }
+        
+        .pig-nostril-right {
+            right: 8px;
+        }
+        
+        .pig-mouth {
+            position: absolute;
+            top: 65px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 3px;
+            background: #333;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .pig-belly {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 50px;
+            background: linear-gradient(145deg, #ffffff, #f0f8ff);
+            border-radius: 50%;
+            border: 2px solid #ff69b4;
+        }
+        
+        .pig-arm {
+            position: absolute;
+            width: 20px;
+            height: 40px;
+            background: linear-gradient(145deg, #ffb6c1, #ffc0cb);
+            border-radius: 20px;
+            border: 2px solid #ff69b4;
+            top: 90px;
+        }
+        
+        .pig-arm-left {
+            left: 5px;
+            animation: armWave 2s ease-in-out infinite;
+        }
+        
+        .pig-arm-right {
+            right: 5px;
+            animation: armWave 2s ease-in-out infinite 1s;
+        }
+        
+        .pig-leg {
+            position: absolute;
+            width: 18px;
+            height: 25px;
+            background: linear-gradient(145deg, #ffb6c1, #ffc0cb);
+            border-radius: 15px;
+            border: 2px solid #ff69b4;
+            top: 120px;
+        }
+        
+        .pig-leg-left {
+            left: 25px;
+        }
+        
+        .pig-leg-right {
+            right: 25px;
+        }
+        
+        /* 对话气泡 */
+        .speech-bubble {
+            position: absolute;
+            top: -20px;
+            right: -180px;
+            width: 200px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #ff69b4;
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: bubbleBounce 2s ease-in-out infinite;
+        }
+        
+        .bubble-content {
+            color: #333;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .bubble-tail {
+            position: absolute;
+            bottom: -15px;
+            left: 30px;
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 15px solid #ff69b4;
+        }
+        
+        .bubble-tail::before {
+            content: '';
+            position: absolute;
+            top: -18px;
+            left: -12px;
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 12px solid rgba(255, 255, 255, 0.95);
+        }
+        
+        /* 小猪Q的动画 */
+        @keyframes pigFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes earWiggle {
+            0%, 100% { transform: rotate(-30deg); }
+            50% { transform: rotate(-20deg); }
+        }
+        
+        @keyframes eyeBlink {
+            0%, 90%, 100% { transform: translateX(-50%) scaleY(1); }
+            95% { transform: translateX(-50%) scaleY(0.1); }
+        }
+        
+        @keyframes armWave {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(15deg); }
+        }
+        
+        @keyframes bubbleBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .pig-q-container {
+                top: 10px;
+                left: 10px;
+                transform: scale(0.7);
+            }
+            
+            .speech-bubble {
+                width: 150px;
+                right: -120px;
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -955,22 +1228,58 @@
     </div>
 
     <!-- Story Introduction Screen -->
-    <div id="storyScreen" class="story-screen">
+    <div id="storyScreen" class="story-screen" style="display: none;">
         <div class="story-content">
+            <!-- 小猪Q角色 -->
+            <div class="pig-q-container">
+                <div class="pig-q">
+                    <div class="pig-body">
+                        <div class="pig-ear pig-ear-left"></div>
+                        <div class="pig-ear pig-ear-right"></div>
+                        <div class="pig-head">
+                            <div class="pig-eye pig-eye-left">
+                                <div class="pig-pupil"></div>
+                            </div>
+                            <div class="pig-eye pig-eye-right">
+                                <div class="pig-pupil"></div>
+                            </div>
+                            <div class="pig-snout">
+                                <div class="pig-nostril pig-nostril-left"></div>
+                                <div class="pig-nostril pig-nostril-right"></div>
+                            </div>
+                            <div class="pig-mouth"></div>
+                        </div>
+                        <div class="pig-belly"></div>
+                        <div class="pig-arm pig-arm-left"></div>
+                        <div class="pig-arm pig-arm-right"></div>
+                        <div class="pig-leg pig-leg-left"></div>
+                        <div class="pig-leg pig-leg-right"></div>
+                    </div>
+                </div>
+                
+                <!-- 对话气泡 -->
+                <div class="speech-bubble">
+                    <div class="bubble-content">
+                        <span id="pigSpeech">嗨！我是Q！欢迎来到代码迷宫...</span>
+                    </div>
+                    <div class="bubble-tail"></div>
+                </div>
+            </div>
+            
             <div class="story-text-container">
                 <div class="story-title">SYSTEM ERROR</div>
                 <div class="story-subtitle">CRITICAL LOGIC FAILURE DETECTED</div>
                 
                 <div class="story-text" id="storyText">
-                    <div class="story-line">You are a programmer trapped in a corrupted code maze...</div>
-                    <div class="story-line">The system's logic gates have malfunctioned.</div>
-                    <div class="story-line">Each pathway requires debugging to unlock.</div>
-                    <div class="story-line">Your Java knowledge is the only way out.</div>
-                    <div class="story-line">Fix the code. Escape the maze. Restore the system.</div>
+                    <div class="story-line">🐷 Q: "哎呀！看起来你被困在这个损坏的代码迷宫里了..."</div>
+                    <div class="story-line">🐷 Q: "这些逻辑门都出了故障，到处都是bug！"</div>
+                    <div class="story-line">🐷 Q: "每条路径都需要调试才能解锁。"</div>
+                    <div class="story-line">🐷 Q: "用你的Java知识来修复这些错误吧！"</div>
+                    <div class="story-line">🐷 Q: "修复代码，逃出迷宫，恢复系统！加油！"</div>
                 </div>
                 
                 <div class="story-prompt">
-                    <span class="blinking-cursor">Press SPACE to initialize debugging protocol...</span>
+                    <span class="blinking-cursor">🐷 Q: "按空格键开始调试程序..."</span>
                 </div>
             </div>
             

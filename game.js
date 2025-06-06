@@ -1424,6 +1424,9 @@ function showStoryScreen() {
     console.log('🌧️ STORY SCREEN - Starting code rain...');
     startCodeRain();
     
+    // Start pig Q dialogue sequence
+    startPigQDialogue();
+    
     // Play atmospheric sound
     soundEffects.systemHum();
     
@@ -1444,15 +1447,15 @@ function showStoryScreen() {
     
     console.log('👂 STORY SCREEN - Event listeners added');
     
-    // Auto-advance after 10 seconds if no interaction
+    // Auto-advance after 15 seconds if no interaction (increased for pig dialogue)
     setTimeout(() => {
         if (storyScreen.style.display !== 'none') {
-            console.log('⏰ STORY SCREEN - Auto-advancing after 10 seconds');
+            console.log('⏰ STORY SCREEN - Auto-advancing after 15 seconds');
             hideStoryScreen();
             document.removeEventListener('keydown', handleStorySkip);
             storyScreen.removeEventListener('click', handleStorySkip);
         }
-    }, 10000);
+    }, 15000);
     
     console.log('🎬 STORY SCREEN - Setup complete!');
 }
@@ -1564,4 +1567,47 @@ function handleQuestionAnswer(question, userAnswer) {
         showDebugPopup(`❌ SYNTAX ERROR: ${question.answer}`, 'error');
         soundEffects.wrongAnswer();
     }
+}
+
+// 小猪Q的对话系统
+function startPigQDialogue() {
+    const pigMessages = [
+        "嗨！我是Q！🐷",
+        "欢迎来到代码迷宫！",
+        "哎呀，这里到处都是bug...",
+        "不过别担心，我来帮你！",
+        "用你的Java知识逃出去吧！",
+        "准备好了吗？"
+    ];
+    
+    const pigSpeechElement = document.getElementById('pigSpeech');
+    let messageIndex = 0;
+    
+    function updatePigMessage() {
+        if (pigSpeechElement && messageIndex < pigMessages.length) {
+            pigSpeechElement.textContent = pigMessages[messageIndex];
+            
+            // 添加打字机效果
+            pigSpeechElement.style.opacity = '0';
+            setTimeout(() => {
+                pigSpeechElement.style.opacity = '1';
+            }, 100);
+            
+            messageIndex++;
+            
+            // 每2秒更换一次消息
+            if (messageIndex < pigMessages.length) {
+                setTimeout(updatePigMessage, 2000);
+            } else {
+                // 消息结束后，显示最终提示
+                setTimeout(() => {
+                    pigSpeechElement.textContent = "按空格键开始冒险！✨";
+                    pigSpeechElement.style.animation = 'bubbleBounce 1s ease-in-out infinite';
+                }, 1000);
+            }
+        }
+    }
+    
+    // 开始对话
+    setTimeout(updatePigMessage, 500);
 } 
