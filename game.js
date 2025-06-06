@@ -589,16 +589,30 @@ class MazeGame {
 
 // Game initialization
 window.onload = () => {
+    console.log('Window loaded - Initializing game...');
+    
     const startScreen = document.getElementById('startScreen');
     const storyScreen = document.getElementById('storyScreen');
     const gameContainer = document.getElementById('gameContainer');
     let currentGame = null;
 
+    console.log('Found elements:', {
+        startScreen: !!startScreen,
+        storyScreen: !!storyScreen,
+        gameContainer: !!gameContainer
+    });
+
     // Initialize audio system
     initializeAudioSystem();
     
-    // Show story screen first
-    showStoryScreen();
+    // Hide all screens initially
+    if (startScreen) startScreen.style.display = 'none';
+    if (gameContainer) gameContainer.style.display = 'none';
+    
+    // Show story screen first after a brief delay to ensure DOM is ready
+    setTimeout(() => {
+        showStoryScreen();
+    }, 100);
 
     // Initialize total coins display
     updateTotalCoinsDisplay();
@@ -1350,8 +1364,19 @@ function showStoryScreen() {
     const storyScreen = document.getElementById('storyScreen');
     const startScreen = document.getElementById('startScreen');
     
+    console.log('Showing story screen...');
+    console.log('Story screen element:', storyScreen);
+    console.log('Start screen element:', startScreen);
+    
+    if (!storyScreen) {
+        console.error('Story screen element not found!');
+        return;
+    }
+    
     storyScreen.style.display = 'flex';
     startScreen.style.display = 'none';
+    
+    console.log('Story screen display set to:', storyScreen.style.display);
     
     // Start code rain effect
     startCodeRain();
@@ -1361,48 +1386,46 @@ function showStoryScreen() {
     
     // Listen for space key or any key to continue
     const handleStorySkip = (event) => {
-        if (event.code === 'Space' || event.type === 'click') {
+        console.log('Key pressed:', event.key, event.code, event.type);
+        if (event.key === ' ' || event.code === 'Space' || event.type === 'click') {
+            console.log('Story screen dismissed by:', event.type === 'click' ? 'click' : 'space key');
             hideStoryScreen();
             document.removeEventListener('keydown', handleStorySkip);
             storyScreen.removeEventListener('click', handleStorySkip);
         }
     };
     
+    // Add event listeners
     document.addEventListener('keydown', handleStorySkip);
     storyScreen.addEventListener('click', handleStorySkip);
     
-    // Auto-advance after 8 seconds if no interaction
+    console.log('Event listeners added for story screen');
+    
+    // Auto-advance after 10 seconds if no interaction
     setTimeout(() => {
         if (storyScreen.style.display !== 'none') {
+            console.log('Auto-advancing story screen after 10 seconds');
             hideStoryScreen();
             document.removeEventListener('keydown', handleStorySkip);
             storyScreen.removeEventListener('click', handleStorySkip);
         }
-    }, 8000);
+    }, 10000);
 }
 
 function hideStoryScreen() {
     const storyScreen = document.getElementById('storyScreen');
     const startScreen = document.getElementById('startScreen');
     
-    // Fade out story screen
-    storyScreen.style.transition = 'opacity 1s ease-out';
-    storyScreen.style.opacity = '0';
+    console.log('Hiding story screen...');
     
-    setTimeout(() => {
-        storyScreen.style.display = 'none';
-        startScreen.style.display = 'flex';
-        startScreen.style.opacity = '0';
-        startScreen.style.transition = 'opacity 1s ease-in';
-        
-        // Fade in start screen
-        setTimeout(() => {
-            startScreen.style.opacity = '1';
-        }, 100);
-        
-        // Start background music
-        backgroundMusic.play();
-    }, 1000);
+    // Immediate transition for now (we can add fade later if needed)
+    storyScreen.style.display = 'none';
+    startScreen.style.display = 'flex';
+    
+    console.log('Start screen now visible');
+    
+    // Start background music
+    backgroundMusic.play();
 }
 
 function startCodeRain() {
