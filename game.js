@@ -589,28 +589,49 @@ class MazeGame {
 
 // Game initialization
 window.onload = () => {
-    console.log('Window loaded - Initializing game...');
+    console.log('🚀 GAME LOADING - Window loaded - Initializing game...');
     
     const startScreen = document.getElementById('startScreen');
     const storyScreen = document.getElementById('storyScreen');
     const gameContainer = document.getElementById('gameContainer');
     let currentGame = null;
 
-    console.log('Found elements:', {
+    console.log('🔍 Found elements:', {
         startScreen: !!startScreen,
         storyScreen: !!storyScreen,
         gameContainer: !!gameContainer
     });
 
+    // Test function - you can call this in console if needed
+    window.forceShowStory = () => {
+        console.log('🧪 FORCING STORY SCREEN...');
+        const story = document.getElementById('storyScreen');
+        if (story) {
+            story.style.display = 'flex';
+            story.style.zIndex = '9999';
+            console.log('✅ Story screen forced to display');
+        } else {
+            console.error('❌ Story screen not found!');
+        }
+    };
+
     // Initialize audio system
     initializeAudioSystem();
     
     // Hide all screens initially
-    if (startScreen) startScreen.style.display = 'none';
-    if (gameContainer) gameContainer.style.display = 'none';
+    if (startScreen) {
+        startScreen.style.display = 'none';
+        console.log('✅ Start screen hidden');
+    }
+    if (gameContainer) {
+        gameContainer.style.display = 'none';
+        console.log('✅ Game container hidden');
+    }
     
     // Show story screen first after a brief delay to ensure DOM is ready
+    console.log('⏰ Setting timeout to show story screen...');
     setTimeout(() => {
+        console.log('🎬 Timeout triggered - calling showStoryScreen()');
         showStoryScreen();
     }, 100);
 
@@ -1361,24 +1382,46 @@ function initializeAudioSystem() {
 }
 
 function showStoryScreen() {
+    console.log('🎬 STORY SCREEN - showStoryScreen() called');
+    
     const storyScreen = document.getElementById('storyScreen');
     const startScreen = document.getElementById('startScreen');
     
-    console.log('Showing story screen...');
-    console.log('Story screen element:', storyScreen);
-    console.log('Start screen element:', startScreen);
+    console.log('🔍 STORY SCREEN - Story screen element:', storyScreen);
+    console.log('🔍 STORY SCREEN - Start screen element:', startScreen);
     
     if (!storyScreen) {
-        console.error('Story screen element not found!');
+        console.error('❌ STORY SCREEN - Story screen element not found!');
+        console.log('🔧 STORY SCREEN - Available elements with id:', 
+            Array.from(document.querySelectorAll('[id]')).map(el => el.id));
         return;
     }
     
+    // Force display settings
     storyScreen.style.display = 'flex';
-    startScreen.style.display = 'none';
+    storyScreen.style.position = 'fixed';
+    storyScreen.style.top = '0';
+    storyScreen.style.left = '0';
+    storyScreen.style.width = '100%';
+    storyScreen.style.height = '100%';
+    storyScreen.style.zIndex = '9999';
+    storyScreen.style.background = 'linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e)';
     
-    console.log('Story screen display set to:', storyScreen.style.display);
+    if (startScreen) {
+        startScreen.style.display = 'none';
+    }
+    
+    console.log('✅ STORY SCREEN - Display set to:', storyScreen.style.display);
+    console.log('✅ STORY SCREEN - Z-index set to:', storyScreen.style.zIndex);
+    
+    // Verify it's actually visible
+    const computedStyle = window.getComputedStyle(storyScreen);
+    console.log('🔍 STORY SCREEN - Computed display:', computedStyle.display);
+    console.log('🔍 STORY SCREEN - Computed visibility:', computedStyle.visibility);
+    console.log('🔍 STORY SCREEN - Computed z-index:', computedStyle.zIndex);
     
     // Start code rain effect
+    console.log('🌧️ STORY SCREEN - Starting code rain...');
     startCodeRain();
     
     // Play atmospheric sound
@@ -1386,9 +1429,9 @@ function showStoryScreen() {
     
     // Listen for space key or any key to continue
     const handleStorySkip = (event) => {
-        console.log('Key pressed:', event.key, event.code, event.type);
+        console.log('⌨️ STORY SCREEN - Key pressed:', event.key, event.code, event.type);
         if (event.key === ' ' || event.code === 'Space' || event.type === 'click') {
-            console.log('Story screen dismissed by:', event.type === 'click' ? 'click' : 'space key');
+            console.log('✅ STORY SCREEN - Dismissed by:', event.type === 'click' ? 'click' : 'space key');
             hideStoryScreen();
             document.removeEventListener('keydown', handleStorySkip);
             storyScreen.removeEventListener('click', handleStorySkip);
@@ -1399,17 +1442,19 @@ function showStoryScreen() {
     document.addEventListener('keydown', handleStorySkip);
     storyScreen.addEventListener('click', handleStorySkip);
     
-    console.log('Event listeners added for story screen');
+    console.log('👂 STORY SCREEN - Event listeners added');
     
     // Auto-advance after 10 seconds if no interaction
     setTimeout(() => {
         if (storyScreen.style.display !== 'none') {
-            console.log('Auto-advancing story screen after 10 seconds');
+            console.log('⏰ STORY SCREEN - Auto-advancing after 10 seconds');
             hideStoryScreen();
             document.removeEventListener('keydown', handleStorySkip);
             storyScreen.removeEventListener('click', handleStorySkip);
         }
     }, 10000);
+    
+    console.log('🎬 STORY SCREEN - Setup complete!');
 }
 
 function hideStoryScreen() {
