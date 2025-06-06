@@ -886,15 +886,16 @@
         /* 小猪Q的样式 */
         .pig-q-container {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 50%;
+            right: -200px;
+            transform: translateY(-50%);
             z-index: 20;
             animation: pigFloat 3s ease-in-out infinite;
         }
         
         .pig-q {
             position: relative;
-            transform: scale(0.8);
+            transform: scale(1.2);
         }
         
         .pig-body {
@@ -1072,9 +1073,9 @@
         /* 对话气泡 */
         .speech-bubble {
             position: absolute;
-            top: -20px;
-            right: -180px;
-            width: 200px;
+            top: -80px;
+            left: -250px;
+            width: 220px;
             background: rgba(255, 255, 255, 0.95);
             border: 3px solid #ff69b4;
             border-radius: 20px;
@@ -1094,7 +1095,7 @@
         .bubble-tail {
             position: absolute;
             bottom: -15px;
-            left: 30px;
+            right: 40px;
             width: 0;
             height: 0;
             border-left: 15px solid transparent;
@@ -1116,8 +1117,8 @@
         
         /* 小猪Q的动画 */
         @keyframes pigFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+            0%, 100% { transform: translateY(-50%) translateX(0px); }
+            50% { transform: translateY(-50%) translateX(-10px); }
         }
         
         @keyframes earWiggle {
@@ -1143,14 +1144,19 @@
         /* 响应式调整 */
         @media (max-width: 768px) {
             .pig-q-container {
-                top: 10px;
-                left: 10px;
-                transform: scale(0.7);
+                top: 20px;
+                right: 20px;
+                transform: scale(0.8);
+            }
+            
+            .pig-q {
+                transform: scale(1.0);
             }
             
             .speech-bubble {
-                width: 150px;
-                right: -120px;
+                width: 180px;
+                left: -200px;
+                top: -60px;
                 font-size: 12px;
                 padding: 10px;
             }
@@ -1230,56 +1236,56 @@
     <!-- Story Introduction Screen -->
     <div id="storyScreen" class="story-screen" style="display: none;">
         <div class="story-content">
-            <!-- 小猪Q角色 -->
-            <div class="pig-q-container">
-                <div class="pig-q">
-                    <div class="pig-body">
-                        <div class="pig-ear pig-ear-left"></div>
-                        <div class="pig-ear pig-ear-right"></div>
-                        <div class="pig-head">
-                            <div class="pig-eye pig-eye-left">
-                                <div class="pig-pupil"></div>
-                            </div>
-                            <div class="pig-eye pig-eye-right">
-                                <div class="pig-pupil"></div>
-                            </div>
-                            <div class="pig-snout">
-                                <div class="pig-nostril pig-nostril-left"></div>
-                                <div class="pig-nostril pig-nostril-right"></div>
-                            </div>
-                            <div class="pig-mouth"></div>
-                        </div>
-                        <div class="pig-belly"></div>
-                        <div class="pig-arm pig-arm-left"></div>
-                        <div class="pig-arm pig-arm-right"></div>
-                        <div class="pig-leg pig-leg-left"></div>
-                        <div class="pig-leg pig-leg-right"></div>
-                    </div>
-                </div>
-                
-                <!-- 对话气泡 -->
-                <div class="speech-bubble">
-                    <div class="bubble-content">
-                        <span id="pigSpeech">嗨！我是Q！欢迎来到代码迷宫...</span>
-                    </div>
-                    <div class="bubble-tail"></div>
-                </div>
-            </div>
-            
             <div class="story-text-container">
                 <div class="story-title">SYSTEM ERROR</div>
                 <div class="story-subtitle">CRITICAL LOGIC FAILURE DETECTED</div>
                 
                 <div class="story-text" id="storyText">
-                    <div class="story-line">🐷 Q: "哎呀！看起来你被困在这个损坏的代码迷宫里了..."</div>
-                    <div class="story-line">🐷 Q: "这些逻辑门都出了故障，到处都是bug！"</div>
-                    <div class="story-line">🐷 Q: "每条路径都需要调试才能解锁。"</div>
-                    <div class="story-line">🐷 Q: "用你的Java知识来修复这些错误吧！"</div>
-                    <div class="story-line">🐷 Q: "修复代码，逃出迷宫，恢复系统！加油！"</div>
+                    <div class="story-line">You are a programmer trapped in a corrupted code maze...</div>
+                    <div class="story-line">The system's logic gates have malfunctioned.</div>
+                    <div class="story-line">Each pathway requires debugging to unlock.</div>
+                    <div class="story-line">Your Java knowledge is the only way out.</div>
+                    <div class="story-line">Fix the code. Escape the maze. Restore the system.</div>
                 </div>
                 
                 <div class="story-prompt">
-                    <span class="blinking-cursor">🐷 Q: "按空格键开始调试程序..."</span>
+                    <span class="blinking-cursor">Press SPACE to initialize debugging protocol...</span>
+                </div>
+                
+                <!-- 小猪Q角色 - 移到文本旁边 -->
+                <div class="pig-q-container">
+                    <div class="pig-q">
+                        <div class="pig-body">
+                            <div class="pig-ear pig-ear-left"></div>
+                            <div class="pig-ear pig-ear-right"></div>
+                            <div class="pig-head">
+                                <div class="pig-eye pig-eye-left">
+                                    <div class="pig-pupil"></div>
+                                </div>
+                                <div class="pig-eye pig-eye-right">
+                                    <div class="pig-pupil"></div>
+                                </div>
+                                <div class="pig-snout">
+                                    <div class="pig-nostril pig-nostril-left"></div>
+                                    <div class="pig-nostril pig-nostril-right"></div>
+                                </div>
+                                <div class="pig-mouth"></div>
+                            </div>
+                            <div class="pig-belly"></div>
+                            <div class="pig-arm pig-arm-left"></div>
+                            <div class="pig-arm pig-arm-right"></div>
+                            <div class="pig-leg pig-leg-left"></div>
+                            <div class="pig-leg pig-leg-right"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 对话气泡 -->
+                    <div class="speech-bubble">
+                        <div class="bubble-content">
+                            <span id="pigSpeech">Welcome! I'm Q, your guide through this digital nightmare...</span>
+                        </div>
+                        <div class="bubble-tail"></div>
+                    </div>
                 </div>
             </div>
             

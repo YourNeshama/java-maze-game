@@ -1430,20 +1430,37 @@ function showStoryScreen() {
     // Play atmospheric sound
     soundEffects.systemHum();
     
-    // Listen for space key or any key to continue
+    // Listen for space key, mouse clicks, and touch events to continue
     const handleStorySkip = (event) => {
-        console.log('⌨️ STORY SCREEN - Key pressed:', event.key, event.code, event.type);
-        if (event.key === ' ' || event.code === 'Space' || event.type === 'click') {
-            console.log('✅ STORY SCREEN - Dismissed by:', event.type === 'click' ? 'click' : 'space key');
+        console.log('⌨️ STORY SCREEN - Event triggered:', event.type, event.key || 'N/A', event.code || 'N/A');
+        
+        // Handle keyboard events
+        if (event.type === 'keydown' && (event.key === ' ' || event.code === 'Space')) {
+            console.log('✅ STORY SCREEN - Dismissed by space key');
             hideStoryScreen();
-            document.removeEventListener('keydown', handleStorySkip);
-            storyScreen.removeEventListener('click', handleStorySkip);
+            cleanup();
+            return;
+        }
+        
+        // Handle mouse clicks and touch events
+        if (event.type === 'click' || event.type === 'touchstart') {
+            console.log('✅ STORY SCREEN - Dismissed by', event.type);
+            hideStoryScreen();
+            cleanup();
+            return;
         }
     };
     
-    // Add event listeners
+    function cleanup() {
+        document.removeEventListener('keydown', handleStorySkip);
+        storyScreen.removeEventListener('click', handleStorySkip);
+        storyScreen.removeEventListener('touchstart', handleStorySkip);
+    }
+    
+    // Add event listeners for multiple input methods
     document.addEventListener('keydown', handleStorySkip);
     storyScreen.addEventListener('click', handleStorySkip);
+    storyScreen.addEventListener('touchstart', handleStorySkip);
     
     console.log('👂 STORY SCREEN - Event listeners added');
     
@@ -1452,8 +1469,7 @@ function showStoryScreen() {
         if (storyScreen.style.display !== 'none') {
             console.log('⏰ STORY SCREEN - Auto-advancing after 15 seconds');
             hideStoryScreen();
-            document.removeEventListener('keydown', handleStorySkip);
-            storyScreen.removeEventListener('click', handleStorySkip);
+            cleanup();
         }
     }, 15000);
     
@@ -1572,12 +1588,12 @@ function handleQuestionAnswer(question, userAnswer) {
 // 小猪Q的对话系统
 function startPigQDialogue() {
     const pigMessages = [
-        "嗨！我是Q！🐷",
-        "欢迎来到代码迷宫！",
-        "哎呀，这里到处都是bug...",
-        "不过别担心，我来帮你！",
-        "用你的Java知识逃出去吧！",
-        "准备好了吗？"
+        "Welcome! I'm Q, your narrator.",
+        "You've stumbled into a corrupted digital maze...",
+        "The code is broken, pathways are blocked.",
+        "Use your programming skills to debug your way out!",
+        "I'll be here to guide you through this nightmare.",
+        "Ready to start debugging?"
     ];
     
     const pigSpeechElement = document.getElementById('pigSpeech');
@@ -1601,7 +1617,7 @@ function startPigQDialogue() {
             } else {
                 // 消息结束后，显示最终提示
                 setTimeout(() => {
-                    pigSpeechElement.textContent = "按空格键开始冒险！✨";
+                    pigSpeechElement.textContent = "Press Space, click, or tap to begin!";
                     pigSpeechElement.style.animation = 'bubbleBounce 1s ease-in-out infinite';
                 }, 1000);
             }
