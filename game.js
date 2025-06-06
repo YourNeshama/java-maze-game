@@ -54,6 +54,9 @@ class MazeGame {
         this.cellSize = Math.min(40, 600 / this.size);
         this.canvas.width = this.size * this.cellSize;
         this.canvas.height = this.size * this.cellSize;
+        
+        // Add code-themed styling to canvas
+        this.canvas.classList.add('code-themed-canvas');
 
         // Initialize player position
         this.playerX = 0;
@@ -261,85 +264,15 @@ class MazeGame {
         const question = this.questions[questionIndex];
         this.questions.splice(questionIndex, 1);
         
-        const userAnswer = prompt(question.question);
-        
-        if (question.checkAnswer(userAnswer)) {
-            // CORRECT ANSWER - ALLOW MOVEMENT
-            console.log("CORRECT ANSWER - MOVING FORWARD");
-            alert('Correct! ' + question.explanation);
-            this.addCoins(COIN_REWARDS.CORRECT_ANSWER);
-            
-            this.playerX = newX;
-            this.playerY = newY;
-            this.maze[newY][newX] = CORRECT_PATH;
-            this.isFirstMove = false;
-            
-            // Update question counter based on new position
-            this.updateQuestionCounter();
-            
-            this.collectCoin(this.playerX, this.playerY);
-            this.checkExit();
-            this.draw();
-            
-        } else {
-            // WRONG ANSWER - OPTION TO SPEND COINS OR GO BACK
-            console.log("WRONG ANSWER - OFFERING COIN OPTION");
-            alert('Wrong! The correct answer is: ' + question.answer + '\n' + question.explanation);
-            this.handleWrongAnswer();
-            
-            const coinCost = COIN_COSTS.AVOID_DEAD_END;
-            let shouldGoBack = true;
-            
-            // Check if player has enough coins and offer the option
-            if (this.coins >= coinCost) {
-                const useCoins = confirm(
-                    `You answered incorrectly!\n\n` +
-                    `Option 1: Go back to start (free)\n` +
-                    `Option 2: Stay here and continue (costs ${coinCost} coins)\n\n` +
-                    `You currently have ${this.coins} coins.\n` +
-                    `Would you like to spend ${coinCost} coins to stay here?`
-                );
-                
-                if (useCoins) {
-                    // Player chooses to spend coins
-                    this.addCoins(-coinCost);
-                    shouldGoBack = false;
-                    alert(`You spent ${coinCost} coins to continue!\nRemaining coins: ${this.coins}`);
-                    console.log(`Player spent ${coinCost} coins to avoid going back`);
-                }
-            } else {
-                // Not enough coins
-                alert(`You don't have enough coins to stay here.\nYou need ${coinCost} coins but only have ${this.coins}.\nGoing back to start!`);
-            }
-            
-            if (shouldGoBack) {
-                // Send back to start
-                console.log(`Going back to start (0,0)`);
-                this.playerX = 0;
-                this.playerY = 0;
-                
-                // Update question counter based on new position
-                this.updateQuestionCounter();
-                
-                alert(`Sent back to start!`);
-                console.log(`Player position after wrong answer: (${this.playerX}, ${this.playerY})`);
-                
-                this.handleDeadEnd();
-            } else {
-                // Player stayed, update question counter for current position
-                this.updateQuestionCounter();
-            }
-            
-            this.draw();
-        }
-        
-        console.log(`=== FINAL POSITION: (${this.playerX}, ${this.playerY}) ===`);
+        // Use story-based question presentation
+        this.handleStoryQuestion(question, newX, newY);
     }
 
     checkExit() {
         if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
             // At exit - check if we need more questions
             if (this.remainingQuestions > 0) {
+                showDebugPopup('⚠️ SYSTEM INCOMPLETE - More debugging required!', 'error');
                 alert('You need to answer all questions before finishing! Questions remaining: ' + this.remainingQuestions);
                 // Send back to start (the only dead end)
                 this.playerX = 0;
@@ -348,13 +281,14 @@ class MazeGame {
             } else {
                 // Game completed - add coins to total
                 const newTotal = addToTotalCoins(this.coins);
-                alert(`Congratulations! You completed the maze!\nGame Score: ${this.coins} coins\nTotal Coins Earned: ${newTotal} coins`);
+                showDebugPopup('🎉 SYSTEM RESTORED - ESCAPE SUCCESSFUL!', 'success');
+                alert(`🎊 CONGRATULATIONS! SYSTEM FULLY DEBUGGED! 🎊\n\nYou've successfully escaped the corrupted code maze!\nGame Score: ${this.coins} coins\nTotal Coins Earned: ${newTotal} coins`);
                 
                 // Add completion bonus
                 const completionBonus = 50;
                 const finalTotal = addToTotalCoins(completionBonus);
                 setTimeout(() => {
-                    alert(`Completion Bonus: +${completionBonus} coins!\nYour new total: ${finalTotal} coins`);
+                    alert(`🚀 SYSTEM BONUS UNLOCKED: +${completionBonus} coins!\nYour new total: ${finalTotal} coins\n\nThe digital realm is safe once again!`);
                 }, 1000);
             }
         }
@@ -529,6 +463,11 @@ class MazeGame {
             this.coinPositions.delete(position);
             this.addCoins(COIN_REWARDS.COIN_PICKUP);
             this.maze[y][x] = PATH;
+            
+            // Play coin collection sound
+            soundEffects.coinCollect();
+            showDebugPopup('💰 Data token acquired!');
+            
             return true;
         }
         return false;
@@ -548,13 +487,118 @@ class MazeGame {
         this.addCoins(COIN_REWARDS.DEAD_END);
         this.inDeadEnd = true;
     }
+
+    handleStoryQuestion(question, newX, newY) {
+        const debugMessages = [
+            "🔍 Logic gate blocked - Debug required",
+            "⚠️ Syntax barrier detected - Fix to proceed", 
+            "🛠️ Code compilation failed - Resolve error",
+            "🔧 System malfunction - Apply knowledge patch",
+            "💻 Runtime exception - Debug to continue"
+        ];
+        
+        const randomMessage = debugMessages[Math.floor(Math.random() * debugMessages.length)];
+        showDebugPopup(randomMessage);
+        
+        soundEffects.debugMode();
+        
+        // After a brief delay, show the actual question
+        setTimeout(() => {
+            const userAnswer = prompt(`[DEBUG MODE ACTIVATED]\n\n${question.question}`);
+            this.handleQuestionAnswer(question, userAnswer, newX, newY);
+        }, 1500);
+    }
+
+    handleQuestionAnswer(question, userAnswer, newX, newY) {
+        if (question.checkAnswer(userAnswer)) {
+            // CORRECT ANSWER - ALLOW MOVEMENT
+            console.log("CORRECT ANSWER - MOVING FORWARD");
+            showDebugPopup('✅ CODE COMPILED SUCCESSFULLY!', 'success');
+            soundEffects.correctAnswer();
+            this.addCoins(COIN_REWARDS.CORRECT_ANSWER);
+            
+            this.playerX = newX;
+            this.playerY = newY;
+            this.maze[newY][newX] = CORRECT_PATH;
+            this.isFirstMove = false;
+            
+            // Update question counter based on new position
+            this.updateQuestionCounter();
+            
+            this.collectCoin(this.playerX, this.playerY);
+            this.checkExit();
+            this.draw();
+            
+        } else {
+            // WRONG ANSWER - OPTION TO SPEND COINS OR GO BACK
+            console.log("WRONG ANSWER - OFFERING COIN OPTION");
+            showDebugPopup(`❌ SYNTAX ERROR: ${question.answer}`, 'error');
+            soundEffects.wrongAnswer();
+            this.handleWrongAnswer();
+            
+            const coinCost = COIN_COSTS.AVOID_DEAD_END;
+            let shouldGoBack = true;
+            
+            // Check if player has enough coins and offer the option
+            if (this.coins >= coinCost) {
+                const useCoins = confirm(
+                    `⚠️ DEBUG PROTOCOL FAILED!\n\n` +
+                    `Option 1: Return to system start (free)\n` +
+                    `Option 2: Override with ${coinCost} data tokens\n\n` +
+                    `Current tokens: ${this.coins}\n` +
+                    `Execute override protocol?`
+                );
+                
+                if (useCoins) {
+                    // Player chooses to spend coins
+                    this.addCoins(-coinCost);
+                    shouldGoBack = false;
+                    showDebugPopup(`💰 Override successful! -${coinCost} tokens`);
+                    console.log(`Player spent ${coinCost} coins to avoid going back`);
+                }
+            } else {
+                // Not enough coins
+                showDebugPopup(`❌ Insufficient tokens for override!`, 'error');
+                alert(`💻 INSUFFICIENT DATA TOKENS!\nRequired: ${coinCost} tokens\nAvailable: ${this.coins}\nInitiating system reset...`);
+            }
+            
+            if (shouldGoBack) {
+                // Send back to start
+                console.log(`Going back to start (0,0)`);
+                this.playerX = 0;
+                this.playerY = 0;
+                
+                // Update question counter based on new position
+                this.updateQuestionCounter();
+                
+                showDebugPopup(`🔄 System reset - Returned to origin`);
+                console.log(`Player position after wrong answer: (${this.playerX}, ${this.playerY})`);
+                
+                this.handleDeadEnd();
+            } else {
+                // Player stayed, update question counter for current position
+                this.updateQuestionCounter();
+            }
+            
+            this.draw();
+        }
+        
+        console.log(`=== FINAL POSITION: (${this.playerX}, ${this.playerY}) ===`);
+    }
 }
 
 // Game initialization
 window.onload = () => {
     const startScreen = document.getElementById('startScreen');
+    const storyScreen = document.getElementById('storyScreen');
     const gameContainer = document.getElementById('gameContainer');
     let currentGame = null;
+
+    // Initialize audio system
+    initializeAudioSystem();
+    
+    // Show story screen first
+    showStoryScreen();
 
     // Initialize total coins display
     updateTotalCoinsDisplay();
@@ -1267,4 +1311,189 @@ function resetFormToAddMode() {
     const submitBtn = form.querySelector('.submit-btn');
     submitBtn.textContent = '💾 Save Question';
     submitBtn.onclick = null;
+}
+
+// Story and Atmospheric System
+let audioContext;
+let backgroundMusic;
+let soundEffects = {};
+
+function initializeAudioSystem() {
+    try {
+        // Note: In a real implementation, you would load actual audio files
+        // For this demo, we'll simulate the audio system
+        console.log('Audio system initialized - Ready for atmospheric sounds');
+        
+        // Simulate background music setup
+        backgroundMusic = {
+            play: () => console.log('🎵 Playing ambient electronic background music'),
+            pause: () => console.log('🎵 Pausing background music'),
+            volume: 0.3
+        };
+        
+        // Simulate sound effects
+        soundEffects = {
+            coinCollect: () => console.log('🔊 Data chirp - Coin collected'),
+            correctAnswer: () => console.log('🔊 Success chime - Code compiled successfully'),
+            wrongAnswer: () => console.log('🔊 Error beep - Syntax error detected'),
+            systemHum: () => console.log('🔊 Subtle system hum'),
+            debugMode: () => console.log('🔊 Debug mode activated'),
+            codeRain: () => console.log('🔊 Data stream flowing')
+        };
+        
+    } catch (error) {
+        console.log('Audio not available, running in silent mode');
+    }
+}
+
+function showStoryScreen() {
+    const storyScreen = document.getElementById('storyScreen');
+    const startScreen = document.getElementById('startScreen');
+    
+    storyScreen.style.display = 'flex';
+    startScreen.style.display = 'none';
+    
+    // Start code rain effect
+    startCodeRain();
+    
+    // Play atmospheric sound
+    soundEffects.systemHum();
+    
+    // Listen for space key or any key to continue
+    const handleStorySkip = (event) => {
+        if (event.code === 'Space' || event.type === 'click') {
+            hideStoryScreen();
+            document.removeEventListener('keydown', handleStorySkip);
+            storyScreen.removeEventListener('click', handleStorySkip);
+        }
+    };
+    
+    document.addEventListener('keydown', handleStorySkip);
+    storyScreen.addEventListener('click', handleStorySkip);
+    
+    // Auto-advance after 8 seconds if no interaction
+    setTimeout(() => {
+        if (storyScreen.style.display !== 'none') {
+            hideStoryScreen();
+            document.removeEventListener('keydown', handleStorySkip);
+            storyScreen.removeEventListener('click', handleStorySkip);
+        }
+    }, 8000);
+}
+
+function hideStoryScreen() {
+    const storyScreen = document.getElementById('storyScreen');
+    const startScreen = document.getElementById('startScreen');
+    
+    // Fade out story screen
+    storyScreen.style.transition = 'opacity 1s ease-out';
+    storyScreen.style.opacity = '0';
+    
+    setTimeout(() => {
+        storyScreen.style.display = 'none';
+        startScreen.style.display = 'flex';
+        startScreen.style.opacity = '0';
+        startScreen.style.transition = 'opacity 1s ease-in';
+        
+        // Fade in start screen
+        setTimeout(() => {
+            startScreen.style.opacity = '1';
+        }, 100);
+        
+        // Start background music
+        backgroundMusic.play();
+    }, 1000);
+}
+
+function startCodeRain() {
+    const codeRain = document.querySelector('.code-rain');
+    const codeSymbols = [
+        'class', 'public', 'private', 'void', 'int', 'String', 'new', 'if', 'else', 'for', 'while',
+        '{}', '();', '[]', '&&', '||', '==', '!=', '//', '/*', '*/', 'extends', 'implements',
+        'try', 'catch', 'throw', 'final', 'static', 'abstract', 'interface', 'package', 'import'
+    ];
+    
+    soundEffects.codeRain();
+    
+    function createCodeParticle() {
+        const particle = document.createElement('div');
+        particle.className = 'code-particle';
+        particle.textContent = codeSymbols[Math.floor(Math.random() * codeSymbols.length)];
+        
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        particle.style.opacity = Math.random() * 0.7 + 0.3;
+        particle.style.fontSize = (Math.random() * 8 + 10) + 'px';
+        
+        codeRain.appendChild(particle);
+        
+        // Remove particle after animation
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
+            }
+        }, 5000);
+    }
+    
+    // Create particles at intervals
+    const rainInterval = setInterval(() => {
+        if (document.getElementById('storyScreen').style.display !== 'none') {
+            createCodeParticle();
+        } else {
+            clearInterval(rainInterval);
+        }
+    }, 200);
+}
+
+function showDebugPopup(message, type = 'info') {
+    const popup = document.createElement('div');
+    popup.className = `debug-popup ${type === 'success' ? 'success-feedback' : type === 'error' ? 'error-feedback' : ''}`;
+    popup.textContent = message;
+    
+    document.body.appendChild(popup);
+    
+    // Remove popup after 3 seconds
+    setTimeout(() => {
+        if (popup.parentNode) {
+            popup.style.transition = 'opacity 0.5s ease-out';
+            popup.style.opacity = '0';
+            setTimeout(() => {
+                if (popup.parentNode) {
+                    popup.parentNode.removeChild(popup);
+                }
+            }, 500);
+        }
+    }, 3000);
+}
+
+// Enhanced question integration with story
+function showStoryQuestion(question) {
+    const debugMessages = [
+        "🔍 Logic gate blocked - Debug required",
+        "⚠️ Syntax barrier detected - Fix to proceed", 
+        "🛠️ Code compilation failed - Resolve error",
+        "🔧 System malfunction - Apply knowledge patch",
+        "💻 Runtime exception - Debug to continue"
+    ];
+    
+    const randomMessage = debugMessages[Math.floor(Math.random() * debugMessages.length)];
+    showDebugPopup(randomMessage);
+    
+    soundEffects.debugMode();
+    
+    // After a brief delay, show the actual question
+    setTimeout(() => {
+        const userAnswer = prompt(`[DEBUG MODE ACTIVATED]\n\n${question.question}`);
+        this.handleQuestionAnswer(question, userAnswer);
+    }, 1500);
+}
+
+function handleQuestionAnswer(question, userAnswer) {
+    if (question.checkAnswer(userAnswer)) {
+        showDebugPopup('✅ CODE COMPILED SUCCESSFULLY!', 'success');
+        soundEffects.correctAnswer();
+    } else {
+        showDebugPopup(`❌ SYNTAX ERROR: ${question.answer}`, 'error');
+        soundEffects.wrongAnswer();
+    }
 } 
