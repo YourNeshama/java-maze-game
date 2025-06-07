@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Java Learning Maze Game</title>
     <style>
         body {
@@ -10,10 +13,37 @@
             flex-direction: column;
             align-items: center;
             font-family: Arial, sans-serif;
-            background: #000000;
+            background: linear-gradient(135deg, #000000, #0a0a0a, #1a1a2e);
             margin: 0;
             min-height: 100vh;
             color: #00ff41;
+            /* Mobile touch optimization */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Add subtle code rain effect to body */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 65, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 191, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 100, 0, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
         }
         #startScreen {
             position: fixed;
@@ -193,6 +223,12 @@
                 0 0 20px rgba(0, 255, 65, 0.3),
                 inset 0 0 50px rgba(0, 20, 40, 0.8);
             position: relative;
+            /* Mobile touch optimization */
+            touch-action: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         #gameStats {
             margin: 10px 0;
@@ -256,16 +292,21 @@
             position: fixed;
             top: 10px;
             right: 10px;
-            color: #333;
+            color: #00ff41;
             text-decoration: none;
             font-size: 14px;
             padding: 5px 10px;
-            background-color: #fff;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 255, 65, 0.3);
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
         }
         #github-link:hover {
-            background-color: #f0f0f0;
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 255, 65, 0.5);
+            transform: translateY(-1px);
         }
         #totalCoins {
             background: linear-gradient(135deg, #FFD700, #FFA500);
@@ -1628,6 +1669,143 @@
         .pig-leg-right {
             right: 25px;
         }
+        
+        /* 虚拟方向键样式 */
+        #virtualDPad {
+            display: grid;
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            margin: 20px auto;
+            width: 160px;
+            height: 160px;
+            justify-content: center;
+        }
+        
+        .dpad-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            align-items: center;
+        }
+        
+        .dpad-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(145deg, rgba(0, 255, 65, 0.2), rgba(0, 200, 50, 0.3));
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            color: #00ff41;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .dpad-btn:hover, .dpad-btn:active {
+            background: linear-gradient(145deg, rgba(0, 255, 65, 0.4), rgba(0, 200, 50, 0.5));
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            transform: scale(0.95);
+            text-shadow: 0 0 10px #00ff41;
+        }
+        
+        .dpad-spacer {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .dpad-center {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 50%;
+        }
+        
+        /* 移动端控制提示 */
+        #mobileControls {
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            #virtualDPad {
+                display: grid;
+                margin: 15px auto;
+            }
+            
+            .dpad-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+            
+            .dpad-spacer, .dpad-center {
+                width: 45px;
+                height: 45px;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            #virtualDPad {
+                display: none;
+            }
+        }
+        
+        /* Override any conflicting styles to maintain dark hacker theme */
+        #gameStats {
+            background: rgba(0, 0, 0, 0.7) !important;
+            border: 1px solid #00ff41 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2) !important;
+        }
+        
+        #questionCounter {
+            color: #00ff41 !important;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.6) !important;
+            font-family: 'Courier New', monospace !important;
+        }
+        
+        #coinCounter {
+            color: #00ff41 !important;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.6) !important;
+            font-family: 'Courier New', monospace !important;
+        }
+        
+        #coinTip {
+            color: #66ff66 !important;
+            background: rgba(0, 255, 65, 0.1) !important;
+            border: 1px solid rgba(0, 255, 65, 0.3) !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            font-family: 'Courier New', monospace !important;
+            text-shadow: 0 0 5px rgba(102, 255, 102, 0.6) !important;
+        }
+        
+        /* Ensure buttons in game container use dark theme */
+        button {
+            background: linear-gradient(145deg, rgba(0, 255, 65, 0.2), rgba(0, 200, 50, 0.3)) !important;
+            color: #00ff41 !important;
+            border: 2px solid #00ff41 !important;
+            border-radius: 8px !important;
+            font-family: 'Courier New', monospace !important;
+            font-weight: bold !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3) !important;
+        }
+        
+        button:hover {
+            background: linear-gradient(145deg, rgba(0, 255, 65, 0.3), rgba(0, 200, 50, 0.4)) !important;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.5) !important;
+            transform: translateY(-2px) !important;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.8) !important;
+        }
     </style>
 </head>
 <body>
@@ -1757,6 +1935,33 @@
             <div id="coinTip">💡 Tip: Spend 5 coins to avoid going back on wrong answers!</div>
         </div>
         <canvas id="mazeCanvas"></canvas>
+        
+        <!-- 移动端控制提示 -->
+        <div id="mobileControls">
+            <p style="color: #00ff41; font-family: 'Courier New', monospace; font-size: 14px; margin: 10px 0;">
+                📱 Mobile: Swipe to move | 🖥️ Desktop: Arrow keys
+            </p>
+        </div>
+        
+        <!-- 虚拟方向键 -->
+        <div id="virtualDPad">
+            <div class="dpad-row">
+                <div class="dpad-spacer"></div>
+                <button id="upBtn" class="dpad-btn">▲</button>
+                <div class="dpad-spacer"></div>
+            </div>
+            <div class="dpad-row">
+                <button id="leftBtn" class="dpad-btn">◀</button>
+                <div class="dpad-center"></div>
+                <button id="rightBtn" class="dpad-btn">▶</button>
+            </div>
+            <div class="dpad-row">
+                <div class="dpad-spacer"></div>
+                <button id="downBtn" class="dpad-btn">▼</button>
+                <div class="dpad-spacer"></div>
+            </div>
+        </div>
+        
         <br>
         <button id="regenerateMazeBtn">Generate New Maze</button>
         <button id="newGameBtn">New Game</button>

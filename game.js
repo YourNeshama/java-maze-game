@@ -55,7 +55,7 @@ class MazeGame {
         this.canvas.width = this.size * this.cellSize;
         this.canvas.height = this.size * this.cellSize;
         
-        // 确保画布背景是纯黑色
+        // Ensure canvas background is pure black
         this.canvas.style.backgroundColor = '#000000';
         
         // Add code-themed styling to canvas
@@ -201,6 +201,7 @@ class MazeGame {
     }
 
     setupEventListeners() {
+        // Keyboard controls
         document.addEventListener('keydown', (e) => {
             if (this.isMoving) return;
             
@@ -215,6 +216,111 @@ class MazeGame {
             
             this.tryMove(dx, dy);
         });
+
+        // Touch controls
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        const minSwipeDistance = 30; // Minimum swipe distance
+
+        this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+        }, { passive: false });
+
+        this.canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Prevent page scrolling
+        }, { passive: false });
+
+        this.canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (this.isMoving) return;
+            
+            const touch = e.changedTouches[0];
+            touchEndX = touch.clientX;
+            touchEndY = touch.clientY;
+            
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            const absDeltaX = Math.abs(deltaX);
+            const absDeltaY = Math.abs(deltaY);
+            
+            // Check if it's a valid swipe
+            if (Math.max(absDeltaX, absDeltaY) < minSwipeDistance) {
+                return; // Swipe distance too short, ignore
+            }
+            
+            let dx = 0, dy = 0;
+            
+            // Determine swipe direction
+            if (absDeltaX > absDeltaY) {
+                // Horizontal swipe
+                dx = deltaX > 0 ? 1 : -1;
+            } else {
+                // Vertical swipe
+                dy = deltaY > 0 ? 1 : -1;
+            }
+            
+            this.tryMove(dx, dy);
+        }, { passive: false });
+
+        // Virtual D-pad controls
+        const setupVirtualDPad = () => {
+            const upBtn = document.getElementById('upBtn');
+            const downBtn = document.getElementById('downBtn');
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+            
+            if (upBtn) {
+                upBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (!this.isMoving) this.tryMove(0, -1);
+                });
+                upBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    if (!this.isMoving) this.tryMove(0, -1);
+                });
+            }
+            
+            if (downBtn) {
+                downBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (!this.isMoving) this.tryMove(0, 1);
+                });
+                downBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    if (!this.isMoving) this.tryMove(0, 1);
+                });
+            }
+            
+            if (leftBtn) {
+                leftBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (!this.isMoving) this.tryMove(-1, 0);
+                });
+                leftBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    if (!this.isMoving) this.tryMove(-1, 0);
+                });
+            }
+            
+            if (rightBtn) {
+                rightBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (!this.isMoving) this.tryMove(1, 0);
+                });
+                rightBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    if (!this.isMoving) this.tryMove(1, 0);
+                });
+            }
+        };
+        
+        // Delay setup of virtual D-pad to ensure DOM is loaded
+        setTimeout(setupVirtualDPad, 100);
 
         document.getElementById('regenerateMazeBtn').addEventListener('click', () => {
             this.initializeMaze();
@@ -300,7 +406,7 @@ class MazeGame {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // 设置纯黑色背景
+        // Set pure black background
         this.ctx.fillStyle = '#000000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
@@ -311,13 +417,13 @@ class MazeGame {
                 const centerX = x * this.cellSize + this.cellSize/2;
                 const centerY = y * this.cellSize + this.cellSize/2;
 
-                // 黑客风格的格子绘制
+                // Hacker-style cell rendering
                 if (cell === WALL) {
-                    // 墙壁 - 深蓝色带发光边框
+                    // Wall - deep blue with glowing border
                     this.ctx.fillStyle = '#0a1a2e';
                     this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
                     
-                    // 添加发光边框
+                    // Add glowing border
                     this.ctx.strokeStyle = '#00ff41';
                     this.ctx.lineWidth = 1;
                     this.ctx.shadowColor = '#00ff41';
@@ -325,11 +431,11 @@ class MazeGame {
                     this.ctx.strokeRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
                     this.ctx.shadowBlur = 0;
                 } else {
-                    // 路径 - 纯黑色背景
+                    // Path - pure black background
                     this.ctx.fillStyle = '#000000';
                     this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
                     
-                    // 添加微弱的网格线
+                    // Add subtle grid lines
                     this.ctx.strokeStyle = 'rgba(0, 255, 65, 0.1)';
                     this.ctx.lineWidth = 0.5;
                     this.ctx.strokeRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
@@ -338,11 +444,11 @@ class MazeGame {
                 // Draw special cells with cyber effects
                 switch(cell) {
                     case CORRECT_PATH:
-                        // 正确路径 - 绿色发光
+                        // Correct path - green glow
                         this.ctx.fillStyle = 'rgba(0, 255, 65, 0.3)';
                         this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
                         
-                        // 添加脉冲发光效果
+                        // Add pulsing glow effect
                         this.ctx.shadowColor = '#00ff41';
                         this.ctx.shadowBlur = 8;
                         this.ctx.strokeStyle = '#00ff41';
@@ -352,11 +458,11 @@ class MazeGame {
                         break;
                         
                     case DEAD_END:
-                        // 死路 - 红色警告
+                        // Dead end - red warning
                         this.ctx.fillStyle = 'rgba(255, 68, 68, 0.3)';
                         this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
                         
-                        // 添加警告发光
+                        // Add warning glow
                         this.ctx.shadowColor = '#ff4444';
                         this.ctx.shadowBlur = 6;
                         this.ctx.strokeStyle = '#ff4444';
@@ -366,14 +472,14 @@ class MazeGame {
                         break;
                         
                     case COIN:
-                        // 数据币 - 金色发光圆形
+                        // Data coin - golden glowing circle
                         const gradient = this.ctx.createRadialGradient(
                             centerX, centerY, 0,
                             centerX, centerY, this.cellSize/3
                         );
-                        gradient.addColorStop(0, '#00ffff');    // 青色中心
-                        gradient.addColorStop(0.7, '#ffff00');  // 黄色过渡
-                        gradient.addColorStop(1, '#ff8800');    // 橙色边缘
+                        gradient.addColorStop(0, '#00ffff');    // Cyan center
+                        gradient.addColorStop(0.7, '#ffff00');  // Yellow transition
+                        gradient.addColorStop(1, '#ff8800');    // Orange edge
                         
                         this.ctx.fillStyle = gradient;
                         this.ctx.shadowColor = '#ffff00';
@@ -383,7 +489,7 @@ class MazeGame {
                         this.ctx.fill();
                         this.ctx.shadowBlur = 0;
                         
-                        // 添加旋转的内环
+                        // Add rotating inner ring
                         this.ctx.strokeStyle = '#ffffff';
                         this.ctx.lineWidth = 2;
                         this.ctx.shadowColor = '#ffffff';
@@ -395,9 +501,9 @@ class MazeGame {
                         break;
                 }
 
-                // 出口标记 - 特殊的黑客风格
+                // Exit marker - special hacker style
                 if (x === this.size - 1 && y === this.size - 1) {
-                    // 创建脉冲发光的出口
+                    // Create pulsing glowing exit
                     const exitGradient = this.ctx.createRadialGradient(
                         centerX, centerY, 0,
                         centerX, centerY, this.cellSize/2
@@ -408,7 +514,7 @@ class MazeGame {
                     this.ctx.fillStyle = exitGradient;
                     this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
                     
-                    // EXIT 文字带发光
+                    // EXIT text with glow
                     this.ctx.fillStyle = '#ffffff';
                     this.ctx.font = `bold ${this.cellSize/3}px 'Courier New'`;
                     this.ctx.textAlign = 'center';
@@ -418,7 +524,7 @@ class MazeGame {
                     this.ctx.fillText('EXIT', centerX, centerY);
                     this.ctx.shadowBlur = 0;
                     
-                    // 添加扫描线效果
+                    // Add scan line effect
                     this.ctx.strokeStyle = '#00ff41';
                     this.ctx.lineWidth = 1;
                     this.ctx.shadowColor = '#00ff41';
@@ -431,11 +537,11 @@ class MazeGame {
             }
         }
         
-        // 绘制玩家 - 黑客风格
+        // Draw player - hacker style
         const playerCenterX = this.playerX * this.cellSize + this.cellSize/2;
         const playerCenterY = this.playerY * this.cellSize + this.cellSize/2;
         
-        // 玩家光环
+        // Player aura
         const playerGradient = this.ctx.createRadialGradient(
             playerCenterX, playerCenterY, 0,
             playerCenterX, playerCenterY, this.cellSize/2
@@ -448,7 +554,7 @@ class MazeGame {
         this.ctx.arc(playerCenterX, playerCenterY, this.cellSize/2, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // 玩家核心
+        // Player core
         this.ctx.fillStyle = '#00bfff';
         this.ctx.shadowColor = '#00bfff';
         this.ctx.shadowBlur = 10;
@@ -457,7 +563,7 @@ class MazeGame {
         this.ctx.fill();
         this.ctx.shadowBlur = 0;
         
-        // 玩家内环
+        // Player inner ring
         this.ctx.strokeStyle = '#ffffff';
         this.ctx.lineWidth = 2;
         this.ctx.shadowColor = '#ffffff';
@@ -1530,12 +1636,14 @@ function showStoryScreen() {
         
         // Handle keyboard events
         if (event.type === 'keydown' && (event.key === ' ' || event.code === 'Space')) {
+            event.preventDefault();
             handleNextPhase();
             return;
         }
         
         // Handle mouse clicks and touch events
-        if (event.type === 'click' || event.type === 'touchstart') {
+        if (event.type === 'click' || event.type === 'touchend') {
+            event.preventDefault();
             handleNextPhase();
             return;
         }
@@ -1592,13 +1700,13 @@ function showStoryScreen() {
     function cleanup() {
         document.removeEventListener('keydown', handleStorySkip);
         storyScreen.removeEventListener('click', handleStorySkip);
-        storyScreen.removeEventListener('touchstart', handleStorySkip);
+        storyScreen.removeEventListener('touchend', handleStorySkip);
     }
     
     // Add event listeners for multiple input methods
     document.addEventListener('keydown', handleStorySkip);
     storyScreen.addEventListener('click', handleStorySkip);
-    storyScreen.addEventListener('touchstart', handleStorySkip);
+    storyScreen.addEventListener('touchend', handleStorySkip);
     
     console.log('👂 STORY SCREEN - Event listeners added');
     
@@ -1766,7 +1874,7 @@ function handleQuestionAnswer(question, userAnswer) {
     }
 }
 
-// 小猪Q的对话系统
+// Q's dialogue system
 function startPigQDialogue() {
     const pigMessages = [
         "Hello there! I'm Q, your guide.",
@@ -1785,7 +1893,7 @@ function startPigQDialogue() {
         if (isQDialoguePhase && dialogueElement && messageIndex < pigMessages.length) {
             dialogueElement.textContent = pigMessages[messageIndex];
             
-            // 添加打字机效果
+            // Add typewriter effect
             dialogueElement.style.opacity = '0';
             setTimeout(() => {
                 dialogueElement.style.opacity = '1';
@@ -1793,11 +1901,11 @@ function startPigQDialogue() {
             
             messageIndex++;
             
-            // 每7秒更换一次消息（增加了间隔时间）
+            // Change message every 7 seconds (increased interval time)
             if (messageIndex < pigMessages.length) {
                 setTimeout(updateDialogue, 7000);
             } else {
-                // Q对话结束，准备显示最终提示
+                // Q dialogue finished, prepare to show final prompt
                 setTimeout(() => {
                     dialogueElement.textContent = "Now let me show you the full picture of your situation...";
                     document.querySelector('.continue-prompt .blinking-cursor').textContent = '▶ Tap to continue';
@@ -1806,6 +1914,6 @@ function startPigQDialogue() {
         }
     }
     
-    // 开始Q的对话（增加初始延迟）
+    // Start Q's dialogue (added initial delay)
     setTimeout(updateDialogue, 1000);
 } 
