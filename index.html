@@ -2035,6 +2035,104 @@
         </div>
     </div>
 
+    <!-- 外部脚本文件 -->
+    <script src="questions.js"></script>
+    <script src="sounds.js"></script>
+    <script src="animations.js"></script>
     <script src="game.js"></script>
+    
+    <!-- 主要初始化脚本 -->
+    <script>
+        // Global variables
+        let currentGame = null;
+        
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize animations
+            initializeAnimations();
+            
+            // Setup difficulty button event listeners
+            document.getElementById('easyBtn').addEventListener('click', () => startGameWithStory('easy'));
+            document.getElementById('mediumBtn').addEventListener('click', () => startGameWithStory('medium'));
+            document.getElementById('hardBtn').addEventListener('click', () => startGameWithStory('hard'));
+            
+            // Setup question bank button
+            document.getElementById('questionBankBtn').addEventListener('click', () => {
+                document.getElementById('questionBankModal').style.display = 'block';
+                loadQuestionBank();
+            });
+            
+            // Setup new game button (when in game)
+            document.getElementById('newGameBtn').addEventListener('click', () => {
+                document.getElementById('gameContainer').style.display = 'none';
+                document.getElementById('startScreen').style.display = 'block';
+                updateDifficultyButtonStatus();
+            });
+            
+            // Setup question bank modal close
+            document.querySelector('.close').addEventListener('click', () => {
+                document.getElementById('questionBankModal').style.display = 'none';
+            });
+            
+            // Initial setup
+            updateDifficultyButtonStatus();
+            
+            console.log('🐷 Game initialized - Q is ready!');
+        });
+        
+        // Start game with story introduction
+        function startGameWithStory(difficulty) {
+            console.log(`Starting ${difficulty} game with story...`);
+            
+            // Hide start screen
+            document.getElementById('startScreen').style.display = 'none';
+            
+            // Show story screen
+            const storyScreen = document.getElementById('storyScreen');
+            storyScreen.style.display = 'flex';
+            
+            // Start pig Q dialogue
+            startPigQDialogue();
+            
+            // Setup story screen click handler
+            const continueHandler = function(e) {
+                // Hide story screen
+                storyScreen.style.display = 'none';
+                
+                // Show game container
+                document.getElementById('gameContainer').style.display = 'block';
+                
+                // Start the actual game
+                currentGame = new MazeGame(difficulty);
+                
+                // Remove event listeners
+                storyScreen.removeEventListener('click', continueHandler);
+                storyScreen.removeEventListener('touchend', continueHandler);
+                document.removeEventListener('keydown', keyHandler);
+                
+                console.log('🐷 Story completed - Game started!');
+            };
+            
+            const keyHandler = function(e) {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    continueHandler(e);
+                }
+            };
+            
+            // Add event listeners for continuing
+            storyScreen.addEventListener('click', continueHandler);
+            storyScreen.addEventListener('touchend', continueHandler);
+            document.addEventListener('keydown', keyHandler);
+        }
+        
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+            console.log('🐷 Q says: "Don\'t worry, I\'m still here!"');
+        });
+        
+        console.log('🐷 Main script loaded - Q is awakening...');
+    </script>
 </body>
 </html> 
