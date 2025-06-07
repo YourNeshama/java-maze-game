@@ -55,6 +55,9 @@ class MazeGame {
         this.canvas.width = this.size * this.cellSize;
         this.canvas.height = this.size * this.cellSize;
         
+        // 确保画布背景是纯黑色
+        this.canvas.style.backgroundColor = '#000000';
+        
         // Add code-themed styling to canvas
         this.canvas.classList.add('code-themed-canvas');
 
@@ -297,6 +300,10 @@ class MazeGame {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
+        // 设置纯黑色背景
+        this.ctx.fillStyle = '#000000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
         // Draw maze
         for (let y = 0; y < this.size; y++) {
             for (let x = 0; x < this.size; x++) {
@@ -304,76 +311,161 @@ class MazeGame {
                 const centerX = x * this.cellSize + this.cellSize/2;
                 const centerY = y * this.cellSize + this.cellSize/2;
 
-                // Draw cell background
-                this.ctx.fillStyle = cell === WALL ? '#333' : '#fff';
-                this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
-                this.ctx.strokeRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+                // 黑客风格的格子绘制
+                if (cell === WALL) {
+                    // 墙壁 - 深蓝色带发光边框
+                    this.ctx.fillStyle = '#0a1a2e';
+                    this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+                    
+                    // 添加发光边框
+                    this.ctx.strokeStyle = '#00ff41';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.shadowColor = '#00ff41';
+                    this.ctx.shadowBlur = 3;
+                    this.ctx.strokeRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+                    this.ctx.shadowBlur = 0;
+                } else {
+                    // 路径 - 纯黑色背景
+                    this.ctx.fillStyle = '#000000';
+                    this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+                    
+                    // 添加微弱的网格线
+                    this.ctx.strokeStyle = 'rgba(0, 255, 65, 0.1)';
+                    this.ctx.lineWidth = 0.5;
+                    this.ctx.strokeRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+                }
 
-                // Draw special cells
+                // Draw special cells with cyber effects
                 switch(cell) {
                     case CORRECT_PATH:
-                        this.ctx.fillStyle = '#90EE90';
+                        // 正确路径 - 绿色发光
+                        this.ctx.fillStyle = 'rgba(0, 255, 65, 0.3)';
                         this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+                        
+                        // 添加脉冲发光效果
+                        this.ctx.shadowColor = '#00ff41';
+                        this.ctx.shadowBlur = 8;
+                        this.ctx.strokeStyle = '#00ff41';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.strokeRect(x * this.cellSize + 2, y * this.cellSize + 2, this.cellSize - 4, this.cellSize - 4);
+                        this.ctx.shadowBlur = 0;
                         break;
+                        
                     case DEAD_END:
-                        this.ctx.fillStyle = '#FFB6C1';
+                        // 死路 - 红色警告
+                        this.ctx.fillStyle = 'rgba(255, 68, 68, 0.3)';
                         this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+                        
+                        // 添加警告发光
+                        this.ctx.shadowColor = '#ff4444';
+                        this.ctx.shadowBlur = 6;
+                        this.ctx.strokeStyle = '#ff4444';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.strokeRect(x * this.cellSize + 1, y * this.cellSize + 1, this.cellSize - 2, this.cellSize - 2);
+                        this.ctx.shadowBlur = 0;
                         break;
+                        
                     case COIN:
-                        // Draw coin as a circle with a gold gradient
+                        // 数据币 - 金色发光圆形
                         const gradient = this.ctx.createRadialGradient(
                             centerX, centerY, 0,
                             centerX, centerY, this.cellSize/3
                         );
-                        gradient.addColorStop(0, '#FFD700');    // Center: Bright gold
-                        gradient.addColorStop(1, '#DAA520');    // Edge: Darker gold
+                        gradient.addColorStop(0, '#00ffff');    // 青色中心
+                        gradient.addColorStop(0.7, '#ffff00');  // 黄色过渡
+                        gradient.addColorStop(1, '#ff8800');    // 橙色边缘
                         
                         this.ctx.fillStyle = gradient;
+                        this.ctx.shadowColor = '#ffff00';
+                        this.ctx.shadowBlur = 10;
                         this.ctx.beginPath();
                         this.ctx.arc(centerX, centerY, this.cellSize/3, 0, Math.PI * 2);
                         this.ctx.fill();
+                        this.ctx.shadowBlur = 0;
                         
-                        // Add shine effect
-                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                        // 添加旋转的内环
+                        this.ctx.strokeStyle = '#ffffff';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.shadowColor = '#ffffff';
+                        this.ctx.shadowBlur = 5;
                         this.ctx.beginPath();
-                        this.ctx.arc(
-                            centerX - this.cellSize/8,
-                            centerY - this.cellSize/8,
-                            this.cellSize/10,
-                            0,
-                            Math.PI * 2
-                        );
-                        this.ctx.fill();
+                        this.ctx.arc(centerX, centerY, this.cellSize/5, 0, Math.PI * 2);
+                        this.ctx.stroke();
+                        this.ctx.shadowBlur = 0;
                         break;
                 }
 
-                // Draw exit marker (at bottom-right corner)
+                // 出口标记 - 特殊的黑客风格
                 if (x === this.size - 1 && y === this.size - 1) {
-                    // Draw exit marker
-                    this.ctx.fillStyle = '#4CAF50';  // Green color for exit
+                    // 创建脉冲发光的出口
+                    const exitGradient = this.ctx.createRadialGradient(
+                        centerX, centerY, 0,
+                        centerX, centerY, this.cellSize/2
+                    );
+                    exitGradient.addColorStop(0, 'rgba(0, 255, 65, 0.8)');
+                    exitGradient.addColorStop(1, 'rgba(0, 255, 65, 0.2)');
+                    
+                    this.ctx.fillStyle = exitGradient;
                     this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
                     
-                    // Draw "EXIT" text
-                    this.ctx.fillStyle = '#fff';
-                    this.ctx.font = `${this.cellSize/3}px Arial`;
+                    // EXIT 文字带发光
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.font = `bold ${this.cellSize/3}px 'Courier New'`;
                     this.ctx.textAlign = 'center';
                     this.ctx.textBaseline = 'middle';
+                    this.ctx.shadowColor = '#00ff41';
+                    this.ctx.shadowBlur = 8;
                     this.ctx.fillText('EXIT', centerX, centerY);
+                    this.ctx.shadowBlur = 0;
+                    
+                    // 添加扫描线效果
+                    this.ctx.strokeStyle = '#00ff41';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.shadowColor = '#00ff41';
+                    this.ctx.shadowBlur = 5;
+                    this.ctx.beginPath();
+                    this.ctx.rect(x * this.cellSize + 2, y * this.cellSize + 2, this.cellSize - 4, this.cellSize - 4);
+                    this.ctx.stroke();
+                    this.ctx.shadowBlur = 0;
                 }
             }
         }
         
-        // Draw player
-        this.ctx.fillStyle = '#2196F3';
-        this.ctx.beginPath();
-        this.ctx.arc(
-            this.playerX * this.cellSize + this.cellSize/2,
-            this.playerY * this.cellSize + this.cellSize/2,
-            this.cellSize/3,
-            0,
-            Math.PI * 2
+        // 绘制玩家 - 黑客风格
+        const playerCenterX = this.playerX * this.cellSize + this.cellSize/2;
+        const playerCenterY = this.playerY * this.cellSize + this.cellSize/2;
+        
+        // 玩家光环
+        const playerGradient = this.ctx.createRadialGradient(
+            playerCenterX, playerCenterY, 0,
+            playerCenterX, playerCenterY, this.cellSize/2
         );
+        playerGradient.addColorStop(0, 'rgba(0, 191, 255, 0.8)');
+        playerGradient.addColorStop(1, 'rgba(0, 191, 255, 0.1)');
+        
+        this.ctx.fillStyle = playerGradient;
+        this.ctx.beginPath();
+        this.ctx.arc(playerCenterX, playerCenterY, this.cellSize/2, 0, Math.PI * 2);
         this.ctx.fill();
+        
+        // 玩家核心
+        this.ctx.fillStyle = '#00bfff';
+        this.ctx.shadowColor = '#00bfff';
+        this.ctx.shadowBlur = 10;
+        this.ctx.beginPath();
+        this.ctx.arc(playerCenterX, playerCenterY, this.cellSize/3, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.shadowBlur = 0;
+        
+        // 玩家内环
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 2;
+        this.ctx.shadowColor = '#ffffff';
+        this.ctx.shadowBlur = 5;
+        this.ctx.beginPath();
+        this.ctx.arc(playerCenterX, playerCenterY, this.cellSize/4, 0, Math.PI * 2);
+        this.ctx.stroke();
+        this.ctx.shadowBlur = 0;
     }
 
     updateQuestionCounter() {
@@ -1701,19 +1793,19 @@ function startPigQDialogue() {
             
             messageIndex++;
             
-            // 每2.5秒更换一次消息
+            // 每7秒更换一次消息（增加了间隔时间）
             if (messageIndex < pigMessages.length) {
-                setTimeout(updateDialogue, 2500);
+                setTimeout(updateDialogue, 7000);
             } else {
                 // Q对话结束，准备显示最终提示
                 setTimeout(() => {
                     dialogueElement.textContent = "Now let me show you the full picture of your situation...";
                     document.querySelector('.continue-prompt .blinking-cursor').textContent = '▶ Tap to continue';
-                }, 1500);
+                }, 3000);
             }
         }
     }
     
-    // 开始Q的对话
-    setTimeout(updateDialogue, 500);
+    // 开始Q的对话（增加初始延迟）
+    setTimeout(updateDialogue, 1000);
 } 
