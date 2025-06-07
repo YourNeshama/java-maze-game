@@ -1847,7 +1847,7 @@
         </div>
     </div>
     
-    <div id="startScreen">
+    <div id="startScreen" style="display: none;">
         <!-- Code Rain Background for Start Screen -->
         <div class="code-rain" id="startScreenCodeRain">
             <!-- Animated code particles will be generated here -->
@@ -1878,7 +1878,7 @@
     </div>
 
     <!-- Story Introduction Screen -->
-    <div id="storyScreen" class="story-screen" style="display: none;">
+    <div id="storyScreen" class="story-screen" style="display: flex;">
         <div class="story-content">
             <div class="visual-novel-container">
                 <!-- Q角色立绘 -->
@@ -2051,10 +2051,42 @@
             // Initialize animations
             initializeAnimations();
             
-            // Setup difficulty button event listeners
-            document.getElementById('easyBtn').addEventListener('click', () => startGameWithStory('easy'));
-            document.getElementById('mediumBtn').addEventListener('click', () => startGameWithStory('medium'));
-            document.getElementById('hardBtn').addEventListener('click', () => startGameWithStory('hard'));
+            // Start Q's introduction dialogue immediately
+            startPigQDialogue();
+            
+            // Setup story screen click handler for after Q's dialogue
+            const storyScreen = document.getElementById('storyScreen');
+            const continueHandler = function(e) {
+                // Hide story screen
+                storyScreen.style.display = 'none';
+                
+                // Show difficulty selection screen
+                document.getElementById('startScreen').style.display = 'flex';
+                
+                // Remove event listeners
+                storyScreen.removeEventListener('click', continueHandler);
+                storyScreen.removeEventListener('touchend', continueHandler);
+                document.removeEventListener('keydown', keyHandler);
+                
+                console.log('🐷 Q introduction completed - Showing difficulty selection');
+            };
+            
+            const keyHandler = function(e) {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    continueHandler(e);
+                }
+            };
+            
+            // Add event listeners for continuing from Q's dialogue
+            storyScreen.addEventListener('click', continueHandler);
+            storyScreen.addEventListener('touchend', continueHandler);
+            document.addEventListener('keydown', keyHandler);
+            
+            // Setup difficulty button event listeners (they will start game directly)
+            document.getElementById('easyBtn').addEventListener('click', () => startGame('easy'));
+            document.getElementById('mediumBtn').addEventListener('click', () => startGame('medium'));
+            document.getElementById('hardBtn').addEventListener('click', () => startGame('hard'));
             
             // Setup question bank button
             document.getElementById('questionBankBtn').addEventListener('click', () => {
@@ -2065,7 +2097,7 @@
             // Setup new game button (when in game)
             document.getElementById('newGameBtn').addEventListener('click', () => {
                 document.getElementById('gameContainer').style.display = 'none';
-                document.getElementById('startScreen').style.display = 'block';
+                document.getElementById('startScreen').style.display = 'flex';
                 updateDifficultyButtonStatus();
             });
             
@@ -2077,53 +2109,23 @@
             // Initial setup
             updateDifficultyButtonStatus();
             
-            console.log('🐷 Game initialized - Q is ready!');
+            console.log('🐷 Game initialized - Q is ready to introduce the game!');
         });
         
-        // Start game with story introduction
-        function startGameWithStory(difficulty) {
-            console.log(`Starting ${difficulty} game with story...`);
+        // Start game directly (since Q already introduced)
+        function startGame(difficulty) {
+            console.log(`Starting ${difficulty} game...`);
             
             // Hide start screen
             document.getElementById('startScreen').style.display = 'none';
             
-            // Show story screen
-            const storyScreen = document.getElementById('storyScreen');
-            storyScreen.style.display = 'flex';
+            // Show game container
+            document.getElementById('gameContainer').style.display = 'block';
             
-            // Start pig Q dialogue
-            startPigQDialogue();
+            // Start the actual game
+            currentGame = new MazeGame(difficulty);
             
-            // Setup story screen click handler
-            const continueHandler = function(e) {
-                // Hide story screen
-                storyScreen.style.display = 'none';
-                
-                // Show game container
-                document.getElementById('gameContainer').style.display = 'block';
-                
-                // Start the actual game
-                currentGame = new MazeGame(difficulty);
-                
-                // Remove event listeners
-                storyScreen.removeEventListener('click', continueHandler);
-                storyScreen.removeEventListener('touchend', continueHandler);
-                document.removeEventListener('keydown', keyHandler);
-                
-                console.log('🐷 Story completed - Game started!');
-            };
-            
-            const keyHandler = function(e) {
-                if (e.key === ' ' || e.key === 'Enter') {
-                    e.preventDefault();
-                    continueHandler(e);
-                }
-            };
-            
-            // Add event listeners for continuing
-            storyScreen.addEventListener('click', continueHandler);
-            storyScreen.addEventListener('touchend', continueHandler);
-            document.addEventListener('keydown', keyHandler);
+            console.log('🐷 Game started!');
         }
         
         // Global error handler
