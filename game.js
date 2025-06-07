@@ -1488,8 +1488,51 @@ function hideStoryScreen() {
     
     console.log('Start screen now visible');
     
+    // Start code rain on start screen
+    startStartScreenCodeRain();
+    
     // Start background music
     backgroundMusic.play();
+}
+
+function startStartScreenCodeRain() {
+    const codeRain = document.getElementById('startScreenCodeRain');
+    if (!codeRain) return;
+    
+    const codeSymbols = [
+        'class', 'public', 'private', 'void', 'int', 'String', 'new', 'if', 'else', 'for', 'while',
+        '{}', '();', '[]', '&&', '||', '==', '!=', '//', '/*', '*/', 'extends', 'implements',
+        'try', 'catch', 'throw', 'final', 'static', 'abstract', 'interface', 'package', 'import'
+    ];
+    
+    function createCodeParticle() {
+        const particle = document.createElement('div');
+        particle.className = 'code-particle';
+        particle.textContent = codeSymbols[Math.floor(Math.random() * codeSymbols.length)];
+        
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        particle.style.opacity = Math.random() * 0.3 + 0.1; // More subtle on start screen
+        particle.style.fontSize = (Math.random() * 6 + 8) + 'px'; // Smaller particles
+        
+        codeRain.appendChild(particle);
+        
+        // Remove particle after animation
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
+            }
+        }, 5000);
+    }
+    
+    // Create particles at intervals - less frequent for start screen
+    const rainInterval = setInterval(() => {
+        if (document.getElementById('startScreen').style.display !== 'none') {
+            createCodeParticle();
+        } else {
+            clearInterval(rainInterval);
+        }
+    }, 300);
 }
 
 function startCodeRain() {
