@@ -418,7 +418,7 @@ class MazeGame {
                 console.log("⚠️ Safety timeout: Force resetting isMoving state");
                 this.isMoving = false;
             }
-        }, 5000);
+        }, 1000); // Reduced from 5000 to 1000 for faster recovery
 
         // If no questions left, check for dead ends then allow movement
         if (this.remainingQuestions === 0) {
@@ -861,28 +861,38 @@ class MazeGame {
         console.log("Starting question handling immediately");
         
         try {
-            const userAnswer = prompt(`[DEBUG MODE ACTIVATED]\n\n${question.question}\n\n💡 Instructions:\n• Enter your answer to proceed\n• Type "skip" to skip without penalty\n• Press Cancel to abort movement`);
-            
-            console.log("Prompt returned:", userAnswer === null ? "CANCELED" : userAnswer);
-            
-            // Handle case where user cancels the prompt
-            if (userAnswer === null) {
-                console.log("User canceled the question prompt - no penalty, just reset movement");
-                this.isMoving = false;
-                showDebugPopup('🚫 Movement canceled', 'info');
-                return;
-            }
-            
-            // Handle skip option
-            if (userAnswer && userAnswer.trim().toLowerCase() === 'skip') {
-                console.log("User chose to skip question - no penalty");
-                this.isMoving = false;
-                showDebugPopup('⏭️ Question skipped - no penalty', 'info');
-                return;
-            }
-            
-            console.log("Processing answer...");
-            this.handleQuestionAnswer(question, userAnswer, newX, newY, questionIndex);
+            // Use setTimeout to ensure prompt is called after current execution context
+            setTimeout(() => {
+                try {
+                    const userAnswer = prompt(`[DEBUG MODE ACTIVATED]\n\n${question.question}\n\n💡 Instructions:\n• Enter your answer to proceed\n• Type "skip" to skip without penalty\n• Press Cancel to abort movement`);
+                    
+                    console.log("Prompt returned:", userAnswer === null ? "CANCELED" : userAnswer);
+                    
+                    // Handle case where user cancels the prompt
+                    if (userAnswer === null) {
+                        console.log("User canceled the question prompt - no penalty, just reset movement");
+                        this.isMoving = false;
+                        showDebugPopup('🚫 Movement canceled', 'info');
+                        return;
+                    }
+                    
+                    // Handle skip option
+                    if (userAnswer && userAnswer.trim().toLowerCase() === 'skip') {
+                        console.log("User chose to skip question - no penalty");
+                        this.isMoving = false;
+                        showDebugPopup('⏭️ Question skipped - no penalty', 'info');
+                        return;
+                    }
+                    
+                    console.log("Processing answer...");
+                    this.handleQuestionAnswer(question, userAnswer, newX, newY, questionIndex);
+                    
+                } catch (error) {
+                    console.error("Error in prompt handling:", error);
+                    this.isMoving = false;
+                    showDebugPopup('❌ Question prompt error - Movement unlocked', 'error');
+                }
+            }, 10); // Very short delay to ensure proper execution order
             
         } catch (error) {
             console.error("Error in question handling:", error);
