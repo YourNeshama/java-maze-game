@@ -1677,12 +1677,12 @@ function handleQuestionAnswer(question, userAnswer) {
 // 小猪Q的对话系统
 function startPigQDialogue() {
     const pigMessages = [
-        "Welcome! I'm Q, your narrator.",
-        "You've stumbled into a corrupted digital maze...",
-        "The code is broken, pathways are blocked.",
-        "Use your programming skills to debug your way out!",
-        "I'll be here to guide you through this nightmare.",
-        "Ready to start debugging?"
+        "Hello there! I'm Q, your guide.",
+        "You are a programmer... but something's wrong.",
+        "You've been trapped in this digital maze.",
+        "The code around you is corrupted and broken.",
+        "As a trapped programmer, you must use your skills.",
+        "Debug your way out of this nightmare!"
     ];
     
     const dialogueElement = document.getElementById('dialogueText');
@@ -1701,19 +1701,19 @@ function startPigQDialogue() {
             
             messageIndex++;
             
-            // 每2秒更换一次消息
+            // 每2.5秒更换一次消息
             if (messageIndex < pigMessages.length) {
-                setTimeout(updateDialogue, 2000);
+                setTimeout(updateDialogue, 2500);
             } else {
                 // Q对话结束，准备显示最终提示
                 setTimeout(() => {
-                    dialogueElement.textContent = "Now let me tell you the real story...";
+                    dialogueElement.textContent = "Now let me show you the full picture of your situation...";
                     document.querySelector('.continue-prompt .blinking-cursor').textContent = '▶ Tap to continue';
-                }, 1000);
+                }, 1500);
             }
         }
     }
     
-    // 开始对话
+    // 开始Q的对话
     setTimeout(updateDialogue, 500);
 } 

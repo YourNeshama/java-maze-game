@@ -779,25 +779,26 @@
             width: 100%;
             height: 100%;
             display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
+            justify-content: center;
+            align-items: center;
         }
         
         .character-portrait {
             position: absolute;
-            bottom: 0;
-            right: 5%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -70%);
             width: 400px;
             height: 600px;
             display: flex;
             justify-content: center;
-            align-items: flex-end;
+            align-items: center;
             z-index: 10;
         }
         
         .pig-q-large {
             position: relative;
-            transform: scale(3.5);
+            transform: scale(4);
             animation: characterFloat 3s ease-in-out infinite;
         }
         
@@ -975,15 +976,15 @@
         
         .dialogue-box {
             position: absolute;
-            bottom: 50px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 80%;
-            max-width: 800px;
+            width: 90%;
+            max-width: 900px;
             background: rgba(0, 0, 0, 0.9);
             border: 3px solid #00ff41;
             border-radius: 15px;
-            padding: 30px;
+            padding: 25px;
             box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
             backdrop-filter: blur(10px);
             z-index: 20;
@@ -1049,8 +1050,8 @@
         }
         
         @keyframes characterFloat {
-            0%, 100% { transform: scale(3.5) translateY(0px); }
-            50% { transform: scale(3.5) translateY(-10px); }
+            0%, 100% { transform: scale(4) translateY(0px); }
+            50% { transform: scale(4) translateY(-10px); }
         }
         
         /* Animations */
@@ -1393,6 +1394,39 @@
                 top: -60px;
                 font-size: 12px;
                 padding: 10px;
+            }
+            
+            .character-portrait {
+                width: 300px;
+                height: 400px;
+                transform: translate(-50%, -60%);
+            }
+            
+            .pig-q-large {
+                transform: scale(2.5);
+            }
+            
+            .dialogue-box {
+                width: 95%;
+                padding: 15px;
+                bottom: 10px;
+            }
+            
+            .speaker-name {
+                font-size: 16px;
+            }
+            
+            .dialogue-text {
+                font-size: 14px;
+            }
+            
+            .continue-prompt {
+                font-size: 14px;
+            }
+            
+            @keyframes characterFloat {
+                0%, 100% { transform: scale(2.5) translateY(0px); }
+                50% { transform: scale(2.5) translateY(-10px); }
             }
         }
     </style>
