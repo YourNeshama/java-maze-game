@@ -1430,26 +1430,72 @@ function showStoryScreen() {
     // Play atmospheric sound
     soundEffects.systemHum();
     
+    let isFirstPhase = true; // Track if we're in Q dialogue phase
+    
     // Listen for space key, mouse clicks, and touch events to continue
     const handleStorySkip = (event) => {
         console.log('⌨️ STORY SCREEN - Event triggered:', event.type, event.key || 'N/A', event.code || 'N/A');
         
         // Handle keyboard events
         if (event.type === 'keydown' && (event.key === ' ' || event.code === 'Space')) {
-            console.log('✅ STORY SCREEN - Dismissed by space key');
-            hideStoryScreen();
-            cleanup();
+            handleNextPhase();
             return;
         }
         
         // Handle mouse clicks and touch events
         if (event.type === 'click' || event.type === 'touchstart') {
-            console.log('✅ STORY SCREEN - Dismissed by', event.type);
-            hideStoryScreen();
-            cleanup();
+            handleNextPhase();
             return;
         }
     };
+    
+    function handleNextPhase() {
+        if (isFirstPhase) {
+            // Transition to original story without Q
+            showOriginalStory();
+            isFirstPhase = false;
+        } else {
+            // Go to start screen
+            console.log('✅ STORY SCREEN - Dismissed to start screen');
+            hideStoryScreen();
+            cleanup();
+        }
+    }
+    
+    function showOriginalStory() {
+        // Hide Q character
+        const characterPortrait = document.querySelector('.character-portrait');
+        if (characterPortrait) {
+            characterPortrait.style.display = 'none';
+        }
+        
+        // Update dialogue box content
+        const speakerName = document.querySelector('.speaker-name');
+        const dialogueText = document.getElementById('dialogueText');
+        const continuePrompt = document.querySelector('.continue-prompt .blinking-cursor');
+        
+        if (speakerName) speakerName.style.display = 'none';
+        if (dialogueText) {
+            dialogueText.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 24px; color: #ff4444; margin-bottom: 10px; text-shadow: 0 0 10px #ff4444;">SYSTEM ERROR</div>
+                    <div style="font-size: 16px; color: #ffaa00; margin-bottom: 20px; text-shadow: 0 0 5px #ffaa00;">CRITICAL LOGIC FAILURE DETECTED</div>
+                </div>
+                <div style="line-height: 1.8;">
+                    You are a programmer trapped in a corrupted code maze...<br><br>
+                    The system's logic gates have malfunctioned.<br><br>
+                    Each pathway requires debugging to unlock.<br><br>
+                    Your Java knowledge is the only way out.<br><br>
+                    Fix the code. Escape the maze. Restore the system.
+                </div>
+            `;
+        }
+        if (continuePrompt) {
+            continuePrompt.textContent = '▶ Press Space to initialize debugging protocol...';
+        }
+        
+        console.log('Transitioned to original story without Q');
+    }
     
     function cleanup() {
         document.removeEventListener('keydown', handleStorySkip);
@@ -1464,14 +1510,14 @@ function showStoryScreen() {
     
     console.log('👂 STORY SCREEN - Event listeners added');
     
-    // Auto-advance after 15 seconds if no interaction (increased for pig dialogue)
+    // Auto-advance after 20 seconds if no interaction (increased for visual novel)
     setTimeout(() => {
         if (storyScreen.style.display !== 'none') {
-            console.log('⏰ STORY SCREEN - Auto-advancing after 15 seconds');
+            console.log('⏰ STORY SCREEN - Auto-advancing after 20 seconds');
             hideStoryScreen();
             cleanup();
         }
-    }, 15000);
+    }, 20000);
     
     console.log('🎬 STORY SCREEN - Setup complete!');
 }
@@ -1639,34 +1685,35 @@ function startPigQDialogue() {
         "Ready to start debugging?"
     ];
     
-    const pigSpeechElement = document.getElementById('pigSpeech');
+    const dialogueElement = document.getElementById('dialogueText');
     let messageIndex = 0;
+    let isQDialoguePhase = true;
     
-    function updatePigMessage() {
-        if (pigSpeechElement && messageIndex < pigMessages.length) {
-            pigSpeechElement.textContent = pigMessages[messageIndex];
+    function updateDialogue() {
+        if (isQDialoguePhase && dialogueElement && messageIndex < pigMessages.length) {
+            dialogueElement.textContent = pigMessages[messageIndex];
             
             // 添加打字机效果
-            pigSpeechElement.style.opacity = '0';
+            dialogueElement.style.opacity = '0';
             setTimeout(() => {
-                pigSpeechElement.style.opacity = '1';
+                dialogueElement.style.opacity = '1';
             }, 100);
             
             messageIndex++;
             
             // 每2秒更换一次消息
             if (messageIndex < pigMessages.length) {
-                setTimeout(updatePigMessage, 2000);
+                setTimeout(updateDialogue, 2000);
             } else {
-                // 消息结束后，显示最终提示
+                // Q对话结束，准备显示最终提示
                 setTimeout(() => {
-                    pigSpeechElement.textContent = "Press Space, click, or tap to begin!";
-                    pigSpeechElement.style.animation = 'bubbleBounce 1s ease-in-out infinite';
+                    dialogueElement.textContent = "Now let me tell you the real story...";
+                    document.querySelector('.continue-prompt .blinking-cursor').textContent = '▶ Tap to continue';
                 }, 1000);
             }
         }
     }
     
     // 开始对话
-    setTimeout(updatePigMessage, 500);
+    setTimeout(updateDialogue, 500);
 } 

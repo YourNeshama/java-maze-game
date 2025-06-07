@@ -774,66 +774,247 @@
             align-items: center;
         }
         
-        .story-text-container {
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00ff41;
-            border-radius: 10px;
-            padding: 40px;
-            max-width: 600px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
-            backdrop-filter: blur(10px);
+        .visual-novel-container {
             position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        
+        .character-portrait {
+            position: absolute;
+            bottom: 0;
+            right: 5%;
+            width: 400px;
+            height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
             z-index: 10;
         }
         
-        .story-title {
-            font-family: 'Courier New', monospace;
-            font-size: 36px;
-            font-weight: bold;
-            color: #ff4444;
-            text-shadow: 0 0 10px #ff4444;
-            margin-bottom: 10px;
-            animation: glitch 2s infinite;
+        .pig-q-large {
+            position: relative;
+            transform: scale(3.5);
+            animation: characterFloat 3s ease-in-out infinite;
         }
         
-        .story-subtitle {
+        .pig-body-large {
+            position: relative;
+            width: 120px;
+            height: 140px;
+        }
+        
+        .pig-head-large {
+            position: absolute;
+            top: 0;
+            left: 10px;
+            width: 100px;
+            height: 90px;
+            background: linear-gradient(145deg, #ffb6c1, #ffc0cb);
+            border-radius: 50px;
+            border: 3px solid #ff69b4;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+        }
+        
+        .pig-ear {
+            position: absolute;
+            width: 25px;
+            height: 35px;
+            background: linear-gradient(145deg, #ff69b4, #ffb6c1);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            border: 2px solid #ff1493;
+        }
+        
+        .pig-ear-left-large {
+            top: -15px;
+            left: 15px;
+            transform: rotate(-30deg);
+            animation: earWiggle 2s ease-in-out infinite;
+        }
+        
+        .pig-ear-right-large {
+            top: -15px;
+            right: 15px;
+            transform: rotate(30deg);
+            animation: earWiggle 2s ease-in-out infinite 0.5s;
+        }
+        
+        .pig-ear::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 15px;
+            height: 20px;
+            background: #dc143c;
+            border-radius: 50%;
+        }
+        
+        .pig-eye {
+            position: absolute;
+            width: 20px;
+            height: 25px;
+            background: white;
+            border-radius: 50%;
+            border: 2px solid #333;
+            top: 25px;
+        }
+        
+        .pig-eye-left-large {
+            left: 20px;
+        }
+        
+        .pig-eye-right-large {
+            right: 20px;
+        }
+        
+        .pig-pupil-large {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 15px;
+            background: #8b0000;
+            border-radius: 50%;
+            animation: eyeBlink 4s ease-in-out infinite;
+        }
+        
+        .pig-snout-large {
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px;
+            height: 25px;
+            background: linear-gradient(145deg, #ff69b4, #dc143c);
+            border-radius: 50%;
+            border: 2px solid #8b0000;
+        }
+        
+        .pig-nostril {
+            position: absolute;
+            top: 8px;
+            width: 4px;
+            height: 6px;
+            background: #8b0000;
+            border-radius: 50%;
+        }
+        
+        .pig-nostril-left-large {
+            left: 8px;
+        }
+        
+        .pig-nostril-right-large {
+            right: 8px;
+        }
+        
+        .pig-mouth-large {
+            position: absolute;
+            top: 65px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 3px;
+            background: #333;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .pig-belly-large {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 50px;
+            background: linear-gradient(145deg, #ffffff, #f0f8ff);
+            border-radius: 50%;
+            border: 2px solid #ff69b4;
+        }
+        
+        .pig-arm {
+            position: absolute;
+            width: 20px;
+            height: 40px;
+            background: linear-gradient(145deg, #ffb6c1, #ffc0cb);
+            border-radius: 20px;
+            border: 2px solid #ff69b4;
+            top: 90px;
+        }
+        
+        .pig-arm-left-large {
+            left: 5px;
+            animation: armWave 2s ease-in-out infinite;
+        }
+        
+        .pig-arm-right-large {
+            right: 5px;
+            animation: armWave 2s ease-in-out infinite 1s;
+        }
+        
+        .pig-leg {
+            position: absolute;
+            width: 18px;
+            height: 25px;
+            background: linear-gradient(145deg, #ffb6c1, #ffc0cb);
+            border-radius: 15px;
+            border: 2px solid #ff69b4;
+            top: 120px;
+        }
+        
+        .pig-leg-left-large {
+            left: 25px;
+        }
+        
+        .pig-leg-right-large {
+            right: 25px;
+        }
+        
+        .dialogue-box {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #00ff41;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 20;
+        }
+        
+        .speaker-name {
             font-family: 'Courier New', monospace;
-            font-size: 16px;
-            color: #ffaa00;
-            text-shadow: 0 0 5px #ffaa00;
-            margin-bottom: 30px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff69b4;
+            text-shadow: 0 0 10px #ff69b4;
+            margin-bottom: 15px;
+            text-transform: uppercase;
             letter-spacing: 2px;
         }
         
-        .story-text {
-            margin: 30px 0;
-        }
-        
-        .story-line {
+        .dialogue-text {
             font-family: 'Courier New', monospace;
             font-size: 18px;
-            color: #00ff41;
-            margin: 15px 0;
-            opacity: 0;
-            animation: fadeInUp 1s ease-out forwards;
-            text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+            color: #ffffff;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+            margin-bottom: 20px;
+            line-height: 1.5;
         }
         
-        .story-line:nth-child(1) { animation-delay: 0.5s; }
-        .story-line:nth-child(2) { animation-delay: 1s; }
-        .story-line:nth-child(3) { animation-delay: 1.5s; }
-        .story-line:nth-child(4) { animation-delay: 2s; }
-        .story-line:nth-child(5) { animation-delay: 2.5s; }
-        
-        .story-prompt {
-            margin-top: 40px;
+        .continue-prompt {
             font-family: 'Courier New', monospace;
             font-size: 16px;
-            color: #ffffff;
-            opacity: 0;
-            animation: fadeIn 1s ease-out 3s forwards;
+            color: #00ff41;
+            text-shadow: 0 0 5px #00ff41;
+            text-align: right;
         }
         
         .blinking-cursor {
@@ -860,46 +1041,37 @@
             animation: fall linear infinite;
         }
         
-        /* Animations */
-        @keyframes glitch {
-            0%, 100% { transform: translateX(0); }
-            10% { transform: translateX(-2px); }
-            20% { transform: translateX(2px); }
-            30% { transform: translateX(-1px); }
-            40% { transform: translateX(1px); }
-            50% { transform: translateX(-2px); }
-            60% { transform: translateX(2px); }
-            70% { transform: translateX(-1px); }
-            80% { transform: translateX(1px); }
-            90% { transform: translateX(-2px); }
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-        
         @keyframes fall {
             to {
                 transform: translateY(100vh);
                 opacity: 0;
             }
+        }
+        
+        @keyframes characterFloat {
+            0%, 100% { transform: scale(3.5) translateY(0px); }
+            50% { transform: scale(3.5) translateY(-10px); }
+        }
+        
+        /* Animations */
+        @keyframes earWiggle {
+            0%, 100% { transform: rotate(-30deg); }
+            50% { transform: rotate(-20deg); }
+        }
+        
+        @keyframes eyeBlink {
+            0%, 90%, 100% { transform: translateX(-50%) scaleY(1); }
+            95% { transform: translateX(-50%) scaleY(0.1); }
+        }
+        
+        @keyframes armWave {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(15deg); }
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
         }
         
         /* Game Enhancement Styles */
@@ -1198,21 +1370,6 @@
             50% { transform: translateY(-50%) translateX(-10px); }
         }
         
-        @keyframes earWiggle {
-            0%, 100% { transform: rotate(-30deg); }
-            50% { transform: rotate(-20deg); }
-        }
-        
-        @keyframes eyeBlink {
-            0%, 90%, 100% { transform: translateX(-50%) scaleY(1); }
-            95% { transform: translateX(-50%) scaleY(0.1); }
-        }
-        
-        @keyframes armWave {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(15deg); }
-        }
-        
         @keyframes bubbleBounce {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -1312,55 +1469,43 @@
     <!-- Story Introduction Screen -->
     <div id="storyScreen" class="story-screen" style="display: none;">
         <div class="story-content">
-            <div class="story-text-container">
-                <div class="story-title">SYSTEM ERROR</div>
-                <div class="story-subtitle">CRITICAL LOGIC FAILURE DETECTED</div>
-                
-                <div class="story-text" id="storyText">
-                    <div class="story-line">You are a programmer trapped in a corrupted code maze...</div>
-                    <div class="story-line">The system's logic gates have malfunctioned.</div>
-                    <div class="story-line">Each pathway requires debugging to unlock.</div>
-                    <div class="story-line">Your Java knowledge is the only way out.</div>
-                    <div class="story-line">Fix the code. Escape the maze. Restore the system.</div>
-                </div>
-                
-                <div class="story-prompt">
-                    <span class="blinking-cursor">Press SPACE to initialize debugging protocol...</span>
-                </div>
-                
-                <!-- 小猪Q角色 - 移到文本旁边 -->
-                <div class="pig-q-container">
-                    <div class="pig-q">
-                        <div class="pig-body">
-                            <div class="pig-ear pig-ear-left"></div>
-                            <div class="pig-ear pig-ear-right"></div>
-                            <div class="pig-head">
-                                <div class="pig-eye pig-eye-left">
-                                    <div class="pig-pupil"></div>
+            <div class="visual-novel-container">
+                <!-- Q角色立绘 -->
+                <div class="character-portrait">
+                    <div class="pig-q-large">
+                        <div class="pig-body-large">
+                            <div class="pig-ear pig-ear-left-large"></div>
+                            <div class="pig-ear pig-ear-right-large"></div>
+                            <div class="pig-head-large">
+                                <div class="pig-eye pig-eye-left-large">
+                                    <div class="pig-pupil-large"></div>
                                 </div>
-                                <div class="pig-eye pig-eye-right">
-                                    <div class="pig-pupil"></div>
+                                <div class="pig-eye pig-eye-right-large">
+                                    <div class="pig-pupil-large"></div>
                                 </div>
-                                <div class="pig-snout">
-                                    <div class="pig-nostril pig-nostril-left"></div>
-                                    <div class="pig-nostril pig-nostril-right"></div>
+                                <div class="pig-snout-large">
+                                    <div class="pig-nostril pig-nostril-left-large"></div>
+                                    <div class="pig-nostril pig-nostril-right-large"></div>
                                 </div>
-                                <div class="pig-mouth"></div>
+                                <div class="pig-mouth-large"></div>
                             </div>
-                            <div class="pig-belly"></div>
-                            <div class="pig-arm pig-arm-left"></div>
-                            <div class="pig-arm pig-arm-right"></div>
-                            <div class="pig-leg pig-leg-left"></div>
-                            <div class="pig-leg pig-leg-right"></div>
+                            <div class="pig-belly-large"></div>
+                            <div class="pig-arm pig-arm-left-large"></div>
+                            <div class="pig-arm pig-arm-right-large"></div>
+                            <div class="pig-leg pig-leg-left-large"></div>
+                            <div class="pig-leg pig-leg-right-large"></div>
                         </div>
                     </div>
-                    
-                    <!-- 对话气泡 -->
-                    <div class="speech-bubble">
-                        <div class="bubble-content">
-                            <span id="pigSpeech">Welcome! I'm Q, your guide through this digital nightmare...</span>
-                        </div>
-                        <div class="bubble-tail"></div>
+                </div>
+                
+                <!-- 视觉小说风格对话框 -->
+                <div class="dialogue-box">
+                    <div class="speaker-name">Q</div>
+                    <div class="dialogue-text" id="dialogueText">
+                        Welcome! I'm Q, your narrator for this digital adventure...
+                    </div>
+                    <div class="continue-prompt">
+                        <span class="blinking-cursor">▶ Tap to continue</span>
                     </div>
                 </div>
             </div>
