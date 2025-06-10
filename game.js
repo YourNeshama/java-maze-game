@@ -18,14 +18,22 @@ const COIN_COSTS = {
 };
 
 class Question {
-    constructor(question, answer, explanation) {
+    constructor(question, answer, explanation, options = null) {
         this.question = question;
-        this.answer = answer;
+        this.answer = answer; // For MCQ: should be 'A', 'B', 'C', or 'D'
         this.explanation = explanation;
+        this.options = options; // Array of 4 options for MCQ
+        this.isMCQ = options !== null;
     }
 
     checkAnswer(userAnswer) {
-        return userAnswer && userAnswer.trim().toLowerCase() === this.answer.trim().toLowerCase();
+        if (this.isMCQ) {
+            // For MCQ, compare the letter (A, B, C, D)
+            return userAnswer && userAnswer.trim().toUpperCase() === this.answer.trim().toUpperCase();
+        } else {
+            // For text questions (backwards compatibility)
+            return userAnswer && userAnswer.trim().toLowerCase() === this.answer.trim().toLowerCase();
+        }
     }
 }
 
@@ -111,12 +119,12 @@ class MazeGame {
         const allQuestions = this.getAvailableGameQuestions();
         
         // Convert to Question objects for the game
-        return allQuestions.map(q => new Question(q.question, q.answer, q.explanation));
+        return allQuestions.map(q => new Question(q.question, q.answer, q.explanation, q.options));
     }
 
     getAvailableGameQuestions() {
-        const defaultQuestions = getDefaultQuestions();
-        const customQuestions = getCustomQuestions();
+        const defaultQuestions = this.getDefaultQuestions();
+        const customQuestions = this.getCustomQuestions();
         const disabledQuestions = JSON.parse(localStorage.getItem('javaMazeDisabledQuestions') || '[]');
         
         // Filter out disabled default questions
@@ -162,13 +170,151 @@ class MazeGame {
         return availableQuestions;
     }
 
+    getDefaultQuestions() {
+        return [
+            // Easy questions
+            { 
+                id: 'default_1', 
+                question: "What keyword is used to create a class in Java?", 
+                answer: "B", 
+                explanation: "The 'class' keyword defines a new class in Java", 
+                options: ["A) interface", "B) class", "C) object", "D) method"],
+                type: 'default', 
+                difficulty: 'easy' 
+            },
+            { 
+                id: 'default_2', 
+                question: "What is the primitive data type for whole numbers in Java?", 
+                answer: "C", 
+                explanation: "int is the primitive type for integer values", 
+                options: ["A) string", "B) double", "C) int", "D) char"],
+                type: 'default', 
+                difficulty: 'easy' 
+            },
+            { 
+                id: 'default_3', 
+                question: "What keyword is used to create an object?", 
+                answer: "A", 
+                explanation: "The 'new' keyword instantiates objects", 
+                options: ["A) new", "B) create", "C) make", "D) build"],
+                type: 'default', 
+                difficulty: 'easy' 
+            },
+            { 
+                id: 'default_4', 
+                question: "Which method is the main entry point in Java?", 
+                answer: "D", 
+                explanation: "public static void main(String[] args) is the main entry point", 
+                options: ["A) start()", "B) begin()", "C) init()", "D) main()"],
+                type: 'default', 
+                difficulty: 'easy' 
+            },
+            { 
+                id: 'default_5', 
+                question: "What is the default value of a boolean variable?", 
+                answer: "B", 
+                explanation: "Boolean variables default to false in Java", 
+                options: ["A) true", "B) false", "C) null", "D) 0"],
+                type: 'default', 
+                difficulty: 'easy' 
+            },
+            
+            // Medium questions
+            { 
+                id: 'default_6', 
+                question: "What keyword is used for inheritance in Java?", 
+                answer: "A", 
+                explanation: "'extends' is used to inherit from a class", 
+                options: ["A) extends", "B) implements", "C) inherits", "D) derives"],
+                type: 'default', 
+                difficulty: 'medium' 
+            },
+            { 
+                id: 'default_7', 
+                question: "Which access modifier makes a member accessible only within the same class?", 
+                answer: "C", 
+                explanation: "'private' restricts access to the same class only", 
+                options: ["A) public", "B) protected", "C) private", "D) default"],
+                type: 'default', 
+                difficulty: 'medium' 
+            },
+            { 
+                id: 'default_8', 
+                question: "What is method overloading?", 
+                answer: "B", 
+                explanation: "Method overloading means having multiple methods with the same name but different parameters", 
+                options: ["A) Changing method visibility", "B) Same name, different parameters", "C) Inheriting methods", "D) Abstract methods"],
+                type: 'default', 
+                difficulty: 'medium' 
+            },
+            
+            // Hard questions
+            { 
+                id: 'default_9', 
+                question: "What is the difference between == and .equals() in Java?", 
+                answer: "A", 
+                explanation: "== compares references, .equals() compares object content", 
+                options: ["A) == compares references, .equals() compares content", "B) They are identical", "C) == is faster", "D) .equals() is deprecated"],
+                type: 'default', 
+                difficulty: 'hard' 
+            },
+            { 
+                id: 'default_10', 
+                question: "What is a Java interface?", 
+                answer: "C", 
+                explanation: "An interface is a contract that defines method signatures without implementation", 
+                options: ["A) A concrete class", "B) A data structure", "C) A contract with method signatures", "D) A primitive type"],
+                type: 'default', 
+                difficulty: 'hard' 
+            },
+            { 
+                id: 'default_11', 
+                question: "What does the 'final' keyword do when applied to a class?", 
+                answer: "D", 
+                explanation: "The 'final' keyword prevents a class from being extended/inherited", 
+                options: ["A) Makes it abstract", "B) Makes it static", "C) Makes it immutable", "D) Prevents inheritance"],
+                type: 'default', 
+                difficulty: 'hard' 
+            }
+        ];
+    }
+
+    getCustomQuestions() {
+        return JSON.parse(localStorage.getItem('javaMazeCustomQuestions') || '[]');
+    }
+
     initializeDeadEndQuestions() {
         return [
-            new Question("What is a constructor?", "method", "A special method that initializes objects"),
-            new Question("What package contains basic Java classes?", "java.lang", "The fundamental package"),
-            new Question("What operator is used for equality comparison?", "==", "Compares two values"),
-            new Question("What is the size of int in Java?", "32", "32 bits or 4 bytes"),
-            new Question("What is the default value of boolean?", "false", "Boolean defaults to false")
+            new Question(
+                "What is a constructor?", 
+                "B", 
+                "A constructor is a special method that initializes objects",
+                ["A) A destructor", "B) A special method that initializes objects", "C) A variable", "D) A loop"]
+            ),
+            new Question(
+                "What package contains basic Java classes?", 
+                "A", 
+                "java.lang contains the fundamental Java classes",
+                ["A) java.lang", "B) java.util", "C) java.io", "D) java.net"]
+            ),
+            new Question(
+                "What operator is used for equality comparison?", 
+                "C", 
+                "== is used to compare two values for equality",
+                ["A) =", "B) ===", "C) ==", "D) .equals()"]
+            ),
+            new Question(
+                "What is the size of int in Java?", 
+                "B", 
+                "int is 32 bits or 4 bytes in Java",
+                ["A) 16 bits", "B) 32 bits", "C) 64 bits", "D) 8 bits"]
+            ),
+            new Question(
+                "What is the default value of boolean?", 
+                "A", 
+                "Boolean variables default to false in Java",
+                ["A) false", "B) true", "C) null", "D) 0"]
+            )
         ];
     }
 
@@ -407,6 +553,12 @@ class MazeGame {
     }
 
     handleDirectionalInput(dx, dy) {
+        // Prevent rapid-fire questions - only one question per movement
+        if (this.isMoving) {
+            console.log('Movement already in progress, ignoring input');
+            return;
+        }
+        
         // Store the intended direction
         this.intendedDirection = { dx, dy };
         
@@ -429,6 +581,9 @@ class MazeGame {
             return;
         }
 
+        // Lock movement while asking question
+        this.isMoving = true;
+        
         // We have questions - ask one immediately
         const questionIndex = Math.floor(Math.random() * this.questions.length);
         const question = this.questions[questionIndex];
@@ -444,6 +599,9 @@ class MazeGame {
         this.collectCoin(this.playerX, this.playerY);
         this.draw();
         this.checkExit();
+        
+        // Unlock movement after executing move
+        this.isMoving = false;
     }
 
     findNearestDeadEnd(x, y) {
@@ -840,8 +998,21 @@ class MazeGame {
     }
 
     handleStoryQuestion(question, newX, newY) {
-        // Directly show the question without debug messages
-        const userAnswer = prompt(`${question.question}`);
+        // Create a multiple choice prompt
+        let promptText = question.question + "\n\n";
+        
+        if (question.isMCQ && question.options) {
+            // Add multiple choice options
+            question.options.forEach(option => {
+                promptText += option + "\n";
+            });
+            promptText += "\nEnter your answer (A, B, C, or D):";
+        } else {
+            // Fallback for non-MCQ questions
+            promptText += "Enter your answer:";
+        }
+        
+        const userAnswer = prompt(promptText);
         this.handleQuestionAnswer(question, userAnswer, newX, newY);
     }
 
@@ -903,6 +1074,9 @@ class MazeGame {
                 this.updateQuestionCounter();
             }
         }
+        
+        // Unlock movement after question is processed
+        this.isMoving = false;
     }
 }
 

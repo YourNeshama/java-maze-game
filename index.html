@@ -952,17 +952,51 @@
                         <div style="margin-bottom: 15px;">
                             <label style="color: #00ff41; font-weight: bold; display: block; margin-bottom: 5px;">Question:</label>
                             <textarea id="questionText" rows="3" style="width: 100%; padding: 10px; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff41; border-radius: 5px; color: #ffffff; font-family: 'Courier New', monospace; resize: vertical;" placeholder="Enter your Java programming question here..." required></textarea>
-            </div>
-            
+                        </div>
+                        
                         <div style="margin-bottom: 15px;">
-                            <label style="color: #00ff41; font-weight: bold; display: block; margin-bottom: 5px;">Answer:</label>
-                            <input type="text" id="answerText" style="width: 100%; padding: 10px; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff41; border-radius: 5px; color: #ffffff; font-family: 'Courier New', monospace;" placeholder="Enter the correct answer..." required>
-                    </div>
+                            <label style="color: #00ff41; font-weight: bold; display: block; margin-bottom: 8px;">Multiple Choice Options:</label>
+                            <div style="display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center;">
+                                <label style="color: #ff69b4; font-weight: bold;">A)</label>
+                                <input type="text" id="optionA" style="padding: 8px; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff41; border-radius: 5px; color: #ffffff; font-family: 'Courier New', monospace;" placeholder="Option A" required>
+                                
+                                <label style="color: #ff69b4; font-weight: bold;">B)</label>
+                                <input type="text" id="optionB" style="padding: 8px; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff41; border-radius: 5px; color: #ffffff; font-family: 'Courier New', monospace;" placeholder="Option B" required>
+                                
+                                <label style="color: #ff69b4; font-weight: bold;">C)</label>
+                                <input type="text" id="optionC" style="padding: 8px; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff41; border-radius: 5px; color: #ffffff; font-family: 'Courier New', monospace;" placeholder="Option C" required>
+                                
+                                <label style="color: #ff69b4; font-weight: bold;">D)</label>
+                                <input type="text" id="optionD" style="padding: 8px; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff41; border-radius: 5px; color: #ffffff; font-family: 'Courier New', monospace;" placeholder="Option D" required>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label style="color: #00ff41; font-weight: bold; display: block; margin-bottom: 8px;">Correct Answer:</label>
+                            <div style="display: flex; gap: 15px; justify-content: center;">
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 15px; background: rgba(255, 105, 180, 0.1); border: 1px solid #ff69b4; border-radius: 8px;">
+                                    <input type="radio" name="correctAnswer" value="A" checked style="margin-right: 8px; accent-color: #ff69b4;">
+                                    <span style="color: #ff69b4; font-weight: bold;">A</span>
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 15px; background: rgba(255, 105, 180, 0.1); border: 1px solid #ff69b4; border-radius: 8px;">
+                                    <input type="radio" name="correctAnswer" value="B" style="margin-right: 8px; accent-color: #ff69b4;">
+                                    <span style="color: #ff69b4; font-weight: bold;">B</span>
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 15px; background: rgba(255, 105, 180, 0.1); border: 1px solid #ff69b4; border-radius: 8px;">
+                                    <input type="radio" name="correctAnswer" value="C" style="margin-right: 8px; accent-color: #ff69b4;">
+                                    <span style="color: #ff69b4; font-weight: bold;">C</span>
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 15px; background: rgba(255, 105, 180, 0.1); border: 1px solid #ff69b4; border-radius: 8px;">
+                                    <input type="radio" name="correctAnswer" value="D" style="margin-right: 8px; accent-color: #ff69b4;">
+                                    <span style="color: #ff69b4; font-weight: bold;">D</span>
+                                </label>
+                            </div>
+                        </div>
                         
                         <div style="margin-bottom: 15px;">
                             <label style="color: #00ff41; font-weight: bold; display: block; margin-bottom: 5px;">Explanation:</label>
                             <textarea id="explanationText" rows="2" style="width: 100%; padding: 10px; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff41; border-radius: 5px; color: #ffffff; font-family: 'Courier New', monospace; resize: vertical;" placeholder="Explain why this answer is correct..." required></textarea>
-                    </div>
+                        </div>
                         
                         <div style="margin-bottom: 20px;">
                             <label style="color: #00ff41; font-weight: bold; display: block; margin-bottom: 8px;">Difficulty Level:</label>
@@ -979,8 +1013,8 @@
                                     <input type="radio" name="difficulty" value="hard" style="margin-right: 8px; accent-color: #ff4444;">
                                     <span style="color: #ff4444; font-weight: bold;">🔴 Hard</span>
                                 </label>
-                </div>
-                </div>
+                            </div>
+                        </div>
                         
                         <div style="text-align: center;">
                             <button type="submit" style="background: linear-gradient(145deg, rgba(0, 255, 65, 0.3), rgba(0, 200, 50, 0.4)); color: #00ff41; border: 2px solid #00ff41; border-radius: 8px; padding: 12px 30px; font-family: 'Courier New', monospace; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">
@@ -1814,20 +1848,25 @@
     // Custom question management functions
     function addCustomQuestion() {
         const questionText = document.getElementById('questionText').value.trim();
-        const answerText = document.getElementById('answerText').value.trim();
+        const optionA = document.getElementById('optionA').value.trim();
+        const optionB = document.getElementById('optionB').value.trim();
+        const optionC = document.getElementById('optionC').value.trim();
+        const optionD = document.getElementById('optionD').value.trim();
+        const correctAnswer = document.querySelector('input[name="correctAnswer"]:checked').value;
         const explanationText = document.getElementById('explanationText').value.trim();
         const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
 
-        if (!questionText || !answerText || !explanationText) {
-            showDebugPopup('❌ Please fill in all fields', 'error');
+        if (!questionText || !optionA || !optionB || !optionC || !optionD || !explanationText) {
+            alert('❌ Please fill in all fields including all 4 multiple choice options');
             return;
         }
 
         const customQuestion = {
             id: 'custom_' + Date.now(),
             question: questionText,
-            answer: answerText,
+            answer: correctAnswer,
             explanation: explanationText,
+            options: [`A) ${optionA}`, `B) ${optionB}`, `C) ${optionC}`, `D) ${optionD}`],
             difficulty: difficulty,
             type: 'custom',
             dateAdded: new Date().toLocaleDateString()
@@ -1847,13 +1886,17 @@
         updateQuestionStats();
         loadCustomQuestions();
 
-        showDebugPopup('✅ Custom question added successfully!', 'success');
+        alert('✅ Custom MCQ added successfully!');
     }
 
     function clearCustomQuestionForm() {
         document.getElementById('questionText').value = '';
-        document.getElementById('answerText').value = '';
+        document.getElementById('optionA').value = '';
+        document.getElementById('optionB').value = '';
+        document.getElementById('optionC').value = '';
+        document.getElementById('optionD').value = '';
         document.getElementById('explanationText').value = '';
+        document.querySelector('input[name="correctAnswer"][value="A"]').checked = true;
         document.querySelector('input[name="difficulty"][value="easy"]').checked = true;
     }
 
@@ -1865,7 +1908,7 @@
             customQuestionsList.innerHTML = `
                 <div style="text-align: center; color: #aaaaaa; padding: 20px;">
                     📝 No custom questions yet.<br>
-                    Create your first custom question above!
+                    Create your first custom MCQ above!
                 </div>
             `;
             return;
@@ -1883,6 +1926,10 @@
                 'medium': '🟡',
                 'hard': '🔴'
             }[question.difficulty];
+            
+            const optionsHTML = question.options ? 
+                question.options.map(option => `<div style="margin: 2px 0; color: #cccccc;">${option}</div>`).join('') :
+                '<div style="color: #aaaaaa; font-style: italic;">Text-based question</div>';
 
             return `
                 <div style="background: rgba(0, 0, 0, 0.6); border: 1px solid ${difficultyColor}; border-radius: 8px; padding: 15px; margin: 10px 0;">
@@ -1897,8 +1944,12 @@
                     <div style="color: #ffffff; margin-bottom: 8px;">
                         <strong>Q:</strong> ${question.question}
                     </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong style="color: #ff69b4;">Options:</strong>
+                        ${optionsHTML}
+                    </div>
                     <div style="color: #00ff41; margin-bottom: 8px;">
-                        <strong>A:</strong> ${question.answer}
+                        <strong>Correct Answer:</strong> ${question.answer}
                     </div>
                     <div style="color: #aaaaaa; font-size: 14px; margin-bottom: 8px;">
                         <strong>Explanation:</strong> ${question.explanation}
