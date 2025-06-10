@@ -1171,6 +1171,14 @@
             startScreen.style.display = 'none';
             gameContainer.style.display = 'block';
             currentGame = new MazeGame(difficulty);
+            
+            // Make game accessible globally for debugging
+            window.currentGame = currentGame;
+            window.unlockMovement = () => currentGame.forceUnlockMovement();
+            window.gameStatus = () => currentGame.getGameStatus();
+            window.addQuestions = () => currentGame.addMoreQuestions();
+            
+            console.log('🔧 Debug functions available: unlockMovement(), gameStatus(), addQuestions()');
         }
         
         // Force attach button events with error handling

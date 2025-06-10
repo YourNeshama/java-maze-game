@@ -555,9 +555,13 @@ class MazeGame {
     handleDirectionalInput(dx, dy) {
         // Prevent rapid-fire questions - only one question per movement
         if (this.isMoving) {
-            console.log('Movement already in progress, ignoring input');
+            console.log('Movement already in progress, ignoring input. Current lock status:', this.isMoving);
+            console.log('Questions remaining:', this.remainingQuestions);
+            console.log('Player position:', this.playerX, this.playerY);
             return;
         }
+        
+        console.log('🎮 Movement input received:', { dx, dy, questionsLeft: this.remainingQuestions });
         
         // Store the intended direction
         this.intendedDirection = { dx, dy };
@@ -567,12 +571,13 @@ class MazeGame {
         const newY = this.playerY + dy;
         
         if (!this.isValidCell(newX, newY) || this.maze[newY][newX] === WALL) {
-            // Removed debug popup for invalid moves
+            console.log('❌ Invalid move to:', newX, newY);
             return;
         }
 
         // If no questions left, check for dead ends then allow movement
         if (this.remainingQuestions === 0) {
+            console.log('✅ No questions remaining, allowing free movement');
             if (this.maze[newY][newX] === DEAD_END) {
                 alert("That's a dead end! Choose another path.");
                 return;
@@ -581,13 +586,33 @@ class MazeGame {
             return;
         }
 
+        // Check if we have questions available
+        if (this.questions.length === 0) {
+            console.log('⚠️ No questions available in the pool!');
+            // Allow movement anyway
+            this.executeMove(newX, newY);
+            return;
+        }
+
         // Lock movement while asking question
         this.isMoving = true;
+        console.log('🔒 Movement locked for question');
+        
+        // Safety timeout to prevent permanent lock (30 seconds)
+        this.movementTimeout = setTimeout(() => {
+            if (this.isMoving) {
+                console.log('⚠️ SAFETY TIMEOUT: Unlocking movement after 30 seconds');
+                this.isMoving = false;
+                alert('🔧 Movement unlocked due to timeout. You can continue playing.');
+            }
+        }, 30000);
         
         // We have questions - ask one immediately
         const questionIndex = Math.floor(Math.random() * this.questions.length);
         const question = this.questions[questionIndex];
         this.questions.splice(questionIndex, 1);
+        
+        console.log('❓ Asking question:', question.question);
         
         // Use story-based question presentation
         this.handleStoryQuestion(question, newX, newY);
@@ -1017,8 +1042,11 @@ class MazeGame {
     }
 
     handleQuestionAnswer(question, userAnswer, newX, newY) {
+        console.log('🎯 Processing answer:', userAnswer, 'for question:', question.question);
+        
         if (question.checkAnswer(userAnswer)) {
             // CORRECT ANSWER - ALLOW MOVEMENT
+            console.log('✅ Correct answer!');
             soundEffects.correctAnswer();
             this.addCoins(COIN_REWARDS.CORRECT_ANSWER);
             
@@ -1032,6 +1060,7 @@ class MazeGame {
             
         } else {
             // WRONG ANSWER - OPTION TO SPEND COINS OR GO BACK
+            console.log('❌ Wrong answer. Correct answer was:', question.answer);
             soundEffects.wrongAnswer();
             this.handleWrongAnswer();
             
@@ -1050,6 +1079,7 @@ class MazeGame {
                 
                 if (useCoins) {
                     // Player chooses to spend coins - execute the move
+                    console.log('💰 Player spent coins to continue');
                     this.addCoins(-coinCost);
                     shouldGoBack = false;
                     this.executeMove(newX, newY);
@@ -1061,6 +1091,7 @@ class MazeGame {
             
             if (shouldGoBack) {
                 // Send back to start
+                console.log('🔄 Sending player back to start');
                 this.playerX = 0;
                 this.playerY = 0;
                 
@@ -1077,6 +1108,50 @@ class MazeGame {
         
         // Unlock movement after question is processed
         this.isMoving = false;
+        console.log('🔓 Movement unlocked');
+        
+        // Clear safety timeout
+        if (this.movementTimeout) {
+            clearTimeout(this.movementTimeout);
+            this.movementTimeout = null;
+        }
+    }
+
+    // Emergency debug functions - can be called from console
+    forceUnlockMovement() {
+        this.isMoving = false;
+        if (this.movementTimeout) {
+            clearTimeout(this.movementTimeout);
+            this.movementTimeout = null;
+        }
+        console.log('🚑 EMERGENCY: Movement force unlocked!');
+        return 'Movement unlocked successfully';
+    }
+
+    getGameStatus() {
+        return {
+            isMoving: this.isMoving,
+            playerPosition: { x: this.playerX, y: this.playerY },
+            remainingQuestions: this.remainingQuestions,
+            questionsInPool: this.questions.length,
+            coins: this.coins,
+            difficulty: this.difficulty,
+            mazeSize: this.size
+        };
+    }
+
+    addMoreQuestions() {
+        // Add some backup questions if we run out
+        this.questions.push(
+            new Question(
+                "Emergency question: What is Java?", 
+                "B", 
+                "Java is a programming language",
+                ["A) A coffee", "B) A programming language", "C) An island", "D) A car"]
+            )
+        );
+        console.log('🆘 Added emergency question. Questions now:', this.questions.length);
+        return 'Emergency question added';
     }
 }
 
