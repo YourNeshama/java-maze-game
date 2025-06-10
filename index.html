@@ -864,6 +864,22 @@
         <div id="startContent">
             <h1>🎮 Java Learning Maze Game</h1>
             
+            <!-- Visible Debug Panel -->
+            <div id="debugPanel" style="
+                background: rgba(255, 68, 68, 0.1);
+                border: 2px solid #ff4444;
+                border-radius: 10px;
+                padding: 15px;
+                margin: 20px 0;
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                color: #ff4444;
+                text-align: left;
+            ">
+                <div style="color: #ffaa00; font-weight: bold; margin-bottom: 10px;">🔧 DEBUG STATUS:</div>
+                <div id="debugStatus">⏳ Loading...</div>
+            </div>
+            
             <div class="difficulty-selection">
                 <h2>Choose Your Challenge</h2>
                 
@@ -1168,6 +1184,34 @@
         initializeAudioSystem();
         
         console.log('🚑 EMERGENCY FIX APPLIED - Game should work now!');
+        
+        // Add visible debug functions
+        function updateDebugStatus(message, color = '#ff4444') {
+            const debugStatus = document.getElementById('debugStatus');
+            if (debugStatus) {
+                const timestamp = new Date().toLocaleTimeString();
+                debugStatus.innerHTML += `<div style="color: ${color}; margin: 2px 0;">[${timestamp}] ${message}</div>`;
+                debugStatus.scrollTop = debugStatus.scrollHeight;
+            }
+            console.log(message);
+        }
+        
+        // Test button existence and events
+        updateDebugStatus('🔍 Checking button elements...');
+        updateDebugStatus(easyBtn ? '✅ Easy button found' : '❌ Easy button NOT found', easyBtn ? '#00ff41' : '#ff4444');
+        updateDebugStatus(mediumBtn ? '✅ Medium button found' : '❌ Medium button NOT found', mediumBtn ? '#00ff41' : '#ff4444');
+        updateDebugStatus(hardBtn ? '✅ Hard button found' : '❌ Hard button NOT found', hardBtn ? '#00ff41' : '#ff4444');
+        
+        updateDebugStatus('🔧 Button events attached');
+        updateDebugStatus('✅ Ready to play! Click any difficulty button.', '#00ff41');
+        
+        // Add click test messages to startGame function
+        const originalStartGame = startGame;
+        startGame = function(difficulty) {
+            updateDebugStatus(`🎮 ${difficulty.toUpperCase()} button clicked!`, '#00ff41');
+            updateDebugStatus('🚀 Starting game...', '#00ff41');
+            originalStartGame(difficulty);
+        };
         
         // Rest of the original initialization code (but won't interfere)
         const originalStartScreen = document.getElementById('startScreen');
