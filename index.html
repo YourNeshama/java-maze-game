@@ -1888,33 +1888,5 @@ Best regards,
         }
     }
     </script>
-    <!-- Detection script for game.js and button event binding -->
-    <script>
-    window.addEventListener('DOMContentLoaded', function() {
-        // Check if MazeGame is loaded
-        if (typeof MazeGame === 'undefined') {
-            alert('❌ game.js was NOT loaded!\nPlease check <script src="game.js"></scr' + 'ipt> path or refresh the page.');
-            return;
-        }
-        // Check if the button exists
-        const easyBtn = document.getElementById('easyBtn');
-        if (!easyBtn) {
-            alert('❌ Could not find a button with id="easyBtn" on the page!\nPlease check your HTML structure.');
-            return;
-        }
-        // Check if event is bound (try triggering click)
-        const oldOnClick = easyBtn.onclick;
-        easyBtn.onclick = function() {
-            alert('✅ Button event binding is working! Clicking will start the game.');
-            // Restore original event
-            if (oldOnClick) oldOnClick();
-            easyBtn.onclick = oldOnClick;
-        };
-        // Prompt user to test
-        setTimeout(function() {
-            alert('🛠️ Detection mode: Please click the EASY button and see if you get the "Button event binding is working!" message.');
-        }, 500);
-    });
-    </script>
 </body>
 </html> 
