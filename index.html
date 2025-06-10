@@ -887,6 +887,7 @@
                 <button id="questionBankBtn">Question Bank</button>
                 <button id="help-btn">Help</button>
                 <button id="meetQBtn">Meet Q Again</button>
+                <button id="whereIsQBtn" style="background: linear-gradient(145deg, rgba(255, 105, 180, 0.3), rgba(255, 105, 180, 0.5)); color: #ff69b4; border: 2px solid #ff69b4;">🐷 Where's Q?</button>
             </div>
         </div>
     </div>
@@ -1107,7 +1108,7 @@
         const gameContainer = document.getElementById('gameContainer');
         
         // Check if user wants to see Q first
-        const shouldShowQ = !localStorage.getItem('javaMazeSkipStory');
+        const shouldShowQ = localStorage.getItem('javaMazeSkipStory') !== 'true';
         
         if (shouldShowQ) {
             // Show Q's story first
@@ -1122,6 +1123,11 @@
             if (gameContainer) gameContainer.style.display = 'none';
             updateDifficultyButtonStatus();
         }
+        
+        // Clear skip setting so Q shows up next time
+        setTimeout(() => {
+            localStorage.removeItem('javaMazeSkipStory');
+        }, 1000);
         
         // Force setup button events immediately
         let currentGame = null;
@@ -1229,6 +1235,13 @@
             localStorage.setItem('javaMazeSkipStory', 'true');
             hideStoryScreen();
         };
+        
+        // Force Q to appear next visit
+        window.forceShowQ = () => {
+            localStorage.removeItem('javaMazeSkipStory');
+            console.log('🐷 Q will appear on next page load');
+            alert('🐷 Q has been restored! Refresh the page to see him again!');
+        };
 
         // Test function to simulate completing all difficulties
         window.testCompleteAllDifficulties = () => {
@@ -1289,6 +1302,15 @@
         // NEW: Meet Q Again button
         document.getElementById('meetQBtn').addEventListener('click', () => {
             console.log('🐷 Meet Q Again clicked!');
+            startScreen.style.display = 'none';
+            storyScreen.style.display = 'flex';
+            showStoryScreen();
+        });
+
+        // NEW: Where's Q button
+        document.getElementById('whereIsQBtn').addEventListener('click', () => {
+            console.log('🐷 Where\'s Q clicked - Forcing Q to appear!');
+            localStorage.removeItem('javaMazeSkipStory');
             startScreen.style.display = 'none';
             storyScreen.style.display = 'flex';
             showStoryScreen();
