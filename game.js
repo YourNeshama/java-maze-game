@@ -790,7 +790,7 @@ class MazeGame {
             
             if (resetCoins) {
                 this.coins = 0;
-                showDebugPopup('💳 System debt cleared - Fresh start!', 'success');
+                console.log('💳 System debt cleared - Fresh start!');
             }
         }
         
@@ -909,12 +909,14 @@ class MazeGame {
 // Q's dialogue system
 function startPigQDialogue() {
     const pigMessages = [
-        "Hello there! I'm Q, your guide.",
+        "Hello there! I'm Q, your guide! 🐷",
+        "Miss me? I'm always here to help!",
         "You are a programmer... but something's wrong.",
         "You've been trapped in this digital maze.",
         "The code around you is corrupted and broken.",
         "As a trapped programmer, you must use your skills.",
-        "Debug your way out of this nightmare!"
+        "Debug your way out of this nightmare!",
+        "Good luck, brave coder! 💻✨"
     ];
     
     const dialogueElement = document.getElementById('dialogueText');
@@ -933,20 +935,20 @@ function startPigQDialogue() {
             
             messageIndex++;
             
-            // Change message every 10 seconds (extended interval time)
+            // Change message every 8 seconds (faster than before)
             if (messageIndex < pigMessages.length) {
-                setTimeout(updateDialogue, 10000);
+                setTimeout(updateDialogue, 8000);
             } else {
                 // Q dialogue finished, prepare to show final prompt
                 setTimeout(() => {
-                    dialogueElement.textContent = "Now let me show you the full picture of your situation...";
-                    document.querySelector('.continue-prompt .blinking-cursor').textContent = '▶ Tap to continue';
-                }, 5000);
+                    dialogueElement.textContent = "Ready to start your debugging adventure?";
+                    document.querySelector('.continue-prompt .blinking-cursor').textContent = '▶ Tap to begin coding journey';
+                }, 3000);
             }
         }
     }
     
-    // Start Q's dialogue (added initial delay)
+    // Start Q's dialogue
     setTimeout(updateDialogue, 1000);
 }
 
