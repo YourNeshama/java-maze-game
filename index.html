@@ -883,14 +883,10 @@
                 </div>
             </div>
 
-            <div class="total-coins-display">
-                <h3>Total Coins Earned: <span id="totalCoinCount">0</span></h3>
-                <button id="resetCoinsBtn">Reset Coins</button>
-            </div>
-
             <div class="game-controls">
                 <button id="questionBankBtn">Question Bank</button>
                 <button id="help-btn">Help</button>
+                <button id="meetQBtn">Meet Q Again</button>
             </div>
         </div>
     </div>
@@ -1110,10 +1106,22 @@
         const storyScreen = document.getElementById('storyScreen');
         const gameContainer = document.getElementById('gameContainer');
         
-        // Force show start screen immediately
-        if (startScreen) startScreen.style.display = 'flex';
-        if (storyScreen) storyScreen.style.display = 'none';
-        if (gameContainer) gameContainer.style.display = 'none';
+        // Check if user wants to see Q first
+        const shouldShowQ = !localStorage.getItem('javaMazeSkipStory');
+        
+        if (shouldShowQ) {
+            // Show Q's story first
+            if (startScreen) startScreen.style.display = 'none';
+            if (storyScreen) storyScreen.style.display = 'flex';
+            if (gameContainer) gameContainer.style.display = 'none';
+            showStoryScreen();
+        } else {
+            // Go straight to game selection
+            if (startScreen) startScreen.style.display = 'flex';
+            if (storyScreen) storyScreen.style.display = 'none';
+            if (gameContainer) gameContainer.style.display = 'none';
+            updateDifficultyButtonStatus();
+        }
         
         // Force setup button events immediately
         let currentGame = null;
@@ -1162,7 +1170,6 @@
         
         // Update difficulty status
         updateDifficultyButtonStatus();
-        updateTotalCoinsDisplay();
         
         // Initialize other systems
         initializeAudioSystem();
@@ -1257,8 +1264,9 @@
         document.getElementById('mediumBtn').addEventListener('click', () => startGame('medium'));
         document.getElementById('hardBtn').addEventListener('click', () => startGame('hard'));
 
-        // Add click event listener to new game button
+        // Add click event listener to new game button - FIXED
         document.getElementById('newGameBtn').addEventListener('click', () => {
+            console.log('🔄 New Game clicked - Returning to start screen');
             startScreen.style.display = 'flex';
             gameContainer.style.display = 'none';
             if (currentGame) {
@@ -1267,7 +1275,7 @@
             updateDifficultyButtonStatus();
         });
 
-        // Add event listeners for other buttons
+        // Add event listeners for other buttons - RESTORED
         document.getElementById('questionBankBtn').addEventListener('click', () => {
             openModal('questionBankModal');
             updateQuestionStats();
@@ -1278,15 +1286,15 @@
             openModal('helpModal');
         });
 
-        document.getElementById('resetCoinsBtn').addEventListener('click', () => {
-            if (confirm('🪙 RESET COIN BANK\n\nAre you sure you want to reset your total coins to 0?\nThis action cannot be undone.')) {
-                localStorage.setItem('javaMazeTotalCoins', '0');
-                updateTotalCoinsDisplay();
-                showDebugPopup('💰 Total coins reset to 0', 'success');
-            }
+        // NEW: Meet Q Again button
+        document.getElementById('meetQBtn').addEventListener('click', () => {
+            console.log('🐷 Meet Q Again clicked!');
+            startScreen.style.display = 'none';
+            storyScreen.style.display = 'flex';
+            showStoryScreen();
         });
 
-        // Add custom question form event listener
+        // Custom question form event listener - RESTORED
         document.getElementById('customQuestionForm').addEventListener('submit', (e) => {
             e.preventDefault();
             addCustomQuestion();
@@ -1465,12 +1473,14 @@
     // Q's dialogue system
     function startPigQDialogue() {
         const pigMessages = [
-            "Hello there! I'm Q, your guide.",
+            "Hello there! I'm Q, your guide! 🐷",
+            "Miss me? I'm always here to help!",
             "You are a programmer... but something's wrong.",
             "You've been trapped in this digital maze.",
             "The code around you is corrupted and broken.",
             "As a trapped programmer, you must use your skills.",
-            "Debug your way out of this nightmare!"
+            "Debug your way out of this nightmare!",
+            "Good luck, brave coder! 💻✨"
         ];
         
         const dialogueElement = document.getElementById('dialogueText');
@@ -1489,15 +1499,15 @@
                 
                 messageIndex++;
                 
-                // Change message every 10 seconds (extended from 7 seconds)
+                // Change message every 8 seconds (faster than before)
                 if (messageIndex < pigMessages.length) {
-                    setTimeout(updateDialogue, 10000);
+                    setTimeout(updateDialogue, 8000);
                 } else {
                     // Q dialogue finished, prepare to show final prompt
                     setTimeout(() => {
-                        dialogueElement.textContent = "Now let me show you the full picture of your situation...";
-                        document.querySelector('.continue-prompt .blinking-cursor').textContent = '▶ Tap to continue';
-                    }, 5000);
+                        dialogueElement.textContent = "Ready to start your debugging adventure?";
+                        document.querySelector('.continue-prompt .blinking-cursor').textContent = '▶ Tap to begin coding journey';
+                    }, 3000);
                 }
             }
         }
@@ -1519,7 +1529,6 @@
         const currentTotal = getTotalCoins();
         const newTotal = currentTotal + gameCoins;
         saveTotalCoins(newTotal);
-        updateTotalCoinsDisplay();
         return newTotal;
     }
 
