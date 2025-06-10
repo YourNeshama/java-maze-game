@@ -415,7 +415,7 @@ class MazeGame {
         const newY = this.playerY + dy;
         
         if (!this.isValidCell(newX, newY) || this.maze[newY][newX] === WALL) {
-            showDebugPopup('❌ Invalid move - Wall detected!', 'error');
+            // Removed debug popup for invalid moves
             return;
         }
 
@@ -460,7 +460,6 @@ class MazeGame {
         if (this.playerX === this.size - 1 && this.playerY === this.size - 1) {
             // At exit - check if we need more questions
             if (this.remainingQuestions > 0) {
-                showDebugPopup('⚠️ SYSTEM INCOMPLETE - More debugging required!', 'error');
                 alert('You need to answer all questions before finishing! Questions remaining: ' + this.remainingQuestions);
                 // Send back to start (the only dead end)
                 this.playerX = 0;
@@ -472,7 +471,6 @@ class MazeGame {
                 
                 // Add coins to total
                 const newTotal = addToTotalCoins(this.coins);
-                showDebugPopup('🎉 SYSTEM RESTORED - ESCAPE SUCCESSFUL!', 'success');
                 
                 // Check if all difficulties are completed
                 const completedDifficulties = this.getCompletedDifficulties();
@@ -820,7 +818,6 @@ class MazeGame {
             
             // Play coin collection sound
             soundEffects.coinCollect();
-            showDebugPopup('💰 Data token acquired!');
             
             return true;
         }
@@ -843,30 +840,14 @@ class MazeGame {
     }
 
     handleStoryQuestion(question, newX, newY) {
-        const debugMessages = [
-            "🔍 Logic gate blocked - Debug required",
-            "⚠️ Syntax barrier detected - Fix to proceed", 
-            "🛠️ Code compilation failed - Resolve error",
-            "🔧 System malfunction - Apply knowledge patch",
-            "💻 Runtime exception - Debug to continue"
-        ];
-        
-        const randomMessage = debugMessages[Math.floor(Math.random() * debugMessages.length)];
-        showDebugPopup(randomMessage);
-        
-        soundEffects.debugMode();
-        
-        // After a brief delay, show the actual question
-        setTimeout(() => {
-            const userAnswer = prompt(`[DEBUG MODE ACTIVATED]\n\n${question.question}`);
-            this.handleQuestionAnswer(question, userAnswer, newX, newY);
-        }, 1500);
+        // Directly show the question without debug messages
+        const userAnswer = prompt(`${question.question}`);
+        this.handleQuestionAnswer(question, userAnswer, newX, newY);
     }
 
     handleQuestionAnswer(question, userAnswer, newX, newY) {
         if (question.checkAnswer(userAnswer)) {
             // CORRECT ANSWER - ALLOW MOVEMENT
-            showDebugPopup('✅ CODE COMPILED SUCCESSFULLY!', 'success');
             soundEffects.correctAnswer();
             this.addCoins(COIN_REWARDS.CORRECT_ANSWER);
             
@@ -880,7 +861,6 @@ class MazeGame {
             
         } else {
             // WRONG ANSWER - OPTION TO SPEND COINS OR GO BACK
-            showDebugPopup(`❌ SYNTAX ERROR: ${question.answer}`, 'error');
             soundEffects.wrongAnswer();
             this.handleWrongAnswer();
             
@@ -901,12 +881,10 @@ class MazeGame {
                     // Player chooses to spend coins - execute the move
                     this.addCoins(-coinCost);
                     shouldGoBack = false;
-                    showDebugPopup(`💰 Override successful! -${coinCost} tokens`);
                     this.executeMove(newX, newY);
                 }
             } else {
                 // Not enough coins
-                showDebugPopup(`❌ Insufficient tokens for override!`, 'error');
                 alert(`💻 INSUFFICIENT DATA TOKENS!\nRequired: ${coinCost} tokens\nAvailable: ${this.coins}\nInitiating system reset...`);
             }
             
@@ -917,8 +895,6 @@ class MazeGame {
                 
                 // Update question counter based on new position
                 this.updateQuestionCounter();
-                
-                showDebugPopup(`🔄 System reset - Returned to origin`);
                 
                 this.handleDeadEnd();
                 this.draw();
