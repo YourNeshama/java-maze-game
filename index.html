@@ -1105,17 +1105,75 @@
     window.onload = () => {
         console.log('🚀 GAME LOADING - Window loaded - Initializing game...');
         
+        // EMERGENCY FIX: Bypass everything and go straight to working game
         const startScreen = document.getElementById('startScreen');
         const storyScreen = document.getElementById('storyScreen');
         const gameContainer = document.getElementById('gameContainer');
+        
+        // Force show start screen immediately
+        if (startScreen) startScreen.style.display = 'flex';
+        if (storyScreen) storyScreen.style.display = 'none';
+        if (gameContainer) gameContainer.style.display = 'none';
+        
+        // Force setup button events immediately
         let currentGame = null;
-
-        console.log('🔍 Found elements:', {
-            startScreen: !!startScreen,
-            storyScreen: !!storyScreen,
-            gameContainer: !!gameContainer
-        });
-
+        
+        function startGame(difficulty) {
+            console.log(`🎮 Starting game with difficulty: ${difficulty}`);
+            startScreen.style.display = 'none';
+            gameContainer.style.display = 'block';
+            currentGame = new MazeGame(difficulty);
+        }
+        
+        // Force attach button events with error handling
+        const easyBtn = document.getElementById('easyBtn');
+        const mediumBtn = document.getElementById('mediumBtn');
+        const hardBtn = document.getElementById('hardBtn');
+        
+        if (easyBtn) {
+            easyBtn.onclick = () => {
+                console.log('✅ EASY button clicked!');
+                startGame('easy');
+            };
+            console.log('✅ Easy button event attached');
+        } else {
+            console.error('❌ Easy button not found!');
+        }
+        
+        if (mediumBtn) {
+            mediumBtn.onclick = () => {
+                console.log('✅ MEDIUM button clicked!');
+                startGame('medium');
+            };
+            console.log('✅ Medium button event attached');
+        } else {
+            console.error('❌ Medium button not found!');
+        }
+        
+        if (hardBtn) {
+            hardBtn.onclick = () => {
+                console.log('✅ HARD button clicked!');
+                startGame('hard');
+            };
+            console.log('✅ Hard button event attached');
+        } else {
+            console.error('❌ Hard button not found!');
+        }
+        
+        // Update difficulty status
+        updateDifficultyButtonStatus();
+        updateTotalCoinsDisplay();
+        
+        // Initialize other systems
+        initializeAudioSystem();
+        
+        console.log('🚑 EMERGENCY FIX APPLIED - Game should work now!');
+        
+        // Rest of the original initialization code (but won't interfere)
+        const originalStartScreen = document.getElementById('startScreen');
+        const originalStoryScreen = document.getElementById('storyScreen');
+        const originalGameContainer = document.getElementById('gameContainer');
+        
         // Initialize audio system first
         initializeAudioSystem();
         
@@ -1193,12 +1251,6 @@
             console.log('✅ Story screen re-enabled');
             alert('Story screen has been re-enabled. Refresh the page to see it again.');
         };
-
-        function startGame(difficulty) {
-            startScreen.style.display = 'none';
-            gameContainer.style.display = 'block';
-            currentGame = new MazeGame(difficulty);
-        }
 
         // Add click event listeners to difficulty buttons
         document.getElementById('easyBtn').addEventListener('click', () => startGame('easy'));
