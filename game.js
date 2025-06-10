@@ -1109,9 +1109,9 @@ function startPigQDialogue() {
             
             messageIndex++;
             
-            // Change message every 8 seconds (faster than before)
+            // Change message every 18 seconds (extended by 10 seconds)
             if (messageIndex < pigMessages.length) {
-                setTimeout(updateDialogue, 8000);
+                setTimeout(updateDialogue, 18000);
             } else {
                 // Q dialogue finished, prepare to show final prompt
                 setTimeout(() => {
