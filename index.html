@@ -2,123 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Java Learning Maze Game</title>
     <style>
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center; /* Center content vertically */
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #000000, #0a0a0a, #1a1a2e);
             margin: 0;
             min-height: 100vh;
             color: #00ff41;
-            /* Mobile touch optimization */
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            overscroll-behavior: none;
             overflow-x: hidden;
-            position: relative;
         }
-        
-        /* Add subtle code rain effect to body */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(0, 255, 65, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(0, 191, 255, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(255, 100, 0, 0.02) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
-        }
-        #startScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            overflow: hidden;
-        }
-        #startContent {
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00ff41;
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
-            backdrop-filter: blur(10px);
-            max-width: 500px;
-            width: 90%;
-            position: relative;
-            z-index: 10;
-        }
-        #startContent h1 {
-            color: #00ff41;
-            margin-bottom: 30px;
-            font-family: 'Courier New', monospace;
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-            font-size: 28px;
-        }
-        #startContent p {
-            color: #ffffff;
-            font-family: 'Courier New', monospace;
-            margin: 15px 0;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-        }
+
         #gameContainer {
-            display: none;
+            max-width: 800px;
             margin: 20px;
             padding: 20px;
             background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
             border: 2px solid #00ff41;
             border-radius: 15px;
             box-shadow: 
-                0 0 30px rgba(0, 255, 65, 0.3),
-                inset 0 0 30px rgba(0, 20, 40, 0.5);
+                0 0 30px rgba(0, 255, 65, 0.4),
+                inset 0 0 30px rgba(0, 20, 40, 0.3);
+            position: relative;
             text-align: center;
-            color: #00ff41;
-            font-family: 'Courier New', monospace;
         }
-        #gameContainer h1 {
-            color: #00ff41;
-            text-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
-            animation: titleGlow 2s ease-in-out infinite alternate;
-        }
+
         #gameStats {
             margin: 15px 0;
             padding: 15px;
             background: rgba(0, 0, 0, 0.7);
             border: 1px solid #00ff41;
             border-radius: 8px;
-            box-shadow: 
-                0 0 15px rgba(0, 255, 65, 0.2),
-                inset 0 0 15px rgba(0, 20, 40, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
         }
+
         #questionCounter, #coinCounter {
             color: #00ff41;
             text-shadow: 0 0 10px rgba(0, 255, 65, 0.6);
             font-family: 'Courier New', monospace;
             margin: 8px 0;
         }
+
         #coinTip {
             color: #66ff66;
             background: rgba(0, 255, 65, 0.1);
@@ -128,6 +57,7 @@
             font-family: 'Courier New', monospace;
             text-shadow: 0 0 5px rgba(102, 255, 102, 0.6);
         }
+
         #gameContainer button {
             background: linear-gradient(145deg, rgba(0, 255, 65, 0.2), rgba(0, 200, 50, 0.3));
             color: #00ff41;
@@ -141,726 +71,91 @@
             transition: all 0.3s ease;
             box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
         }
+
         #gameContainer button:hover {
             background: linear-gradient(145deg, rgba(0, 255, 65, 0.3), rgba(0, 200, 50, 0.4));
             box-shadow: 0 0 25px rgba(0, 255, 65, 0.5);
             transform: translateY(-2px);
             text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
         }
-        .difficulty-btn {
-            margin: 10px;
-            padding: 15px 30px;
-            font-size: 18px;
-            border: 2px solid;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 200px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
-        }
-        .cyber-btn {
-            background: rgba(0, 0, 0, 0.7);
-            color: #00ff41;
-            border-color: #00ff41;
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
-        }
-        .cyber-btn:hover {
-            background: rgba(0, 255, 65, 0.1);
-            color: #ffffff;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
-            transform: scale(1.05);
-        }
-        .cyber-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-        .cyber-btn:hover::before {
-            left: 100%;
-        }
-        #easyBtn.cyber-btn {
-            border-color: #4CAF50;
-            color: #4CAF50;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
-        }
-        #easyBtn.cyber-btn:hover {
-            background: rgba(76, 175, 80, 0.1);
-            box-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
-        }
-        #mediumBtn.cyber-btn {
-            border-color: #FFA500;
-            color: #FFA500;
-            box-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
-        }
-        #mediumBtn.cyber-btn:hover {
-            background: rgba(255, 165, 0, 0.1);
-            box-shadow: 0 0 20px rgba(255, 165, 0, 0.6);
-        }
-        #hardBtn.cyber-btn {
-            border-color: #f44336;
-            color: #f44336;
-            box-shadow: 0 0 10px rgba(244, 67, 54, 0.3);
-        }
-        #hardBtn.cyber-btn:hover {
-            background: rgba(244, 67, 54, 0.1);
-            box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
-        }
+
         canvas {
             border: 2px solid #00ff41;
-            margin: 10px 0;
+            margin: 10px auto;
             background: #000000;
             box-shadow: 
                 0 0 20px rgba(0, 255, 65, 0.3),
                 inset 0 0 50px rgba(0, 20, 40, 0.8);
             position: relative;
-            /* Mobile touch optimization */
-            touch-action: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+            display: block;
         }
-        #gameStats {
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #f8f8f8;
-            border-radius: 5px;
+
+        .virtual-dpad {
+            display: grid;
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            margin: 20px auto;
+            width: 180px;
+            height: 180px;
+            justify-content: center;
         }
-        #questionCounter {
-            font-size: 18px;
-            color: #333;
-            margin: 10px 0;
+        
+        .dpad-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
         }
-        #coinCounter {
-            font-size: 18px;
-            color: #FFD700;
-            margin: 10px 0;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-        #coinTip {
-            font-size: 12px;
-            color: #666;
-            margin: 5px 0;
-            font-style: italic;
-            background: rgba(255, 215, 0, 0.1);
-            padding: 5px 10px;
-            border-radius: 10px;
-            border-left: 3px solid #FFD700;
-        }
-        button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        
+        .dpad-btn {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(145deg, rgba(0, 255, 65, 0.2), rgba(0, 200, 50, 0.3));
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            color: #00ff41;
+            font-size: 22px;
+            font-weight: bold;
             cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
-        button:hover {
-            background-color: #1976D2;
+        
+        .dpad-btn:hover, .dpad-btn:active {
+            background: linear-gradient(145deg, rgba(0, 255, 65, 0.4), rgba(0, 200, 50, 0.5));
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            transform: scale(0.95);
+            text-shadow: 0 0 10px #00ff41;
         }
-        h1 {
-            color: #00ff41;
-            margin-bottom: 30px;
-            font-family: 'Courier New', monospace;
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-            animation: titleGlow 2s ease-in-out infinite alternate;
+
+        .dpad-spacer {
+            width: 55px;
+            height: 55px;
+            /* Empty space for layout */
         }
-        @keyframes titleGlow {
-            from { text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); }
-            to { text-shadow: 0 0 20px rgba(0, 255, 65, 0.8), 0 0 30px rgba(0, 255, 65, 0.4); }
-        }
-        .difficulty-label {
-            font-size: 14px;
-            margin-top: 5px;
-            color: #aaaaaa;
-            font-family: 'Courier New', monospace;
-            text-shadow: 0 0 5px rgba(170, 170, 170, 0.3);
-        }
-        #github-link {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            color: #00ff41;
-            text-decoration: none;
-            font-size: 14px;
-            padding: 5px 10px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #00ff41;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 255, 65, 0.3);
-            font-family: 'Courier New', monospace;
-            transition: all 0.3s ease;
-        }
-        #github-link:hover {
-            background: rgba(0, 255, 65, 0.1);
-            box-shadow: 0 4px 10px rgba(0, 255, 65, 0.5);
-            transform: translateY(-1px);
-        }
-        #totalCoins {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            padding: 15px 25px;
-            border-radius: 25px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        
+        .dpad-center {
+            width: 55px;
+            height: 55px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            border: 2px solid #DAA520;
-        }
-        .coin-icon {
-            font-size: 24px;
-            animation: coinSpin 2s linear infinite;
-        }
-        @keyframes coinSpin {
-            0%, 100% { transform: rotateY(0deg); }
-            50% { transform: rotateY(180deg); }
-        }
-        #totalCoinCount {
-            font-size: 24px;
-            font-weight: bold;
-            color: #8B4513;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-        .total-label {
-            font-size: 14px;
-            color: #8B4513;
-            font-weight: 600;
-        }
-        #resetCoinsBtn {
-            background: rgba(255, 255, 255, 0.3);
-            border: 1px solid #DAA520;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            color: rgba(0, 255, 65, 0.4);
             font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-left: 10px;
-        }
-        #resetCoinsBtn:hover {
-            background: rgba(255, 255, 255, 0.6);
-            transform: rotate(90deg);
-        }
-        #help-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2196F3, #1976D2);
-            color: white;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
-            transition: all 0.3s ease;
-            z-index: 1002;
-        }
-        #help-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 25px rgba(33, 150, 243, 0.5);
-        }
-        /* Help Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1003;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .modal-content {
-            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
-            margin: 15% auto;
-            padding: 20px;
-            border: 2px solid #00ff41;
-            width: 80%;
-            max-width: 600px;
-            border-radius: 10px;
-            color: #00ff41;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
-        }
-        .close {
-            color: #00ff41;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close:hover,
-        .close:focus {
-            color: #ffffff;
-            text-decoration: none;
-            cursor: pointer;
-            text-shadow: 0 0 10px #00ff41;
-        }
-        .help-section {
-            margin-bottom: 20px;
-        }
-        .help-section h3 {
-            color: #00ff41;
-            font-size: 20px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
-        }
-        .help-section p {
-            color: #cccccc;
-            margin: 5px 0;
-            line-height: 1.5;
-        }
-        .email-btn {
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .email-btn:hover {
-            background-color: #1976D2;
-        }
-        .question-bank-btn {
-            margin: 10px;
-            padding: 15px 30px;
-            font-size: 18px;
-            background: rgba(156, 39, 176, 0.7);
-            color: #E1BEE7;
-            border: 2px solid #9C27B0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 280px;
             font-family: 'Courier New', monospace;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 0 10px rgba(156, 39, 176, 0.3);
         }
-        .question-bank-btn:hover {
-            background: rgba(156, 39, 176, 0.1);
-            color: #ffffff;
-            box-shadow: 0 0 20px rgba(156, 39, 176, 0.6);
-            transform: scale(1.05);
-        }
-        .question-bank-content {
-            max-width: 800px;
-            width: 95%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .question-bank-tabs {
-            margin-bottom: 30px;
-            border-bottom: 2px solid #00ff41;
-        }
-        .tab-btn {
-            padding: 12px 25px;
+        
+        .dpad-center::before {
+            content: '⊡';
             font-size: 16px;
-            border: none;
-            border-radius: 8px 8px 0 0;
-            cursor: pointer;
-            margin-right: 5px;
-            background-color: rgba(0, 20, 40, 0.8);
-            color: #00ff41;
-            transition: all 0.3s ease;
-            border: 1px solid #00ff41;
         }
-        .tab-btn:hover {
-            background-color: rgba(0, 255, 65, 0.1);
-        }
-        .tab-btn.active {
-            background-color: rgba(0, 255, 65, 0.2);
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
-        }
-        .tab-content {
-            display: none;
-            text-align: left;
-            padding: 20px 0;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .questions-filter {
-            margin-bottom: 25px;
-            text-align: center;
-        }
-        .filter-group {
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: rgba(0, 20, 40, 0.8);
-            border-radius: 8px;
-            border: 1px solid #00ff41;
-        }
-        .filter-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #00ff41;
-            font-size: 14px;
-        }
-        .filter-btn {
-            padding: 8px 16px;
-            font-size: 13px;
-            border: 2px solid #2196F3;
-            border-radius: 20px;
-            cursor: pointer;
-            margin: 3px;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #00ff41;
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-        .filter-btn:hover {
-            background-color: rgba(0, 255, 65, 0.1);
-        }
-        .filter-btn.active {
-            background-color: #2196F3;
-            color: white;
-        }
-        .difficulty-filter.easy {
-            border-color: #4CAF50;
-            color: #4CAF50;
-        }
-        .difficulty-filter.easy.active {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .difficulty-filter.medium {
-            border-color: #FF9800;
-            color: #FF9800;
-        }
-        .difficulty-filter.medium.active {
-            background-color: #FF9800;
-            color: white;
-        }
-        .difficulty-filter.hard {
-            border-color: #f44336;
-            color: #f44336;
-        }
-        .difficulty-filter.hard.active {
-            background-color: #f44336;
-            color: white;
-        }
-        .question-difficulty {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-left: 10px;
-        }
-        .question-difficulty.easy {
-            background-color: #E8F5E8;
-            color: #4CAF50;
-            border: 1px solid #4CAF50;
-        }
-        .question-difficulty.medium {
-            background-color: #FFF3E0;
-            color: #FF9800;
-            border: 1px solid #FF9800;
-        }
-        .question-difficulty.hard {
-            background-color: #FFEBEE;
-            color: #f44336;
-            border: 1px solid #f44336;
-        }
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #00ff41;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-            box-sizing: border-box;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #00ff41;
-        }
-        .form-group select:focus {
-            outline: none;
-            border-color: #00ff41;
-            box-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
-        }
-        .questions-list {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #00ff41;
-            border-radius: 8px;
-            padding: 15px;
-            background-color: rgba(0, 0, 0, 0.9);
-        }
-        .question-item {
-            background-color: rgba(0, 20, 40, 0.8);
-            border: 1px solid #00ff41;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0, 255, 65, 0.2);
-            transition: transform 0.2s ease;
-        }
-        .question-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 255, 65, 0.3);
-        }
-        .question-item.default {
-            border-left: 4px solid #4CAF50;
-        }
-        .question-item.custom {
-            border-left: 4px solid #FF9800;
-        }
-        .question-text {
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #00ff41;
-        }
-        .question-answer {
-            color: #00bfff;
-            margin-bottom: 5px;
-        }
-        .question-explanation {
-            color: #cccccc;
-            font-style: italic;
-            margin-bottom: 10px;
-        }
-        .question-type {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .question-type.default {
-            background-color: #E8F5E8;
-            color: #4CAF50;
-        }
-        .question-type.custom {
-            background-color: #FFF3E0;
-            color: #FF9800;
-        }
-        .question-actions {
-            margin-top: 10px;
-            text-align: right;
-        }
-        .edit-btn, .delete-btn {
-            padding: 5px 12px;
-            font-size: 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-left: 5px;
-            transition: all 0.2s ease;
-        }
-        .edit-btn {
-            background-color: #2196F3;
-            color: white;
-        }
-        .edit-btn:hover {
-            background-color: #1976D2;
-        }
-        .delete-btn {
-            background-color: #f44336;
-            color: white;
-        }
-        .delete-btn:hover {
-            background-color: #d32f2f;
-        }
-        .question-form {
-            background-color: rgba(0, 20, 40, 0.9);
-            padding: 25px;
-            border-radius: 8px;
-            border: 1px solid #00ff41;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #00ff41;
-        }
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #00ff41;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-            box-sizing: border-box;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #00ff41;
-        }
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #00ff41;
-            box-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
-        }
-        .form-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        .form-buttons {
-            margin-top: 25px;
-            text-align: center;
-        }
-        .submit-btn, .clear-btn {
-            padding: 12px 25px;
-            font-size: 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 0 10px;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-        .submit-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .submit-btn:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-        }
-        .clear-btn {
-            background-color: #f44336;
-            color: white;
-        }
-        .clear-btn:hover {
-            background-color: #d32f2f;
-            transform: translateY(-2px);
-        }
-        .empty-state {
-            text-align: center;
-            color: #999;
-            padding: 40px;
-            font-style: italic;
-        }
-        .stats-bar {
-            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .stats-item {
-            display: inline-block;
-            margin: 0 20px;
-            color: #1976D2;
-            font-weight: bold;
-        }
-        
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .modal-content {
-                margin: 10% auto;
-                width: 95%;
-                padding: 15px;
-            }
-            .question-bank-content {
-                max-height: 85vh;
-                padding: 20px;
-            }
-            .filter-btn {
-                padding: 6px 12px;
-                font-size: 12px;
-                margin: 2px;
-            }
-            .filter-group {
-                margin-bottom: 10px;
-                padding: 8px;
-            }
-            .tab-btn {
-                padding: 10px 15px;
-                font-size: 14px;
-                margin-right: 3px;
-            }
-            .question-item {
-                padding: 12px;
-                margin-bottom: 10px;
-            }
-            .question-text {
-                font-size: 14px;
-            }
-            .question-answer, .question-explanation {
-                font-size: 13px;
-            }
-            .form-group {
-                margin-bottom: 15px;
-            }
-            .form-group input,
-            .form-group textarea,
-            .form-group select {
-                padding: 10px;
-                font-size: 14px;
-            }
-            .submit-btn, .clear-btn {
-                padding: 10px 20px;
-                font-size: 14px;
-                margin: 5px;
-            }
-            .stats-item {
-                display: block;
-                margin: 5px 0;
-                font-size: 14px;
-            }
-            .question-bank-btn {
-                width: 90%;
-                font-size: 16px;
-                padding: 12px 20px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .question-bank-content {
-                padding: 15px;
-            }
-            .filter-group {
-                padding: 6px;
-            }
-            .filter-btn {
-                padding: 5px 10px;
-                font-size: 11px;
-                margin: 1px;
-            }
-            .filter-group label {
-                font-size: 13px;
-            }
-            .tab-btn {
-                padding: 8px 12px;
-                font-size: 13px;
-            }
-            .question-item {
-                padding: 10px;
-            }
-            .edit-btn, .delete-btn {
-                padding: 4px 8px;
-                font-size: 11px;
-            }
-        }
-        
-        /* Story Screen Styling */
+
         .story-screen {
             position: fixed;
             top: 0;
@@ -868,7 +163,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
-            display: none; /* Initially hidden */
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 2000;
@@ -908,7 +203,7 @@
         
         .pig-q-large {
             position: relative;
-            transform: scale(4);
+            transform: scale(3);
             animation: characterFloat 3s ease-in-out infinite;
             filter: drop-shadow(0 0 20px rgba(255, 105, 180, 0.4));
         }
@@ -1116,188 +411,6 @@
             right: 23px;
         }
         
-        /* 对话气泡 */
-        .speech-bubble {
-            position: absolute;
-            top: -80px;
-            left: -250px;
-            width: 220px;
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 248, 255, 0.95));
-            border: 3px solid #ff69b4;
-            border-radius: 20px;
-            padding: 15px;
-            box-shadow: 
-                0 8px 25px rgba(255, 105, 180, 0.3),
-                0 4px 15px rgba(0, 0, 0, 0.1),
-                inset 0 2px 10px rgba(255, 255, 255, 0.8);
-            animation: bubbleBounce 2s ease-in-out infinite;
-        }
-        
-        .bubble-content {
-            color: #333;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            text-align: center;
-            font-weight: bold;
-            text-shadow: 0 1px 2px rgba(255, 105, 180, 0.2);
-        }
-        
-        .bubble-tail {
-            position: absolute;
-            bottom: -15px;
-            right: 40px;
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 15px solid #ff69b4;
-            filter: drop-shadow(0 2px 4px rgba(255, 105, 180, 0.3));
-        }
-        
-        .bubble-tail::before {
-            content: '';
-            position: absolute;
-            top: -18px;
-            left: -12px;
-            width: 0;
-            height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-top: 12px solid rgba(255, 255, 255, 0.98);
-        }
-        
-        /* 小猪Q的动画 */
-        @keyframes pigFloat {
-            0%, 100% { transform: translateY(-50%) translateX(0px); }
-            50% { transform: translateY(-50%) translateX(-10px); }
-        }
-        
-        @keyframes bubbleBounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        /* 响应式调整 */
-        @media (max-width: 768px) {
-            .pig-q-container {
-                top: 20px;
-                right: 20px;
-                transform: scale(0.8);
-            }
-            
-            .pig-q {
-                transform: scale(1.0);
-            }
-            
-            .speech-bubble {
-                width: 180px;
-                left: -200px;
-                top: -60px;
-                font-size: 12px;
-                padding: 10px;
-            }
-            
-            .character-portrait {
-                width: 300px;
-                height: 400px;
-                transform: translate(-50%, -60%);
-            }
-            
-            .pig-q-large {
-                transform: scale(2.5);
-            }
-            
-            .dialogue-box {
-                width: 95%;
-                padding: 15px;
-                bottom: 10px;
-            }
-            
-            .speaker-name {
-                font-size: 16px;
-            }
-            
-            .dialogue-text {
-                font-size: 14px;
-            }
-            
-            .continue-prompt {
-                font-size: 14px;
-            }
-            
-            @keyframes characterFloat {
-                0%, 100% { transform: scale(2.5) translateY(0px); }
-                50% { transform: scale(2.5) translateY(-10px); }
-            }
-        }
-        
-        .code-themed-canvas {
-            border: 2px solid #00ff41;
-            box-shadow: 
-                0 0 30px rgba(0, 255, 65, 0.4),
-                0 0 60px rgba(0, 255, 65, 0.2),
-                inset 0 0 50px rgba(0, 20, 40, 0.8);
-            background: #000000;
-            position: relative;
-            animation: canvasGlow 3s ease-in-out infinite alternate;
-        }
-        
-        .code-themed-canvas::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(
-                transparent 48%, 
-                rgba(0, 255, 65, 0.1) 49%, 
-                rgba(0, 255, 65, 0.1) 51%, 
-                transparent 52%
-            );
-            background-size: 100% 4px;
-            animation: scanLines 2s linear infinite;
-            pointer-events: none;
-            z-index: 10;
-        }
-        
-        .code-themed-canvas::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(
-                circle at center,
-                transparent 0%,
-                transparent 70%,
-                rgba(0, 0, 17, 0.3) 100%
-            );
-            pointer-events: none;
-            z-index: 5;
-        }
-        
-        @keyframes canvasGlow {
-            from { 
-                box-shadow: 
-                    0 0 30px rgba(0, 255, 65, 0.4),
-                    0 0 60px rgba(0, 255, 65, 0.2),
-                    inset 0 0 50px rgba(0, 20, 40, 0.8);
-            }
-            to { 
-                box-shadow: 
-                    0 0 40px rgba(0, 255, 65, 0.6),
-                    0 0 80px rgba(0, 255, 65, 0.3),
-                    inset 0 0 50px rgba(0, 20, 40, 0.8);
-            }
-        }
-        
-        @keyframes scanLines {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100vh); }
-        }
-        
         .dialogue-box {
             position: absolute;
             bottom: 20px;
@@ -1346,7 +459,6 @@
             animation: blink 1.5s infinite;
         }
         
-        /* Code Rain Effect */
         .code-rain {
             position: absolute;
             top: 0;
@@ -1374,11 +486,10 @@
         }
         
         @keyframes characterFloat {
-            0%, 100% { transform: scale(4) translateY(0px); }
-            50% { transform: scale(4) translateY(-10px); }
+            0%, 100% { transform: scale(3) translateY(0px); }
+            50% { transform: scale(3) translateY(-10px); }
         }
         
-        /* Animations */
         @keyframes earWiggle {
             0%, 100% { transform: rotate(-30deg); }
             50% { transform: rotate(-20deg); }
@@ -1399,486 +510,286 @@
             51%, 100% { opacity: 0; }
         }
         
-        /* Game Enhancement Styles */
-        .debug-popup {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #00ff41;
-            border-radius: 8px;
-            padding: 15px 25px;
-            color: #00ff41;
-            font-family: 'Courier New', monospace;
-            font-size: 16px;
-            z-index: 1001;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
-            animation: slideDown 0.5s ease-out;
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-        
-        .success-feedback {
-            color: #00ff41 !important;
-            text-shadow: 0 0 5px #00ff41;
-            animation: successPulse 0.5s ease-out;
-        }
-        
-        .error-feedback {
-            color: #ff4444 !important;
-            text-shadow: 0 0 5px #ff4444;
-            animation: errorShake 0.5s ease-out;
-        }
-        
-        @keyframes successPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        @keyframes errorShake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        
-        /* 小猪Q的样式 */
-        .pig-q-container {
-            position: absolute;
-            top: 50%;
-            right: -200px;
-            transform: translateY(-50%);
-            z-index: 20;
-            animation: pigFloat 3s ease-in-out infinite;
-        }
-        
-        .pig-q {
-            position: relative;
-            transform: scale(1.2);
-            filter: drop-shadow(0 0 15px rgba(255, 105, 180, 0.4));
-        }
-        
-        .pig-body {
-            position: relative;
-            width: 120px;
-            height: 140px;
-        }
-        
-        .pig-head {
-            position: absolute;
-            top: 0;
-            left: 10px;
-            width: 100px;
-            height: 90px;
-            background: linear-gradient(145deg, #ffcccb, #ffb3d9);
-            border-radius: 50px;
-            border: 2px solid #ff69b4;
-            box-shadow: 
-                0 0 15px rgba(255, 105, 180, 0.4),
-                inset 0 8px 15px rgba(255, 255, 255, 0.3),
-                inset 0 -8px 15px rgba(255, 105, 180, 0.2);
-        }
-        
-        .pig-ear {
-            position: absolute;
-            width: 25px;
-            height: 35px;
-            background: linear-gradient(145deg, #ff91a4, #ffb3d9);
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            border: 2px solid #ff1493;
-            box-shadow: 0 0 8px rgba(255, 20, 147, 0.3);
-        }
-        
-        .pig-ear-left {
-            top: -15px;
-            left: 15px;
-            transform: rotate(-30deg);
-            animation: earWiggle 2s ease-in-out infinite;
-        }
-        
-        .pig-ear-right {
-            top: -15px;
-            right: 15px;
-            transform: rotate(30deg);
-            animation: earWiggle 2s ease-in-out infinite 0.5s;
-        }
-        
-        .pig-ear::before {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            width: 15px;
-            height: 20px;
-            background: linear-gradient(145deg, #ff1493, #dc143c);
-            border-radius: 50%;
-            box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.4);
-        }
-        
-        .pig-eye {
-            position: absolute;
-            width: 20px;
-            height: 25px;
-            background: radial-gradient(circle, #ffffff 60%, #f0f8ff 100%);
-            border-radius: 50%;
-            border: 2px solid #333;
-            top: 25px;
-            box-shadow: 
-                0 0 8px rgba(255, 255, 255, 0.8),
-                inset 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .pig-eye-left {
-            left: 20px;
-        }
-        
-        .pig-eye-right {
-            right: 20px;
-        }
-        
-        .pig-pupil {
-            position: absolute;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 12px;
-            height: 15px;
-            background: radial-gradient(circle at 30% 30%, #4169e1, #000080);
-            border-radius: 50%;
-            animation: eyeBlink 4s ease-in-out infinite;
-        }
-        
-        .pig-pupil::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 3px;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 50%;
-        }
-        
-        .pig-snout {
-            position: absolute;
-            top: 45px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 35px;
-            height: 25px;
-            background: linear-gradient(145deg, #ff91a4, #ff1493);
-            border-radius: 50%;
-            border: 2px solid #dc143c;
-            box-shadow: 
-                0 0 12px rgba(255, 20, 147, 0.4),
-                inset 0 3px 6px rgba(255, 255, 255, 0.3),
-                inset 0 -3px 6px rgba(220, 20, 60, 0.3);
-        }
-        
-        .pig-nostril {
-            position: absolute;
-            top: 8px;
-            width: 4px;
-            height: 6px;
-            background: radial-gradient(circle, #8b0000, #000);
-            border-radius: 50%;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
-        }
-        
-        .pig-nostril-left {
-            left: 8px;
-        }
-        
-        .pig-nostril-right {
-            right: 8px;
-        }
-        
-        .pig-mouth {
-            position: absolute;
-            top: 65px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 15px;
-            height: 3px;
-            background: linear-gradient(90deg, #8b0000, #333, #8b0000);
-            border-radius: 0 0 15px 15px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-        }
-        
-        .pig-belly {
-            position: absolute;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 50px;
-            background: linear-gradient(145deg, #ffffff, #f8f8ff);
-            border-radius: 50%;
-            border: 2px solid #ff69b4;
-            box-shadow: 
-                0 0 12px rgba(255, 105, 180, 0.3),
-                inset 0 4px 8px rgba(255, 255, 255, 0.4),
-                inset 0 -4px 8px rgba(255, 105, 180, 0.1);
-        }
-        
-        .pig-arm {
-            position: absolute;
-            width: 20px;
-            height: 40px;
-            background: linear-gradient(145deg, #ffcccb, #ffb3d9);
-            border-radius: 20px;
-            border: 2px solid #ff69b4;
-            top: 90px;
-            box-shadow: 0 0 8px rgba(255, 105, 180, 0.3);
-        }
-        
-        .pig-arm-left {
-            left: 5px;
-            animation: armWave 2s ease-in-out infinite;
-        }
-        
-        .pig-arm-right {
-            right: 5px;
-            animation: armWave 2s ease-in-out infinite 1s;
-        }
-        
-        .pig-leg {
-            position: absolute;
-            width: 18px;
-            height: 25px;
-            background: linear-gradient(145deg, #ffcccb, #ffb3d9);
-            border-radius: 15px;
-            border: 2px solid #ff69b4;
-            top: 120px;
-            box-shadow: 0 0 8px rgba(255, 105, 180, 0.3);
-        }
-        
-        .pig-leg-left {
-            left: 25px;
-        }
-        
-        .pig-leg-right {
-            right: 25px;
-        }
-        
-        /* 虚拟方向键样式 */
-        #virtualDPad {
-            display: grid;
-            grid-template-rows: repeat(3, 1fr);
-            gap: 5px;
-            margin: 20px auto;
-            width: 160px;
-            height: 160px;
-            justify-content: center;
-        }
-        
-        .dpad-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            align-items: center;
-        }
-        
-        .dpad-btn {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(145deg, rgba(0, 255, 65, 0.2), rgba(0, 200, 50, 0.3));
-            border: 2px solid #00ff41;
-            border-radius: 8px;
-            color: #00ff41;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        .dpad-btn:hover, .dpad-btn:active {
-            background: linear-gradient(145deg, rgba(0, 255, 65, 0.4), rgba(0, 200, 50, 0.5));
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
-            transform: scale(0.95);
-            text-shadow: 0 0 10px #00ff41;
-        }
-        
-        .dpad-spacer {
-            width: 50px;
-            height: 50px;
-        }
-        
-        .dpad-center {
-            width: 50px;
-            height: 50px;
-            background: rgba(0, 255, 65, 0.1);
-            border: 1px solid rgba(0, 255, 65, 0.3);
-            border-radius: 50%;
-        }
-        
-        /* 移动端控制提示 */
-        #mobileControls {
-            text-align: center;
-            margin: 10px 0;
-        }
-        
-        /* 响应式设计 */
         @media (max-width: 768px) {
-            #virtualDPad {
-                display: grid;
-                margin: 15px auto;
+            .virtual-dpad {
+                width: 160px;
+                height: 160px;
+                gap: 6px;
             }
             
             .dpad-btn {
-                width: 45px;
-                height: 45px;
-                font-size: 18px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
             }
             
-            .dpad-spacer, .dpad-center {
-                width: 45px;
-                height: 45px;
+            .dpad-spacer {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .dpad-center {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .character-portrait {
+                width: 300px;
+                height: 400px;
+                transform: translate(-50%, -60%);
+            }
+            
+            .pig-q-large {
+                transform: scale(2);
+            }
+            
+            @keyframes characterFloat {
+                0%, 100% { transform: scale(2) translateY(0px); }
+                50% { transform: scale(2) translateY(-10px); }
             }
         }
-        
-        @media (min-width: 769px) {
-            #virtualDPad {
-                display: none;
-            }
+
+        /* Start Screen Styling */
+        #startScreen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
         }
         
-        /* Override any conflicting styles to maintain dark hacker theme */
-        #gameStats {
-            background: rgba(0, 0, 0, 0.7) !important;
-            border: 1px solid #00ff41 !important;
-            border-radius: 8px !important;
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2) !important;
+        #startContent {
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #00ff41;
+            padding: 40px 50px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.4);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
         }
         
-        #questionCounter {
-            color: #00ff41 !important;
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.6) !important;
-            font-family: 'Courier New', monospace !important;
+        #startContent h1 {
+            color: #00ff41;
+            margin-bottom: 30px;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
+            font-size: 32px;
+            animation: titleGlow 2s ease-in-out infinite alternate;
         }
         
-        #coinCounter {
-            color: #00ff41 !important;
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.6) !important;
-            font-family: 'Courier New', monospace !important;
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 15px rgba(0, 255, 65, 0.8); }
+            to { text-shadow: 0 0 25px rgba(0, 255, 65, 1), 0 0 35px rgba(0, 255, 65, 0.6); }
         }
         
-        #coinTip {
-            color: #66ff66 !important;
-            background: rgba(0, 255, 65, 0.1) !important;
-            border: 1px solid rgba(0, 255, 65, 0.3) !important;
-            border-radius: 8px !important;
-            padding: 8px 12px !important;
-            font-family: 'Courier New', monospace !important;
-            text-shadow: 0 0 5px rgba(102, 255, 102, 0.6) !important;
+        .difficulty-selection {
+            margin: 30px 0;
         }
         
-        /* Ensure buttons in game container use dark theme */
-        button {
-            background: linear-gradient(145deg, rgba(0, 255, 65, 0.2), rgba(0, 200, 50, 0.3)) !important;
-            color: #00ff41 !important;
-            border: 2px solid #00ff41 !important;
-            border-radius: 8px !important;
-            font-family: 'Courier New', monospace !important;
-            font-weight: bold !important;
-            text-transform: uppercase !important;
-            letter-spacing: 1px !important;
-            transition: all 0.3s ease !important;
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3) !important;
+        .difficulty-selection h2 {
+            color: #ffffff;
+            margin-bottom: 25px;
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
         
-        button:hover {
-            background: linear-gradient(145deg, rgba(0, 255, 65, 0.3), rgba(0, 200, 50, 0.4)) !important;
-            box-shadow: 0 0 25px rgba(0, 255, 65, 0.5) !important;
-            transform: translateY(-2px) !important;
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.8) !important;
+        .difficulty-option {
+            margin: 20px 0;
+        }
+        
+        .difficulty-btn {
+            padding: 18px 40px;
+            font-size: 20px;
+            border: 3px solid;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00ff41;
+            border-color: #00ff41;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+            margin: 0 10px;
+        }
+        
+        .difficulty-btn:hover {
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.6);
+            transform: translateY(-3px) scale(1.05);
+            text-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
+        }
+        
+        .difficulty-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .difficulty-btn:hover::before {
+            left: 100%;
+        }
+        
+        .difficulty-description {
+            color: #aaaaaa;
+            font-size: 14px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px rgba(170, 170, 170, 0.3);
+        }
+        
+        .total-coins-display {
+            margin: 30px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: 2px solid #FF8C00;
+            border-radius: 15px;
+            color: #8B4513;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .total-coins-display h3 {
+            margin: 10px 0;
+            font-size: 20px;
+        }
+        
+        .game-controls {
+            margin-top: 25px;
+        }
+        
+        .game-controls button {
+            margin: 10px;
+            padding: 15px 25px;
+            font-size: 16px;
+            border: 2px solid #2196F3;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(33, 150, 243, 0.7);
+            color: #E3F2FD;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+        }
+        
+        .game-controls button:hover {
+            background: rgba(33, 150, 243, 0.9);
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+            border: 3px solid #00ff41;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            max-height: 80%;
+            width: 90%;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.4);
+            position: relative;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #00ff41;
+            padding-bottom: 15px;
+        }
+        
+        .modal-title {
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.6);
+        }
+        
+        .close-btn {
+            background: none;
+            border: 2px solid #ff4444;
+            color: #ff4444;
+            font-size: 20px;
+            font-weight: bold;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: #ff4444;
+            color: #000000;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.6);
+        }
+        
+        .modal-body {
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+        
+        .modal-body h3 {
+            color: #00ff41;
+            margin: 20px 0 10px 0;
+            text-shadow: 0 0 5px rgba(0, 255, 65, 0.4);
+        }
+        
+        .modal-body p {
+            margin: 10px 0;
+        }
+        
+        .modal-body ul {
+            padding-left: 20px;
+        }
+        
+        .modal-body li {
+            margin: 8px 0;
         }
     </style>
 </head>
 <body>
-    <a id="github-link" href="https://github.com/YourNeshama/java-maze-game" target="_blank">View on GitHub</a>
-    
-    <button id="help-btn" title="Report Bug / Contact Developer">💬</button>
-    
-    <!-- Help Modal -->
-    <div id="helpModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>💬 Contact Developer</h2>
-            
-            <div class="help-section">
-                <h3>🐛 Found a Bug?</h3>
-                <p>If you've encountered any issues while playing the game, please let me know!</p>
-                <button id="emailBtn" class="email-btn">📧 Send Bug Report</button>
-            </div>
-            
-            <div class="help-section">
-                <h3>💡 Suggestions & Feedback</h3>
-                <p>Have ideas for new features or improvements? I'd love to hear from you!</p>
-                <button id="feedbackBtn" class="email-btn">💭 Send Feedback</button>
-            </div>
-            
-            <div class="help-section">
-                <h3>📝 What to Include</h3>
-                <p>• Describe what happened</p>
-                <p>• What you expected to happen</p>
-                <p>• Steps to reproduce the issue</p>
-                <p>• Your browser and device info</p>
-                <p>• Screenshots if helpful</p>
-            </div>
-            
-            <div class="help-section">
-                <h3>🔗 Other Ways to Contact</h3>
-                <p>You can also create an issue on the <a href="https://github.com/YourNeshama/java-maze-game/issues" target="_blank">GitHub repository</a></p>
-            </div>
-        </div>
-    </div>
-    
-    <div id="startScreen" style="display: none;">
-        <!-- Code Rain Background for Start Screen -->
-        <div class="code-rain" id="startScreenCodeRain">
-            <!-- Animated code particles will be generated here -->
-        </div>
-        
-        <div id="startContent">
-            <h1>Java Learning Maze Game</h1>
-            <p>Test your Java knowledge while solving a maze!</p>
-            <p>Select your difficulty level to start:</p>
-            <div>
-                <button id="easyBtn" class="difficulty-btn cyber-btn">Easy</button>
-                <div class="difficulty-label">5x5 Maze - Basic Java Concepts</div>
-            </div>
-            <div>
-                <button id="mediumBtn" class="difficulty-btn cyber-btn">Medium</button>
-                <div class="difficulty-label">7x7 Maze - Intermediate Topics</div>
-            </div>
-            <div>
-                <button id="hardBtn" class="difficulty-btn cyber-btn">Hard</button>
-                <div class="difficulty-label">9x9 Maze - Large Maze</div>
-            </div>
-            
-            <div style="margin-top: 30px;">
-                <button id="questionBankBtn" class="question-bank-btn cyber-btn">📚 Question Bank</button>
-                <div class="difficulty-label">Manage & Create Custom Questions</div>
-            </div>
-        </div>
-    </div>
+    <!-- Game initialization and completion tracking will be added at the end -->
 
     <!-- Story Introduction Screen -->
-    <div id="storyScreen" class="story-screen" style="display: flex;">
+    <div id="storyScreen" class="story-screen" style="display: none;">
         <div class="story-content">
             <div class="visual-novel-container">
                 <!-- Q角色立绘 -->
@@ -1919,6 +830,27 @@
                         <span class="blinking-cursor">▶ Tap to continue</span>
                     </div>
                 </div>
+                
+                <!-- Emergency Skip Button -->
+                <div style="position: absolute; top: 20px; right: 20px; z-index: 25;">
+                    <button onclick="skipToGame()" style="
+                        background: linear-gradient(145deg, rgba(255, 68, 68, 0.3), rgba(255, 68, 68, 0.5));
+                        color: #ff4444;
+                        border: 2px solid #ff4444;
+                        border-radius: 8px;
+                        padding: 10px 20px;
+                        font-family: 'Courier New', monospace;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        font-size: 14px;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+                    " onmouseover="this.style.background='linear-gradient(145deg, rgba(255, 68, 68, 0.5), rgba(255, 68, 68, 0.7))'; this.style.boxShadow='0 0 25px rgba(255, 68, 68, 0.6)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='linear-gradient(145deg, rgba(255, 68, 68, 0.3), rgba(255, 68, 68, 0.5))'; this.style.boxShadow='0 0 15px rgba(255, 68, 68, 0.3)'; this.style.transform='translateY(0)'">
+                        🚀 SKIP TO GAME
+                    </button>
+                </div>
             </div>
             
             <div class="code-rain">
@@ -1927,214 +859,1034 @@
         </div>
     </div>
 
-    <div id="gameContainer">
-        <h1>Java Learning Maze Game</h1>
+    <!-- Start Screen -->
+    <div id="startScreen">
+        <div id="startContent">
+            <h1>🎮 Java Learning Maze Game</h1>
+            
+            <div class="difficulty-selection">
+                <h2>Choose Your Challenge</h2>
+                
+                <div class="difficulty-option">
+                    <button id="easyBtn" class="difficulty-btn">🟢 EASY</button>
+                    <div class="difficulty-description">Perfect for beginners - Basic Java concepts</div>
+                </div>
+                
+                <div class="difficulty-option">
+                    <button id="mediumBtn" class="difficulty-btn">🟡 MEDIUM</button>
+                    <div class="difficulty-description">Intermediate challenge - OOP and advanced topics</div>
+                </div>
+                
+                <div class="difficulty-option">
+                    <button id="hardBtn" class="difficulty-btn">🔴 HARD</button>
+                    <div class="difficulty-description">Expert level - All Java concepts including advanced patterns</div>
+                </div>
+            </div>
+
+            <div class="total-coins-display">
+                <h3>Total Coins Earned: <span id="totalCoinCount">0</span></h3>
+                <button id="resetCoinsBtn">Reset Coins</button>
+            </div>
+
+            <div class="game-controls">
+                <button id="questionBankBtn">Question Bank</button>
+                <button id="help-btn">Help</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div id="gameContainer" style="display: none;">
         <div id="gameStats">
-            <div id="questionCounter">Questions Remaining: 5</div>
+            <div id="questionCounter">Questions Remaining: 0</div>
             <div id="coinCounter">Coins: 0</div>
-            <div id="coinTip">💡 Tip: Spend 5 coins to avoid going back on wrong answers!</div>
-        </div>
-        <canvas id="mazeCanvas"></canvas>
-        
-        <!-- 移动端控制提示 -->
-        <div id="mobileControls">
-            <p style="color: #00ff41; font-family: 'Courier New', monospace; font-size: 14px; margin: 10px 0;">
-                📱 Mobile: Swipe to move | 🖥️ Desktop: Arrow keys
-            </p>
+            <div id="coinTip">💡 Tip: Use arrow keys, left-click, or right-click to trigger questions and move!</div>
         </div>
         
-        <!-- 虚拟方向键 -->
-        <div id="virtualDPad">
+        <canvas id="mazeCanvas" width="400" height="400"></canvas>
+        
+        <div class="game-controls">
+            <button id="newGameBtn">New Game</button>
+            <button id="regenerateMazeBtn">Regenerate Maze</button>
+        </div>
+        
+        <!-- Virtual D-pad for mobile -->
+        <div class="virtual-dpad">
             <div class="dpad-row">
                 <div class="dpad-spacer"></div>
-                <button id="upBtn" class="dpad-btn">▲</button>
+                <button id="upBtn" class="dpad-btn">↑</button>
                 <div class="dpad-spacer"></div>
             </div>
             <div class="dpad-row">
-                <button id="leftBtn" class="dpad-btn">◀</button>
+                <button id="leftBtn" class="dpad-btn">←</button>
                 <div class="dpad-center"></div>
-                <button id="rightBtn" class="dpad-btn">▶</button>
+                <button id="rightBtn" class="dpad-btn">→</button>
             </div>
             <div class="dpad-row">
                 <div class="dpad-spacer"></div>
-                <button id="downBtn" class="dpad-btn">▼</button>
+                <button id="downBtn" class="dpad-btn">↓</button>
                 <div class="dpad-spacer"></div>
             </div>
         </div>
-        
-        <br>
-        <button id="regenerateMazeBtn">Generate New Maze</button>
-        <button id="newGameBtn">New Game</button>
     </div>
 
     <!-- Question Bank Modal -->
-    <div id="questionBankModal" class="modal">
-        <div class="modal-content question-bank-content">
-            <span class="close question-bank-close">&times;</span>
-            <h2>📚 Question Bank Management</h2>
-            
-            <div class="question-bank-tabs">
-                <button id="viewQuestionsTab" class="tab-btn active">📋 View Questions</button>
-                <button id="addQuestionTab" class="tab-btn">➕ Add Question</button>
+    <div id="questionBankModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📚 Question Bank Management</div>
+                <button class="close-btn" onclick="closeModal('questionBankModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>🎯 Current Question Pool</h3>
+                <p>The game includes built-in Java questions across three difficulty levels:</p>
+                <ul>
+                    <li><strong>Easy:</strong> Basic syntax, keywords, data types</li>
+                    <li><strong>Medium:</strong> OOP concepts, methods, inheritance</li>
+                    <li><strong>Hard:</strong> Advanced topics, design patterns, best practices</li>
+                </ul>
+                
+                <h3>📊 Question Statistics</h3>
+                <p id="questionStats">Loading statistics...</p>
+                
+                <h3>➕ Add Custom Question</h3>
+                <div style="background: rgba(0, 0, 0, 0.6); border: 2px solid #00ff41; border-radius: 10px; padding: 20px; margin: 15px 0;">
+                    <form id="customQuestionForm">
+                        <div style="margin-bottom: 15px;">
+                            <label style="color: #00ff41; font-weight: bold; display: block; margin-bottom: 5px;">Question:</label>
+                            <textarea id="questionText" rows="3" style="width: 100%; padding: 10px; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff41; border-radius: 5px; color: #ffffff; font-family: 'Courier New', monospace; resize: vertical;" placeholder="Enter your Java programming question here..." required></textarea>
             </div>
             
-            <!-- View Questions Tab -->
-            <div id="viewQuestionsContent" class="tab-content active">
-                <h3>All Available Questions</h3>
-                <div class="questions-filter">
-                    <div class="filter-group">
-                        <label>Filter by Type:</label>
-                        <button id="showAllBtn" class="filter-btn active">All</button>
-                        <button id="showDefaultBtn" class="filter-btn">Default</button>
-                        <button id="showCustomBtn" class="filter-btn">Custom</button>
+                        <div style="margin-bottom: 15px;">
+                            <label style="color: #00ff41; font-weight: bold; display: block; margin-bottom: 5px;">Answer:</label>
+                            <input type="text" id="answerText" style="width: 100%; padding: 10px; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff41; border-radius: 5px; color: #ffffff; font-family: 'Courier New', monospace;" placeholder="Enter the correct answer..." required>
                     </div>
-                    <div class="filter-group">
-                        <label>Filter by Difficulty:</label>
-                        <button id="showAllDiffBtn" class="filter-btn difficulty-filter active">All</button>
-                        <button id="showEasyBtn" class="filter-btn difficulty-filter easy">🟢 Easy</button>
-                        <button id="showMediumBtn" class="filter-btn difficulty-filter medium">🟡 Medium</button>
-                        <button id="showHardBtn" class="filter-btn difficulty-filter hard">🔴 Hard</button>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="color: #00ff41; font-weight: bold; display: block; margin-bottom: 5px;">Explanation:</label>
+                            <textarea id="explanationText" rows="2" style="width: 100%; padding: 10px; background: rgba(0, 0, 0, 0.8); border: 1px solid #00ff41; border-radius: 5px; color: #ffffff; font-family: 'Courier New', monospace; resize: vertical;" placeholder="Explain why this answer is correct..." required></textarea>
                     </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <label style="color: #00ff41; font-weight: bold; display: block; margin-bottom: 8px;">Difficulty Level:</label>
+                            <div style="display: flex; gap: 15px; justify-content: center;">
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 15px; background: rgba(0, 255, 65, 0.1); border: 1px solid #00ff41; border-radius: 8px; transition: all 0.3s ease;">
+                                    <input type="radio" name="difficulty" value="easy" checked style="margin-right: 8px; accent-color: #00ff41;">
+                                    <span style="color: #00ff41; font-weight: bold;">🟢 Easy</span>
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 15px; background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; border-radius: 8px; transition: all 0.3s ease;">
+                                    <input type="radio" name="difficulty" value="medium" style="margin-right: 8px; accent-color: #ffc107;">
+                                    <span style="color: #ffc107; font-weight: bold;">🟡 Medium</span>
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 15px; background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; border-radius: 8px; transition: all 0.3s ease;">
+                                    <input type="radio" name="difficulty" value="hard" style="margin-right: 8px; accent-color: #ff4444;">
+                                    <span style="color: #ff4444; font-weight: bold;">🔴 Hard</span>
+                                </label>
                 </div>
-                <div id="questionsList" class="questions-list">
-                    <!-- Questions will be populated here -->
                 </div>
+                        
+                        <div style="text-align: center;">
+                            <button type="submit" style="background: linear-gradient(145deg, rgba(0, 255, 65, 0.3), rgba(0, 200, 50, 0.4)); color: #00ff41; border: 2px solid #00ff41; border-radius: 8px; padding: 12px 30px; font-family: 'Courier New', monospace; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">
+                                ➕ ADD QUESTION
+                            </button>
+                            <button type="button" onclick="clearCustomQuestionForm()" style="background: rgba(255, 68, 68, 0.2); color: #ff4444; border: 2px solid #ff4444; border-radius: 8px; padding: 12px 30px; font-family: 'Courier New', monospace; font-weight: bold; cursor: pointer; transition: all 0.3s ease; margin-left: 15px;">
+                                🗑️ CLEAR
+                            </button>
+                        </div>
+                    </form>
             </div>
             
-            <!-- Add Question Tab -->
-            <div id="addQuestionContent" class="tab-content">
-                <h3>Create New Question</h3>
-                <form id="addQuestionForm" class="question-form">
-                    <div class="form-group">
-                        <label for="newQuestion">Question:</label>
-                        <textarea id="newQuestion" placeholder="Enter your Java question here..." required></textarea>
+                <h3>📝 Your Custom Questions</h3>
+                <div id="customQuestionsList" style="max-height: 200px; overflow-y: auto; background: rgba(0, 0, 0, 0.4); border: 1px solid #00ff41; border-radius: 8px; padding: 15px;">
+                    <!-- Custom questions will be loaded here -->
                     </div>
-                    <div class="form-group">
-                        <label for="newAnswer">Answer:</label>
-                        <input type="text" id="newAnswer" placeholder="Enter the correct answer..." required>
+                
+                <div style="margin-top: 25px; padding: 15px; background: rgba(0, 255, 65, 0.1); border: 1px solid #00ff41; border-radius: 8px;">
+                    <strong>💡 Pro Tips:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Keep answers concise and accurate</li>
+                        <li>Choose appropriate difficulty levels</li>
+                        <li>Add helpful explanations for learning</li>
+                        <li>Custom questions are saved locally on your device</li>
+                    </ul>
                     </div>
-                    <div class="form-group">
-                        <label for="newExplanation">Explanation:</label>
-                        <textarea id="newExplanation" placeholder="Explain why this answer is correct..."></textarea>
                     </div>
-                    <div class="form-group">
-                        <label for="newDifficulty">Difficulty Level:</label>
-                        <select id="newDifficulty" required>
-                            <option value="">Select difficulty...</option>
-                            <option value="easy">🟢 Easy - Basic Java concepts</option>
-                            <option value="medium">🟡 Medium - Intermediate topics</option>
-                            <option value="hard">🔴 Hard - Advanced concepts</option>
-                        </select>
                     </div>
-                    <div class="form-buttons">
-                        <button type="submit" class="submit-btn">💾 Save Question</button>
-                        <button type="button" id="clearFormBtn" class="clear-btn">🗑️ Clear Form</button>
                     </div>
-                </form>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">❓ Game Help & Support</div>
+                <button class="close-btn" onclick="closeModal('helpModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>🎮 How to Play</h3>
+                <p>You are a programmer trapped in a corrupted digital maze. Use your Java knowledge to debug your way out!</p>
+                
+                <h3>🕹️ Game Controls</h3>
+                <ul>
+                    <li><strong>Desktop:</strong> Use arrow keys to move</li>
+                    <li><strong>Mouse:</strong> Left-click or right-click anywhere on the maze</li>
+                    <li><strong>Mobile/Touch:</strong> Swipe in any direction</li>
+                    <li><strong>Virtual D-pad:</strong> Tap the directional buttons</li>
+                </ul>
+                
+                <h3>🎯 Game Mechanics</h3>
+                <ul>
+                    <li><strong>Questions:</strong> Each move triggers a Java programming question</li>
+                    <li><strong>Correct Answer:</strong> Move forward and earn +10 coins</li>
+                    <li><strong>Wrong Answer:</strong> Return to start, lose 5 coins (or spend 5 coins to stay)</li>
+                    <li><strong>Coins:</strong> Collect data tokens throughout the maze (+5 coins each)</li>
+                    <li><strong>Dead Ends:</strong> Cost 2 coins as debugging penalty</li>
+                </ul>
+                
+                <h3>🏆 Difficulty Levels</h3>
+                <ul>
+                    <li><strong>🟢 Easy:</strong> 5x5 maze, basic Java concepts</li>
+                    <li><strong>🟡 Medium:</strong> 7x7 maze, intermediate topics</li>
+                    <li><strong>🔴 Hard:</strong> 9x9 maze, advanced Java knowledge</li>
+                </ul>
+                
+                <h3>💀 Victory Condition</h3>
+                <p>Reach the EXIT after answering all required questions. Complete all three difficulty levels to achieve <strong>MASTER DEBUGGER</strong> status and escape digital death!</p>
+                
+                <h3>💰 Coin System</h3>
+                <ul>
+                    <li>Correct answers: +10 coins</li>
+                    <li>Data token pickup: +5 coins</li>
+                    <li>Wrong answers: -5 coins</li>
+                    <li>Dead end penalty: -2 coins</li>
+                    <li>Override wrong answer: -5 coins (to avoid returning to start)</li>
+                </ul>
+                
+                <div style="margin-top: 25px; padding: 15px; background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; border-radius: 8px;">
+                    <strong>⚠️ Warning:</strong> If your debt reaches -50 coins, the system will offer to reset your debt to continue playing.
+                </div>
+                
+                <h3>🐛 Found a Bug or Need Help?</h3>
+                <div style="background: rgba(33, 150, 243, 0.1); border: 2px solid #2196F3; border-radius: 10px; padding: 20px; margin: 15px 0; text-align: center;">
+                    <div style="color: #2196F3; font-weight: bold; margin-bottom: 15px; font-size: 18px;">
+                        📧 Contact Developer
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        If you encounter any bugs, have suggestions, or need technical support, please feel free to reach out:
+                    </div>
+                    <div style="background: rgba(0, 0, 0, 0.6); border: 1px solid #2196F3; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                        <div style="color: #ffffff; font-family: 'Courier New', monospace; font-size: 16px; margin-bottom: 10px;">
+                            Email: <span style="color: #2196F3; font-weight: bold;">kexinliu7a@gmail.com</span>
+                        </div>
+                        <button onclick="openEmailClient()" style="background: linear-gradient(145deg, rgba(33, 150, 243, 0.3), rgba(33, 150, 243, 0.5)); color: #2196F3; border: 2px solid #2196F3; border-radius: 8px; padding: 10px 20px; font-family: 'Courier New', monospace; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">
+                            📧 SEND EMAIL
+                        </button>
+                    </div>
+                    <div style="font-size: 14px; color: #aaaaaa; margin-top: 10px;">
+                        Please include details about the issue, your browser, and steps to reproduce the problem.
+                    </div>
+                </div>
+                
+                <h3>🌟 Game Features</h3>
+                <ul>
+                    <li>Three difficulty levels with adaptive questions</li>
+                    <li>Custom question creation system</li>
+                    <li>Progress tracking across sessions</li>
+                    <li>Responsive design for mobile and desktop</li>
+                    <li>Local storage for persistent game data</li>
+                </ul>
             </div>
         </div>
     </div>
 
-    <!-- 外部脚本文件 -->
-    <script src="questions.js"></script>
-    <script src="sounds.js"></script>
-    <script src="animations.js"></script>
     <script src="game.js"></script>
     
-    <!-- 主要初始化脚本 -->
     <script>
-        // Global variables
-        let currentGame = null;
+    // Game initialization
+    window.onload = () => {
+        console.log('🚀 GAME LOADING - Window loaded - Initializing game...');
         
-        // Initialize page when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize animations
-            initializeAnimations();
-            
-            // Start Q's introduction dialogue immediately
-            startPigQDialogue();
-            
-            // Setup story screen click handler for after Q's dialogue
-            const storyScreen = document.getElementById('storyScreen');
-            const continueHandler = function(e) {
-                // Hide story screen
-                storyScreen.style.display = 'none';
-                
-                // Show difficulty selection screen
-                document.getElementById('startScreen').style.display = 'flex';
-                
-                // Remove event listeners
-                storyScreen.removeEventListener('click', continueHandler);
-                storyScreen.removeEventListener('touchend', continueHandler);
-                document.removeEventListener('keydown', keyHandler);
-                
-                console.log('🐷 Q introduction completed - Showing difficulty selection');
-            };
-            
-            const keyHandler = function(e) {
-                if (e.key === ' ' || e.key === 'Enter') {
-                    e.preventDefault();
-                    continueHandler(e);
-                }
-            };
-            
-            // Add event listeners for continuing from Q's dialogue
-            storyScreen.addEventListener('click', continueHandler);
-            storyScreen.addEventListener('touchend', continueHandler);
-            document.addEventListener('keydown', keyHandler);
-            
-            // Setup difficulty button event listeners (they will start game directly)
-            document.getElementById('easyBtn').addEventListener('click', () => startGame('easy'));
-            document.getElementById('mediumBtn').addEventListener('click', () => startGame('medium'));
-            document.getElementById('hardBtn').addEventListener('click', () => startGame('hard'));
-            
-            // Setup question bank button
-            document.getElementById('questionBankBtn').addEventListener('click', () => {
-                document.getElementById('questionBankModal').style.display = 'block';
-                loadQuestionBank();
-            });
-            
-            // Setup new game button (when in game)
-            document.getElementById('newGameBtn').addEventListener('click', () => {
-                document.getElementById('gameContainer').style.display = 'none';
-                document.getElementById('startScreen').style.display = 'flex';
-                updateDifficultyButtonStatus();
-            });
-            
-            // Setup question bank modal close
-            document.querySelector('.close').addEventListener('click', () => {
-                document.getElementById('questionBankModal').style.display = 'none';
-            });
-            
-            // Initial setup
-            updateDifficultyButtonStatus();
-            
-            console.log('🐷 Game initialized - Q is ready to introduce the game!');
+        const startScreen = document.getElementById('startScreen');
+        const storyScreen = document.getElementById('storyScreen');
+        const gameContainer = document.getElementById('gameContainer');
+        let currentGame = null;
+
+        console.log('🔍 Found elements:', {
+            startScreen: !!startScreen,
+            storyScreen: !!storyScreen,
+            gameContainer: !!gameContainer
+        });
+
+        // Initialize audio system first
+        initializeAudioSystem();
+        
+        // Update total coins display on load
+        updateTotalCoinsDisplay();
+        
+        // Prevent context menu on canvas and game area to ensure smooth right-click functionality
+        document.addEventListener('contextmenu', (e) => {
+            // Only prevent context menu on game-related elements
+            if (e.target.closest('#gameContainer') || e.target.closest('#mazeCanvas')) {
+                e.preventDefault();
+                console.log('🖱️ Context menu prevented for game area');
+            }
         });
         
-        // Start game directly (since Q already introduced)
-        function startGame(difficulty) {
-            console.log(`Starting ${difficulty} game...`);
-            
-            // Hide start screen
-            document.getElementById('startScreen').style.display = 'none';
-            
-            // Show game container
-            document.getElementById('gameContainer').style.display = 'block';
-            
-            // Start the actual game
-            currentGame = new MazeGame(difficulty);
-            
-            console.log('🐷 Game started!');
+        // Prevent text selection that might interfere with right-click
+        document.addEventListener('selectstart', (e) => {
+            if (e.target.closest('#gameContainer') || e.target.closest('#mazeCanvas')) {
+                e.preventDefault();
+            }
+        });
+        
+        // EMERGENCY DEBUG: Skip story and go straight to start screen
+        const debugSkip = localStorage.getItem('javaMazeSkipStory');
+        if (debugSkip === 'true') {
+            console.log('🚑 DEBUG MODE: Skipping story screen');
+            storyScreen.style.display = 'none';
+            gameContainer.style.display = 'none';
+            startScreen.style.display = 'flex';
+            updateDifficultyButtonStatus();
+            return;
         }
         
-        // Global error handler
-        window.addEventListener('error', function(e) {
-            console.error('Global error:', e.error);
-            console.log('🐷 Q says: "Don\'t worry, I\'m still here!"');
+        // Hide all screens initially except story
+        startScreen.style.display = 'none';
+        gameContainer.style.display = 'none';
+        
+        // Show story screen first, but with immediate skip option
+        setTimeout(() => {
+            showStoryScreen();
+        }, 100);
+
+        // Add emergency skip function for debugging
+        window.skipToGame = () => {
+            console.log('🚑 EMERGENCY SKIP - Going directly to game selection');
+            localStorage.setItem('javaMazeSkipStory', 'true');
+            hideStoryScreen();
+        };
+
+        // Test function to simulate completing all difficulties
+        window.testCompleteAllDifficulties = () => {
+            console.log('🧪 TESTING COMPLETE ALL DIFFICULTIES...');
+            localStorage.setItem('javaMazeCompletedDifficulties', JSON.stringify(['easy', 'medium', 'hard']));
+            updateDifficultyButtonStatus();
+            console.log('✅ All difficulties marked as completed');
+            alert('🧪 TEST: All difficulties marked as completed!\nCheck the start screen for the Master Debugger status!');
+        };
+        
+        // Test function to reset all completions
+        window.testResetCompletions = () => {
+            console.log('🧪 RESETTING ALL COMPLETIONS...');
+            localStorage.setItem('javaMazeCompletedDifficulties', JSON.stringify([]));
+            const masterStatus = document.getElementById('masterDebuggerStatus');
+            if (masterStatus) {
+                masterStatus.remove();
+            }
+            updateDifficultyButtonStatus();
+            console.log('✅ All completions reset');
+            alert('🧪 TEST: All completions reset!');
+        };
+
+        // Add function to reset story skip
+        window.enableStoryScreen = () => {
+            localStorage.removeItem('javaMazeSkipStory');
+            console.log('✅ Story screen re-enabled');
+            alert('Story screen has been re-enabled. Refresh the page to see it again.');
+        };
+
+        function startGame(difficulty) {
+            startScreen.style.display = 'none';
+            gameContainer.style.display = 'block';
+            currentGame = new MazeGame(difficulty);
+        }
+
+        // Add click event listeners to difficulty buttons
+        document.getElementById('easyBtn').addEventListener('click', () => startGame('easy'));
+        document.getElementById('mediumBtn').addEventListener('click', () => startGame('medium'));
+        document.getElementById('hardBtn').addEventListener('click', () => startGame('hard'));
+
+        // Add click event listener to new game button
+        document.getElementById('newGameBtn').addEventListener('click', () => {
+            startScreen.style.display = 'flex';
+            gameContainer.style.display = 'none';
+            if (currentGame) {
+                currentGame = null;
+            }
+            updateDifficultyButtonStatus();
+        });
+
+        // Add event listeners for other buttons
+        document.getElementById('questionBankBtn').addEventListener('click', () => {
+            openModal('questionBankModal');
+            updateQuestionStats();
+            loadCustomQuestions();
+        });
+
+        document.getElementById('help-btn').addEventListener('click', () => {
+            openModal('helpModal');
+        });
+
+        document.getElementById('resetCoinsBtn').addEventListener('click', () => {
+            if (confirm('🪙 RESET COIN BANK\n\nAre you sure you want to reset your total coins to 0?\nThis action cannot be undone.')) {
+                localStorage.setItem('javaMazeTotalCoins', '0');
+                updateTotalCoinsDisplay();
+                showDebugPopup('💰 Total coins reset to 0', 'success');
+            }
+        });
+
+        // Add custom question form event listener
+        document.getElementById('customQuestionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            addCustomQuestion();
+        });
+    };
+
+    // Story screen functions
+    function showStoryScreen() {
+        console.log('🎬 STORY SCREEN - showStoryScreen() called');
+        
+        const storyScreen = document.getElementById('storyScreen');
+        const startScreen = document.getElementById('startScreen');
+        
+        if (!storyScreen) {
+            console.error('❌ STORY SCREEN - Story screen element not found!');
+            return;
+        }
+        
+        // Show story screen
+        storyScreen.style.display = 'flex';
+        if (startScreen) {
+            startScreen.style.display = 'none';
+        }
+        
+        // Start code rain effect
+        startCodeRain();
+        
+        // Start pig Q dialogue sequence
+        startPigQDialogue();
+        
+        let isFirstPhase = true; // Track if we're in Q dialogue phase
+        
+        // Listen for space key, mouse clicks, and touch events to continue
+        const handleStorySkip = (event) => {
+            // Handle keyboard events
+            if (event.type === 'keydown' && (event.key === ' ' || event.code === 'Space')) {
+                event.preventDefault();
+                handleNextPhase();
+                return;
+            }
+            
+            // Handle mouse clicks and touch events
+            if (event.type === 'click' || event.type === 'touchend') {
+                event.preventDefault();
+                handleNextPhase();
+                return;
+            }
+        };
+        
+        function handleNextPhase() {
+            if (isFirstPhase) {
+                // Transition to original story without Q
+                showOriginalStory();
+                isFirstPhase = false;
+            } else {
+                // Go to start screen
+                console.log('✅ STORY SCREEN - Dismissed to start screen');
+                hideStoryScreen();
+                cleanup();
+            }
+        }
+        
+        function showOriginalStory() {
+            // Hide Q character
+            const characterPortrait = document.querySelector('.character-portrait');
+            if (characterPortrait) {
+                characterPortrait.style.display = 'none';
+            }
+            
+            // Update dialogue box content
+            const speakerName = document.querySelector('.speaker-name');
+            const dialogueText = document.getElementById('dialogueText');
+            const continuePrompt = document.querySelector('.continue-prompt .blinking-cursor');
+            
+            if (speakerName) speakerName.style.display = 'none';
+            if (dialogueText) {
+                dialogueText.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 24px; color: #ff4444; margin-bottom: 10px; text-shadow: 0 0 10px #ff4444;">SYSTEM ERROR</div>
+                        <div style="font-size: 16px; color: #ffaa00; margin-bottom: 20px; text-shadow: 0 0 5px #ffaa00;">CRITICAL LOGIC FAILURE DETECTED</div>
+                    </div>
+                    <div style="line-height: 1.8;">
+                        You are a programmer trapped in a corrupted code maze...<br><br>
+                        The system's logic gates have malfunctioned.<br><br>
+                        Each pathway requires debugging to unlock.<br><br>
+                        Your Java knowledge is the only way out.<br><br>
+                        Fix the code. Escape the maze. Restore the system.
+                    </div>
+                `;
+            }
+            if (continuePrompt) {
+                continuePrompt.textContent = '▶ Press Space to initialize debugging protocol...';
+            }
+            
+            console.log('Transitioned to original story without Q');
+        }
+        
+        function cleanup() {
+            document.removeEventListener('keydown', handleStorySkip);
+            storyScreen.removeEventListener('click', handleStorySkip);
+            storyScreen.removeEventListener('touchend', handleStorySkip);
+        }
+        
+        // Add event listeners for multiple input methods
+        document.addEventListener('keydown', handleStorySkip);
+        storyScreen.addEventListener('click', handleStorySkip);
+        storyScreen.addEventListener('touchend', handleStorySkip);
+        
+        console.log('👂 STORY SCREEN - Event listeners added');
+        
+        // Auto-advance after 20 seconds if no interaction
+        setTimeout(() => {
+            if (storyScreen.style.display !== 'none') {
+                console.log('⏰ STORY SCREEN - Auto-advancing after 20 seconds');
+                hideStoryScreen();
+                cleanup();
+            }
+        }, 20000);
+        
+        console.log('🎬 STORY SCREEN - Setup complete!');
+    }
+    
+    function hideStoryScreen() {
+        const storyScreen = document.getElementById('storyScreen');
+        const startScreen = document.getElementById('startScreen');
+        
+        console.log('Hiding story screen...');
+        
+        storyScreen.style.display = 'none';
+        startScreen.style.display = 'flex';
+        
+        // Update difficulty button completion status when showing start screen
+        updateDifficultyButtonStatus();
+        
+        console.log('Start screen now visible');
+    }
+    
+    function startCodeRain() {
+        const codeRain = document.querySelector('.code-rain');
+        const codeSymbols = [
+            'class', 'public', 'private', 'void', 'int', 'String', 'new', 'if', 'else', 'for', 'while',
+            '{}', '();', '[]', '&&', '||', '==', '!=', '//', '/*', '*/', 'extends', 'implements',
+            'try', 'catch', 'throw', 'final', 'static', 'abstract', 'interface', 'package', 'import'
+        ];
+        
+        function createCodeParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'code-particle';
+            particle.textContent = codeSymbols[Math.floor(Math.random() * codeSymbols.length)];
+            
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            particle.style.opacity = Math.random() * 0.7 + 0.3;
+            particle.style.fontSize = (Math.random() * 8 + 10) + 'px';
+            
+            codeRain.appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 5000);
+        }
+        
+        // Create particles at intervals
+        const rainInterval = setInterval(() => {
+            if (document.getElementById('storyScreen').style.display !== 'none') {
+                createCodeParticle();
+            } else {
+                clearInterval(rainInterval);
+            }
+        }, 200);
+    }
+    
+    // Q's dialogue system
+    function startPigQDialogue() {
+        const pigMessages = [
+            "Hello there! I'm Q, your guide.",
+            "You are a programmer... but something's wrong.",
+            "You've been trapped in this digital maze.",
+            "The code around you is corrupted and broken.",
+            "As a trapped programmer, you must use your skills.",
+            "Debug your way out of this nightmare!"
+        ];
+        
+        const dialogueElement = document.getElementById('dialogueText');
+        let messageIndex = 0;
+        let isQDialoguePhase = true;
+        
+        function updateDialogue() {
+            if (isQDialoguePhase && dialogueElement && messageIndex < pigMessages.length) {
+                dialogueElement.textContent = pigMessages[messageIndex];
+                
+                // Add typewriter effect
+                dialogueElement.style.opacity = '0';
+                setTimeout(() => {
+                    dialogueElement.style.opacity = '1';
+                }, 100);
+                
+                messageIndex++;
+                
+                // Change message every 10 seconds (extended from 7 seconds)
+                if (messageIndex < pigMessages.length) {
+                    setTimeout(updateDialogue, 10000);
+                } else {
+                    // Q dialogue finished, prepare to show final prompt
+                    setTimeout(() => {
+                        dialogueElement.textContent = "Now let me show you the full picture of your situation...";
+                        document.querySelector('.continue-prompt .blinking-cursor').textContent = '▶ Tap to continue';
+                    }, 5000);
+                }
+            }
+        }
+        
+        // Start Q's dialogue
+        setTimeout(updateDialogue, 1000);
+    }
+
+    // localStorage functions for total coins
+    function getTotalCoins() {
+        return parseInt(localStorage.getItem('javaMazeTotalCoins') || '0');
+    }
+
+    function saveTotalCoins(coins) {
+        localStorage.setItem('javaMazeTotalCoins', coins.toString());
+    }
+
+    function addToTotalCoins(gameCoins) {
+        const currentTotal = getTotalCoins();
+        const newTotal = currentTotal + gameCoins;
+        saveTotalCoins(newTotal);
+        updateTotalCoinsDisplay();
+        return newTotal;
+    }
+
+    function updateTotalCoinsDisplay() {
+        const totalCoinsElement = document.getElementById('totalCoinCount');
+        if (totalCoinsElement) {
+            totalCoinsElement.textContent = getTotalCoins();
+        }
+    }
+
+    function updateDifficultyButtonStatus() {
+        const completedDifficulties = JSON.parse(localStorage.getItem('javaMazeCompletedDifficulties') || '[]');
+        
+        // Update each difficulty button
+        const difficultyButtons = {
+            'easy': document.getElementById('easyBtn'),
+            'medium': document.getElementById('mediumBtn'),
+            'hard': document.getElementById('hardBtn')
+        };
+        
+        Object.entries(difficultyButtons).forEach(([difficulty, button]) => {
+            if (button) {
+                const isCompleted = completedDifficulties.includes(difficulty);
+                
+                if (isCompleted) {
+                    // Add completion styling
+                    button.innerHTML = `${button.textContent.replace('✅ ', '')} ✅`;
+                    button.style.background = 'linear-gradient(145deg, rgba(0, 255, 65, 0.3), rgba(0, 200, 50, 0.4))';
+                    button.style.boxShadow = '0 0 20px rgba(0, 255, 65, 0.5)';
+                } else {
+                    // Reset to original styling if not completed
+                    button.innerHTML = button.textContent.replace(' ✅', '');
+                    button.style.background = '';
+                    button.style.boxShadow = '';
+                }
+            }
         });
         
-        console.log('🐷 Main script loaded - Q is awakening...');
+        // Check if all completed for special message
+        const allCompleted = completedDifficulties.length === 3 && 
+                            completedDifficulties.includes('easy') && 
+                            completedDifficulties.includes('medium') && 
+                            completedDifficulties.includes('hard');
+        
+        if (allCompleted) {
+            // Add special completion message to start screen
+            const startContent = document.getElementById('startContent');
+            if (startContent && !document.getElementById('masterDebuggerStatus')) {
+                const masterStatus = document.createElement('div');
+                masterStatus.id = 'masterDebuggerStatus';
+                masterStatus.innerHTML = `
+                    <div style="
+                        margin: 20px 0;
+                        padding: 15px;
+                        background: linear-gradient(135deg, #FFD700, #FFA500);
+                        border: 2px solid #FF8C00;
+                        border-radius: 10px;
+                        color: #8B4513;
+                        font-weight: bold;
+                        text-align: center;
+                        animation: victoryGlow 2s ease-in-out infinite alternate;
+                    ">
+                        🏆 MASTER DEBUGGER STATUS ACHIEVED! 🏆<br>
+                        <span style="font-size: 14px;">💀 Successfully Escaped Digital Death 💀</span>
+                    </div>
+                `;
+                
+                startContent.appendChild(masterStatus);
+                
+                // Add the victory glow animation
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes victoryGlow {
+                        from { 
+                            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+                            transform: scale(1);
+                        }
+                        to { 
+                            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+                            transform: scale(1.02);
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+    }
+
+    // Question Bank Management System
+    function initializeQuestionBank() {
+        if (!localStorage.getItem('javaMazeCustomQuestions')) {
+            localStorage.setItem('javaMazeCustomQuestions', JSON.stringify([]));
+        }
+    }
+
+    function getCustomQuestions() {
+        return JSON.parse(localStorage.getItem('javaMazeCustomQuestions') || '[]');
+    }
+
+    function getDefaultQuestions() {
+        return [
+            // Easy questions
+            { id: 'default_1', question: "What keyword is used to create a class in Java?", answer: "class", explanation: "The class keyword defines a new class", type: 'default', difficulty: 'easy' },
+            { id: 'default_2', question: "What is the primitive data type for whole numbers in Java?", answer: "int", explanation: "int is used for integer values", type: 'default', difficulty: 'easy' },
+            { id: 'default_3', question: "What keyword is used to create an object?", answer: "new", explanation: "The new keyword instantiates objects", type: 'default', difficulty: 'easy' },
+            
+            // Medium questions
+            { id: 'default_4', question: "What is the main entry point method in Java?", answer: "public static void main", explanation: "The main method is the entry point", type: 'default', difficulty: 'medium' },
+            { id: 'default_5', question: "What keyword is used for inheritance?", answer: "extends", explanation: "extends is used to inherit from a class", type: 'default', difficulty: 'medium' },
+            
+            // Hard questions
+            { id: 'default_6', question: "What is the difference between == and .equals()?", answer: "== compares references, .equals() compares values", explanation: "== checks references, .equals() checks logical equality", type: 'default', difficulty: 'hard' }
+        ];
+    }
+
+    // Audio system
+    let soundEffects = {};
+
+    function initializeAudioSystem() {
+        try {
+            console.log('Audio system initialized - Ready for atmospheric sounds');
+            
+            soundEffects = {
+                coinCollect: () => console.log('🔊 Data chirp - Coin collected'),
+                correctAnswer: () => console.log('🔊 Success chime - Code compiled successfully'),
+                wrongAnswer: () => console.log('🔊 Error beep - Syntax error detected'),
+                debugMode: () => console.log('🔊 Debug mode activated')
+            };
+        } catch (error) {
+            console.log('Audio not available, running in silent mode');
+        }
+    }
+
+    function showDebugPopup(message, type = 'info') {
+        const popup = document.createElement('div');
+        popup.className = `debug-popup ${type === 'success' ? 'success-feedback' : type === 'error' ? 'error-feedback' : ''}`;
+        popup.textContent = message;
+        
+        // Add basic styling
+        popup.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            padding: 15px 25px;
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            z-index: 1001;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        `;
+        
+        if (type === 'success') {
+            popup.style.color = '#00ff41';
+            popup.style.borderColor = '#00ff41';
+        } else if (type === 'error') {
+            popup.style.color = '#ff4444';
+            popup.style.borderColor = '#ff4444';
+        }
+        
+        document.body.appendChild(popup);
+        
+        // Remove popup after 3 seconds
+        setTimeout(() => {
+            if (popup.parentNode) {
+                popup.style.transition = 'opacity 0.5s ease-out';
+                popup.style.opacity = '0';
+                setTimeout(() => {
+                    if (popup.parentNode) {
+                        popup.parentNode.removeChild(popup);
+                    }
+                }, 500);
+            }
+        }, 3000);
+    }
+
+    // Modal management functions
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'flex';
+            // Prevent body scrolling when modal is open
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+            // Restore body scrolling
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    // Close modals when clicking outside of them
+    window.addEventListener('click', (event) => {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                closeModal(modal.id);
+            }
+        });
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            const openModals = document.querySelectorAll('.modal[style*="flex"]');
+            openModals.forEach(modal => {
+                closeModal(modal.id);
+            });
+        }
+    });
+
+    function updateQuestionStats() {
+        const statsElement = document.getElementById('questionStats');
+        if (statsElement) {
+            try {
+                const defaultQuestions = getDefaultQuestions();
+                const customQuestions = getCustomQuestions();
+                const disabledQuestions = JSON.parse(localStorage.getItem('javaMazeDisabledQuestions') || '[]');
+                
+                const enabledDefault = defaultQuestions.filter(q => !disabledQuestions.includes(q.id));
+                
+                const easyCount = [...enabledDefault, ...customQuestions].filter(q => (q.difficulty || 'easy') === 'easy').length;
+                const mediumCount = [...enabledDefault, ...customQuestions].filter(q => (q.difficulty || 'easy') === 'medium').length;
+                const hardCount = [...enabledDefault, ...customQuestions].filter(q => (q.difficulty || 'easy') === 'hard').length;
+                
+                statsElement.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center;">
+                        <div style="padding: 10px; background: rgba(0, 255, 65, 0.1); border: 1px solid #00ff41; border-radius: 8px;">
+                            <div style="color: #00ff41; font-weight: bold;">🟢 EASY</div>
+                            <div style="font-size: 20px; margin-top: 5px;">${easyCount}</div>
+                        </div>
+                        <div style="padding: 10px; background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; border-radius: 8px;">
+                            <div style="color: #ffc107; font-weight: bold;">🟡 MEDIUM</div>
+                            <div style="font-size: 20px; margin-top: 5px;">${mediumCount}</div>
+                        </div>
+                        <div style="padding: 10px; background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; border-radius: 8px;">
+                            <div style="color: #ff4444; font-weight: bold;">🔴 HARD</div>
+                            <div style="font-size: 20px; margin-top: 5px;">${hardCount}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 14px; color: #aaaaaa;">
+                        Total Active Questions: ${easyCount + mediumCount + hardCount}<br>
+                        Custom Questions: ${customQuestions.length}<br>
+                        Disabled Questions: ${disabledQuestions.length}
+                    </div>
+                `;
+            } catch (error) {
+                statsElement.innerHTML = '<div style="color: #ff4444;">Error loading question statistics</div>';
+                console.error('Error updating question stats:', error);
+            }
+        }
+    }
+
+    // Custom question management functions
+    function addCustomQuestion() {
+        const questionText = document.getElementById('questionText').value.trim();
+        const answerText = document.getElementById('answerText').value.trim();
+        const explanationText = document.getElementById('explanationText').value.trim();
+        const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+
+        if (!questionText || !answerText || !explanationText) {
+            showDebugPopup('❌ Please fill in all fields', 'error');
+            return;
+        }
+
+        const customQuestion = {
+            id: 'custom_' + Date.now(),
+            question: questionText,
+            answer: answerText,
+            explanation: explanationText,
+            difficulty: difficulty,
+            type: 'custom',
+            dateAdded: new Date().toLocaleDateString()
+        };
+
+        // Get existing custom questions
+        const customQuestions = getCustomQuestions();
+        customQuestions.push(customQuestion);
+
+        // Save to localStorage
+        localStorage.setItem('javaMazeCustomQuestions', JSON.stringify(customQuestions));
+
+        // Clear form
+        clearCustomQuestionForm();
+
+        // Refresh displays
+        updateQuestionStats();
+        loadCustomQuestions();
+
+        showDebugPopup('✅ Custom question added successfully!', 'success');
+    }
+
+    function clearCustomQuestionForm() {
+        document.getElementById('questionText').value = '';
+        document.getElementById('answerText').value = '';
+        document.getElementById('explanationText').value = '';
+        document.querySelector('input[name="difficulty"][value="easy"]').checked = true;
+    }
+
+    function loadCustomQuestions() {
+        const customQuestionsList = document.getElementById('customQuestionsList');
+        const customQuestions = getCustomQuestions();
+
+        if (customQuestions.length === 0) {
+            customQuestionsList.innerHTML = `
+                <div style="text-align: center; color: #aaaaaa; padding: 20px;">
+                    📝 No custom questions yet.<br>
+                    Create your first custom question above!
+                </div>
+            `;
+            return;
+        }
+
+        const questionsHTML = customQuestions.map((question, index) => {
+            const difficultyColor = {
+                'easy': '#00ff41',
+                'medium': '#ffc107',
+                'hard': '#ff4444'
+            }[question.difficulty];
+
+            const difficultyIcon = {
+                'easy': '🟢',
+                'medium': '🟡',
+                'hard': '🔴'
+            }[question.difficulty];
+
+            return `
+                <div style="background: rgba(0, 0, 0, 0.6); border: 1px solid ${difficultyColor}; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="color: ${difficultyColor}; font-weight: bold;">
+                            ${difficultyIcon} ${question.difficulty.toUpperCase()}
+                        </span>
+                        <button onclick="deleteCustomQuestion(${index})" style="background: rgba(255, 68, 68, 0.2); color: #ff4444; border: 1px solid #ff4444; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 12px;">
+                            🗑️ DELETE
+                        </button>
+                    </div>
+                    <div style="color: #ffffff; margin-bottom: 8px;">
+                        <strong>Q:</strong> ${question.question}
+                    </div>
+                    <div style="color: #00ff41; margin-bottom: 8px;">
+                        <strong>A:</strong> ${question.answer}
+                    </div>
+                    <div style="color: #aaaaaa; font-size: 14px; margin-bottom: 8px;">
+                        <strong>Explanation:</strong> ${question.explanation}
+                    </div>
+                    <div style="color: #666666; font-size: 12px; text-align: right;">
+                        Added: ${question.dateAdded}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        customQuestionsList.innerHTML = questionsHTML;
+    }
+
+    function deleteCustomQuestion(index) {
+        if (confirm('🗑️ DELETE CUSTOM QUESTION\n\nAre you sure you want to delete this custom question?\nThis action cannot be undone.')) {
+            const customQuestions = getCustomQuestions();
+            customQuestions.splice(index, 1);
+            localStorage.setItem('javaMazeCustomQuestions', JSON.stringify(customQuestions));
+            
+            // Refresh displays
+            updateQuestionStats();
+            loadCustomQuestions();
+            
+            showDebugPopup('🗑️ Custom question deleted', 'success');
+        }
+    }
+
+    // Email functionality
+    function openEmailClient() {
+        const subject = encodeURIComponent('Java Maze Game - Bug Report/Support Request');
+        const body = encodeURIComponent(`Hi,
+
+I am writing to report an issue with the Java Maze Game:
+
+Issue Description:
+[Please describe the issue you encountered]
+
+Steps to Reproduce:
+1. [Step one]
+2. [Step two]
+3. [Step three]
+
+Browser Information:
+- Browser: ${navigator.userAgent}
+- Screen Resolution: ${screen.width}x${screen.height}
+- Game Version: Current
+
+Additional Information:
+[Any other relevant details]
+
+Thank you for your time and assistance!
+
+Best regards,
+[Your name]`);
+        
+        const mailtoLink = `mailto:kexinliu7a@gmail.com?subject=${subject}&body=${body}`;
+        
+        try {
+            window.location.href = mailtoLink;
+            showDebugPopup('📧 Email client opened', 'success');
+        } catch (error) {
+            // Fallback for browsers that don't support mailto
+            navigator.clipboard.writeText('kexinliu7a@gmail.com').then(() => {
+                showDebugPopup('📧 Email address copied to clipboard', 'success');
+                alert('📧 EMAIL CONTACT\n\nEmail address copied to clipboard: kexinliu7a@gmail.com\n\nPlease paste this into your email client and describe your issue.');
+            }).catch(() => {
+                alert('📧 EMAIL CONTACT\n\nPlease send your bug report to:\nkexinliu7a@gmail.com\n\nInclude details about the issue and your browser information.');
+            });
+        }
+    }
     </script>
 </body>
 </html> 

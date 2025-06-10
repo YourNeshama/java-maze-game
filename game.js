@@ -208,15 +208,9 @@ class MazeGame {
     }
 
     setupEventListeners() {
-        // Keyboard controls
+        // Keyboard controls - immediate question on keypress
         document.addEventListener('keydown', (e) => {
-            // Emergency unlock with Escape key
-            if (e.key === 'Escape') {
-                console.log("🚨 EMERGENCY UNLOCK - Escape key pressed");
-                this.isMoving = false;
-                showDebugPopup('🔓 Movement force unlocked!', 'success');
-                return;
-            }
+            if (this.isMoving) return;
             
             let dx = 0, dy = 0;
             switch(e.key) {
@@ -227,15 +221,88 @@ class MazeGame {
                 default: return;
             }
             
-            this.tryMove(dx, dy);
+            this.handleDirectionalInput(dx, dy);
         });
 
-        // Touch controls
+        // Canvas click controls - immediate question on click
+        this.canvas.addEventListener('click', (e) => {
+            if (this.isMoving) return;
+            
+            const rect = this.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Calculate which direction was clicked relative to player
+            const playerPixelX = this.playerX * this.cellSize + this.cellSize/2;
+            const playerPixelY = this.playerY * this.cellSize + this.cellSize/2;
+            
+            const deltaX = x - playerPixelX;
+            const deltaY = y - playerPixelY;
+            const absDeltaX = Math.abs(deltaX);
+            const absDeltaY = Math.abs(deltaY);
+            
+            // Determine primary direction
+            let dx = 0, dy = 0;
+            if (absDeltaX > absDeltaY) {
+                dx = deltaX > 0 ? 1 : -1;
+            } else {
+                dy = deltaY > 0 ? 1 : -1;
+            }
+            
+            this.handleDirectionalInput(dx, dy);
+        });
+
+        // Right-click controls - also trigger questions immediately
+        this.canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault(); // Prevent browser context menu
+            if (this.isMoving) return;
+            
+            const rect = this.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Calculate which direction was right-clicked relative to player
+            const playerPixelX = this.playerX * this.cellSize + this.cellSize/2;
+            const playerPixelY = this.playerY * this.cellSize + this.cellSize/2;
+            
+            const deltaX = x - playerPixelX;
+            const deltaY = y - playerPixelY;
+            const absDeltaX = Math.abs(deltaX);
+            const absDeltaY = Math.abs(deltaY);
+            
+            // Determine primary direction
+            let dx = 0, dy = 0;
+            if (absDeltaX > absDeltaY) {
+                dx = deltaX > 0 ? 1 : -1;
+            } else {
+                dy = deltaY > 0 ? 1 : -1;
+            }
+            
+            // Show special right-click feedback
+            showDebugPopup('🖱️ Right-click detected - Initiating debug protocol', 'info');
+            
+            this.handleDirectionalInput(dx, dy);
+        });
+
+        // Additional event to catch right mouse button down
+        this.canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 2) { // Right mouse button
+                e.preventDefault();
+                // This will be handled by contextmenu event
+            }
+        });
+
+        // Prevent drag operations that might interfere
+        this.canvas.addEventListener('dragstart', (e) => {
+            e.preventDefault();
+        });
+
+        // Touch controls - immediate question on swipe
         let touchStartX = 0;
         let touchStartY = 0;
         let touchEndX = 0;
         let touchEndY = 0;
-        const minSwipeDistance = 30; // Minimum swipe distance
+        const minSwipeDistance = 30;
 
         this.canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -245,11 +312,12 @@ class MazeGame {
         }, { passive: false });
 
         this.canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // Prevent page scrolling
+            e.preventDefault();
         }, { passive: false });
 
         this.canvas.addEventListener('touchend', (e) => {
             e.preventDefault();
+            if (this.isMoving) return;
             
             const touch = e.changedTouches[0];
             touchEndX = touch.clientX;
@@ -260,26 +328,22 @@ class MazeGame {
             const absDeltaX = Math.abs(deltaX);
             const absDeltaY = Math.abs(deltaY);
             
-            // Check if it's a valid swipe
             if (Math.max(absDeltaX, absDeltaY) < minSwipeDistance) {
-                return; // Swipe distance too short, ignore
+                return;
             }
             
             let dx = 0, dy = 0;
             
-            // Determine swipe direction
             if (absDeltaX > absDeltaY) {
-                // Horizontal swipe
                 dx = deltaX > 0 ? 1 : -1;
             } else {
-                // Vertical swipe
                 dy = deltaY > 0 ? 1 : -1;
             }
             
-            this.tryMove(dx, dy);
+            this.handleDirectionalInput(dx, dy);
         }, { passive: false });
 
-        // Virtual D-pad controls
+        // Virtual D-pad controls - immediate question on button press
         const setupVirtualDPad = () => {
             const upBtn = document.getElementById('upBtn');
             const downBtn = document.getElementById('downBtn');
@@ -289,49 +353,48 @@ class MazeGame {
             if (upBtn) {
                 upBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    this.tryMove(0, -1);
+                    if (!this.isMoving) this.handleDirectionalInput(0, -1);
                 });
                 upBtn.addEventListener('touchend', (e) => {
                     e.preventDefault();
-                    this.tryMove(0, -1);
+                    if (!this.isMoving) this.handleDirectionalInput(0, -1);
                 });
             }
             
             if (downBtn) {
                 downBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    this.tryMove(0, 1);
+                    if (!this.isMoving) this.handleDirectionalInput(0, 1);
                 });
                 downBtn.addEventListener('touchend', (e) => {
                     e.preventDefault();
-                    this.tryMove(0, 1);
+                    if (!this.isMoving) this.handleDirectionalInput(0, 1);
                 });
             }
             
             if (leftBtn) {
                 leftBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    this.tryMove(-1, 0);
+                    if (!this.isMoving) this.handleDirectionalInput(-1, 0);
                 });
                 leftBtn.addEventListener('touchend', (e) => {
                     e.preventDefault();
-                    this.tryMove(-1, 0);
+                    if (!this.isMoving) this.handleDirectionalInput(-1, 0);
                 });
             }
             
             if (rightBtn) {
                 rightBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    this.tryMove(1, 0);
+                    if (!this.isMoving) this.handleDirectionalInput(1, 0);
                 });
                 rightBtn.addEventListener('touchend', (e) => {
                     e.preventDefault();
-                    this.tryMove(1, 0);
+                    if (!this.isMoving) this.handleDirectionalInput(1, 0);
                 });
             }
         };
         
-        // Delay setup of virtual D-pad to ensure DOM is loaded
         setTimeout(setupVirtualDPad, 100);
 
         document.getElementById('regenerateMazeBtn').addEventListener('click', () => {
@@ -341,39 +404,46 @@ class MazeGame {
             this.placeCoinInMaze();
             this.draw();
         });
+    }
+
+    handleDirectionalInput(dx, dy) {
+        // Store the intended direction
+        this.intendedDirection = { dx, dy };
         
-        // Emergency reset button
-        document.getElementById('emergencyResetBtn').addEventListener('click', () => {
-            if (confirm('🚨 EMERGENCY RESET\n\nThis will reset:\n• Player position to start\n• Coins to 0\n• Movement flags\n• Generate new maze\n\nContinue?')) {
-                // Reset all game state
-                this.playerX = 0;
-                this.playerY = 0;
-                this.coins = 0;
-                this.isMoving = false;
-                this.isFirstMove = true;
-                this.inDeadEnd = false;
-                
-                // Generate new maze
-                this.initializeMaze();
-                this.placeCoinInMaze();
-                
-                // Make the first box a dead end again
-                this.maze[0][0] = DEAD_END;
-                this.deadEndPositions = [{ x: 0, y: 0 }];
-                
-                // Ensure the second box (first move positions) are not dead ends
-                this.maze[0][1] = PATH;
-                this.maze[1][0] = PATH;
-                
-                // Update displays
-                this.updateQuestionCounter();
-                this.updateCoinDisplay();
-                this.draw();
-                
-                showDebugPopup('🚨 Emergency reset complete - Game state restored!', 'success');
-                console.log('Emergency reset performed - all flags cleared');
+        // Check if the intended direction is valid
+        const newX = this.playerX + dx;
+        const newY = this.playerY + dy;
+        
+        if (!this.isValidCell(newX, newY) || this.maze[newY][newX] === WALL) {
+            showDebugPopup('❌ Invalid move - Wall detected!', 'error');
+            return;
+        }
+
+        // If no questions left, check for dead ends then allow movement
+        if (this.remainingQuestions === 0) {
+            if (this.maze[newY][newX] === DEAD_END) {
+                alert("That's a dead end! Choose another path.");
+                return;
             }
-        });
+            this.executeMove(newX, newY);
+            return;
+        }
+
+        // We have questions - ask one immediately
+        const questionIndex = Math.floor(Math.random() * this.questions.length);
+        const question = this.questions[questionIndex];
+        this.questions.splice(questionIndex, 1);
+        
+        // Use story-based question presentation
+        this.handleStoryQuestion(question, newX, newY);
+    }
+
+    executeMove(newX, newY) {
+        this.playerX = newX;
+        this.playerY = newY;
+        this.collectCoin(this.playerX, this.playerY);
+        this.draw();
+        this.checkExit();
     }
 
     findNearestDeadEnd(x, y) {
@@ -384,78 +454,6 @@ class MazeGame {
 
         // Return the last dead end we created
         return this.lastDeadEnd;
-    }
-
-    tryMove(dx, dy) {
-        const newX = this.playerX + dx;
-        const newY = this.playerY + dy;
-        
-        console.log(`=== MOVE ATTEMPT: (${this.playerX}, ${this.playerY}) to (${newX}, ${newY}) ===`);
-        console.log(`Current isMoving state: ${this.isMoving}`);
-        console.log(`Current coins: ${this.coins}`);
-        console.log(`Remaining questions: ${this.remainingQuestions}`);
-        console.log(`Available questions in bank: ${this.questions.length}`);
-        
-        // Prevent multiple simultaneous moves
-        if (this.isMoving) {
-            console.log("BLOCKED: Already moving/processing");
-            return;
-        }
-        
-        // Check if move is valid (not wall, not out of bounds)
-        if (!this.isValidCell(newX, newY) || this.maze[newY][newX] === WALL) {
-            console.log("BLOCKED: Wall or out of bounds");
-            return;
-        }
-
-        // Set moving state
-        this.isMoving = true;
-        console.log("Setting isMoving to true");
-
-        // Safety timeout to reset isMoving state in case something goes wrong
-        setTimeout(() => {
-            if (this.isMoving) {
-                console.log("⚠️ Safety timeout: Force resetting isMoving state");
-                this.isMoving = false;
-            }
-        }, 1000); // Reduced from 5000 to 1000 for faster recovery
-
-        // If no questions left, check for dead ends then allow movement
-        if (this.remainingQuestions === 0) {
-            if (this.maze[newY][newX] === DEAD_END) {
-                alert("That's a dead end! Choose another path.");
-                this.isMoving = false; // Reset moving state
-                console.log("Reset isMoving to false (dead end)");
-                return;
-            }
-            console.log("FREE MOVEMENT: No questions left");
-            this.playerX = newX;
-            this.playerY = newY;
-            this.collectCoin(this.playerX, this.playerY);
-            this.draw();
-            this.isMoving = false; // Reset moving state
-            console.log("Reset isMoving to false (free movement complete)");
-            return;
-        }
-
-        // Check if we have questions available
-        if (this.questions.length === 0) {
-            console.log("ERROR: No questions available but remainingQuestions > 0");
-            alert("Game error: No questions available! Please restart the game.");
-            this.isMoving = false;
-            return;
-        }
-
-        // We have questions - ask one
-        console.log("ASKING QUESTION...");
-        const questionIndex = Math.floor(Math.random() * this.questions.length);
-        const question = this.questions[questionIndex];
-        
-        // Don't remove question from bank yet - only remove after successful answer
-        // this.questions.splice(questionIndex, 1);
-        
-        // Use story-based question presentation
-        this.handleStoryQuestion(question, newX, newY, questionIndex);
     }
 
     checkExit() {
@@ -484,7 +482,7 @@ class MazeGame {
                 
                 if (allCompleted) {
                     // Special message for completing all difficulties
-                    alert(`🎊 CONGRATULATIONS! SYSTEM FULLY DEBUGGED! 🎊\n\nYou've successfully escaped the corrupted code maze!\nGame Score: ${this.coins} coins\nTotal Coins Earned: ${newTotal} coins`);
+                alert(`🎊 CONGRATULATIONS! SYSTEM FULLY DEBUGGED! 🎊\n\nYou've successfully escaped the corrupted code maze!\nGame Score: ${this.coins} coins\nTotal Coins Earned: ${newTotal} coins`);
                     
                     setTimeout(() => {
                         alert(`🌟 ULTIMATE ACHIEVEMENT UNLOCKED! 🌟\n\n💀 ESCAPE FROM DIGITAL DEATH COMPLETE! 💀\n\nYou have successfully conquered ALL difficulty levels!\n✅ Easy Mode - CLEARED\n✅ Medium Mode - CLEARED  \n✅ Hard Mode - CLEARED\n\nThe corrupted digital realm has been fully purged!\nYou are now a true MASTER DEBUGGER!\n\n🚀 FREEDOM ACHIEVED - WELCOME BACK TO REALITY! 🚀`);
@@ -499,13 +497,13 @@ class MazeGame {
                 } else {
                     // Regular completion message
                     alert(`🎊 CONGRATULATIONS! SYSTEM FULLY DEBUGGED! 🎊\n\nYou've successfully escaped the corrupted code maze!\nGame Score: ${this.coins} coins\nTotal Coins Earned: ${newTotal} coins\n\nCompleted Difficulties: ${completedDifficulties.map(d => d.toUpperCase()).join(', ')}\n${this.getRemainingDifficultiesMessage(completedDifficulties)}`);
-                    
-                    // Add completion bonus
-                    const completionBonus = 50;
-                    const finalTotal = addToTotalCoins(completionBonus);
-                    setTimeout(() => {
-                        alert(`🚀 SYSTEM BONUS UNLOCKED: +${completionBonus} coins!\nYour new total: ${finalTotal} coins\n\nThe digital realm is safe once again!`);
-                    }, 1000);
+                
+                // Add completion bonus
+                const completionBonus = 50;
+                const finalTotal = addToTotalCoins(completionBonus);
+                setTimeout(() => {
+                    alert(`🚀 SYSTEM BONUS UNLOCKED: +${completionBonus} coins!\nYour new total: ${finalTotal} coins\n\nThe digital realm is safe once again!`);
+                }, 1000);
                 }
             }
         }
@@ -772,7 +770,7 @@ class MazeGame {
                 coinDisplay.style.color = '#ff4444';
                 coinDisplay.style.fontWeight = 'bold';
             } else {
-                coinDisplay.textContent = `Coins: ${this.coins}`;
+            coinDisplay.textContent = `Coins: ${this.coins}`;
                 coinDisplay.style.color = '#00ff41';
                 coinDisplay.style.fontWeight = 'normal';
             }
@@ -844,7 +842,7 @@ class MazeGame {
         this.inDeadEnd = true;
     }
 
-    handleStoryQuestion(question, newX, newY, questionIndex) {
+    handleStoryQuestion(question, newX, newY) {
         const debugMessages = [
             "🔍 Logic gate blocked - Debug required",
             "⚠️ Syntax barrier detected - Fix to proceed", 
@@ -858,78 +856,30 @@ class MazeGame {
         
         soundEffects.debugMode();
         
-        console.log("Starting question handling immediately");
-        
-        try {
-            // Use setTimeout to ensure prompt is called after current execution context
-            setTimeout(() => {
-                try {
-                    const userAnswer = prompt(`[DEBUG MODE ACTIVATED]\n\n${question.question}\n\n💡 Instructions:\n• Enter your answer to proceed\n• Type "skip" to skip without penalty\n• Press Cancel to abort movement`);
-                    
-                    console.log("Prompt returned:", userAnswer === null ? "CANCELED" : userAnswer);
-                    
-                    // Handle case where user cancels the prompt
-                    if (userAnswer === null) {
-                        console.log("User canceled the question prompt - no penalty, just reset movement");
-                        this.isMoving = false;
-                        showDebugPopup('🚫 Movement canceled', 'info');
-                        return;
-                    }
-                    
-                    // Handle skip option
-                    if (userAnswer && userAnswer.trim().toLowerCase() === 'skip') {
-                        console.log("User chose to skip question - no penalty");
-                        this.isMoving = false;
-                        showDebugPopup('⏭️ Question skipped - no penalty', 'info');
-                        return;
-                    }
-                    
-                    console.log("Processing answer...");
-                    this.handleQuestionAnswer(question, userAnswer, newX, newY, questionIndex);
-                    
-                } catch (error) {
-                    console.error("Error in prompt handling:", error);
-                    this.isMoving = false;
-                    showDebugPopup('❌ Question prompt error - Movement unlocked', 'error');
-                }
-            }, 10); // Very short delay to ensure proper execution order
-            
-        } catch (error) {
-            console.error("Error in question handling:", error);
-            this.isMoving = false;
-            showDebugPopup('❌ Question handling error - Movement unlocked', 'error');
-        }
+        // After a brief delay, show the actual question
+        setTimeout(() => {
+            const userAnswer = prompt(`[DEBUG MODE ACTIVATED]\n\n${question.question}`);
+            this.handleQuestionAnswer(question, userAnswer, newX, newY);
+        }, 1500);
     }
 
-    handleQuestionAnswer(question, userAnswer, newX, newY, questionIndex) {
-        console.log("Processing question answer...");
-        
+    handleQuestionAnswer(question, userAnswer, newX, newY) {
         if (question.checkAnswer(userAnswer)) {
-            // CORRECT ANSWER - ALLOW MOVEMENT AND REMOVE QUESTION
-            console.log("CORRECT ANSWER - MOVING FORWARD");
-            
-            // Remove question from bank only on correct answer
-            this.questions.splice(questionIndex, 1);
-            
+            // CORRECT ANSWER - ALLOW MOVEMENT
             showDebugPopup('✅ CODE COMPILED SUCCESSFULLY!', 'success');
             soundEffects.correctAnswer();
             this.addCoins(COIN_REWARDS.CORRECT_ANSWER);
             
-            this.playerX = newX;
-            this.playerY = newY;
+            // Execute the move using the intended direction
             this.maze[newY][newX] = CORRECT_PATH;
             this.isFirstMove = false;
+            this.executeMove(newX, newY);
             
             // Update question counter based on new position
             this.updateQuestionCounter();
             
-            this.collectCoin(this.playerX, this.playerY);
-            this.checkExit();
-            this.draw();
-            
         } else {
-            // WRONG ANSWER - QUESTION STAYS IN BANK
-            console.log("WRONG ANSWER - QUESTION REMAINS IN BANK");
+            // WRONG ANSWER - OPTION TO SPEND COINS OR GO BACK
             showDebugPopup(`❌ SYNTAX ERROR: ${question.answer}`, 'error');
             soundEffects.wrongAnswer();
             this.handleWrongAnswer();
@@ -948,11 +898,11 @@ class MazeGame {
                 );
                 
                 if (useCoins) {
-                    // Player chooses to spend coins
+                    // Player chooses to spend coins - execute the move
                     this.addCoins(-coinCost);
                     shouldGoBack = false;
                     showDebugPopup(`💰 Override successful! -${coinCost} tokens`);
-                    console.log(`Player spent ${coinCost} coins to avoid going back`);
+                    this.executeMove(newX, newY);
                 }
             } else {
                 // Not enough coins
@@ -962,7 +912,6 @@ class MazeGame {
             
             if (shouldGoBack) {
                 // Send back to start
-                console.log(`Going back to start (0,0)`);
                 this.playerX = 0;
                 this.playerY = 0;
                 
@@ -970,22 +919,14 @@ class MazeGame {
                 this.updateQuestionCounter();
                 
                 showDebugPopup(`🔄 System reset - Returned to origin`);
-                console.log(`Player position after wrong answer: (${this.playerX}, ${this.playerY})`);
                 
                 this.handleDeadEnd();
+                this.draw();
             } else {
-                // Player stayed, update question counter for current position
+                // Player moved, update question counter for current position
                 this.updateQuestionCounter();
             }
-            
-            this.draw();
         }
-        
-        // Always reset moving state after handling question
-        this.isMoving = false;
-        console.log("Reset isMoving to false (question handled)");
-        
-        console.log(`=== FINAL POSITION: (${this.playerX}, ${this.playerY}) ===`);
     }
 }
 
@@ -1016,15 +957,15 @@ function startPigQDialogue() {
             
             messageIndex++;
             
-            // Change message every 7 seconds (increased interval time)
+            // Change message every 10 seconds (extended interval time)
             if (messageIndex < pigMessages.length) {
-                setTimeout(updateDialogue, 7000);
+                setTimeout(updateDialogue, 10000);
             } else {
                 // Q dialogue finished, prepare to show final prompt
                 setTimeout(() => {
                     dialogueElement.textContent = "Now let me show you the full picture of your situation...";
                     document.querySelector('.continue-prompt .blinking-cursor').textContent = '▶ Tap to continue';
-                }, 3000);
+                }, 5000);
             }
         }
     }

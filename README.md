@@ -29,7 +29,7 @@ A fun and interactive way to learn Java concepts while solving a maze! Test your
 
 ## Play Online
 
-Visit [https://[your-github-username].github.io/java-maze-game](https://[your-github-username].github.io/java-maze-game) to play the game!
+Visit [https://YourNeshama].github.io/java-maze-game](https://[YourNeshama].github.io/java-maze-game) to play the game!
 
 ## Local Development
 
