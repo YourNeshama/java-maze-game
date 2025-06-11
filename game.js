@@ -43,6 +43,14 @@ class MazeGame {
         this.initializeGameSettings();
         this.questions = this.initializeQuestions();
         this.deadEndQuestions = this.initializeDeadEndQuestions();
+        
+        // Debug logging
+        console.log(`🎯 GAME INIT: Difficulty=${difficulty}, Questions loaded=${this.questions.length}`);
+        console.log(`📚 Questions by difficulty:`, this.questions.map(q => ({ 
+            question: q.question.substring(0, 50) + '...', 
+            isMCQ: q.isMCQ 
+        })));
+        
         this.playerPath = [];
         this.moveQueue = [];
         this.isMoving = false;
@@ -354,39 +362,74 @@ class MazeGame {
     }
 
     setupEventListeners() {
-        // Global debouncing system to prevent double-triggering from any source
-        this.lastInputTime = 0;
-        this.inputCallCount = 0; // Track total input calls
-        const INPUT_DEBOUNCE_MS = 150; // Increase debounce time
+        // PREVENT DOUBLE EVENT LISTENERS - GLOBAL SINGLETON SYSTEM
+        if (window.MAZE_GAME_EVENTS_INITIALIZED) {
+            console.log('🔒 Event listeners already initialized globally - skipping setup');
+            return;
+        }
         
-        const safeHandleInput = (dx, dy, source = 'unknown') => {
-            this.inputCallCount++;
+        console.log('🔧 INITIALIZING GLOBAL EVENT SYSTEM - FIRST TIME ONLY');
+        window.MAZE_GAME_EVENTS_INITIALIZED = true;
+        
+        // GLOBAL QUESTION LOCK - shared across all game instances
+        if (!window.GLOBAL_QUESTION_LOCK) {
+            window.GLOBAL_QUESTION_LOCK = {
+                isActive: false,
+                lastInputTime: 0,
+                inputCount: 0
+            };
+        }
+        
+        const SUPER_DEBOUNCE_MS = 500; // Even more aggressive debouncing
+        
+        const globalSafeInput = (dx, dy, source = 'unknown') => {
+            window.GLOBAL_QUESTION_LOCK.inputCount++;
             const now = Date.now();
-            const timeSinceLastInput = now - this.lastInputTime;
+            const timeSinceLastInput = now - window.GLOBAL_QUESTION_LOCK.lastInputTime;
             
-            console.log(`📊 INPUT #${this.inputCallCount}: Source=${source}, Time since last=${timeSinceLastInput}ms, isMoving=${this.isMoving}`);
+            console.log(`🌍 GLOBAL INPUT #${window.GLOBAL_QUESTION_LOCK.inputCount}: ${source}, Time=${timeSinceLastInput}ms, GlobalLock=${window.GLOBAL_QUESTION_LOCK.isActive}`);
             
-            if (now - this.lastInputTime < INPUT_DEBOUNCE_MS) {
-                console.log(`🚫 Input #${this.inputCallCount} BLOCKED - too soon after last input (${source})`);
-                // Show visual feedback on screen
-                this.showDebugCounter(`❌ BLOCKED: ${source} (${timeSinceLastInput}ms)`);
+            // ULTRA-STRICT GLOBAL BLOCKING
+            if (window.GLOBAL_QUESTION_LOCK.isActive) {
+                console.log(`🚫🚫🚫 GLOBAL BLOCK #${window.GLOBAL_QUESTION_LOCK.inputCount} - Question system locked globally (${source})`);
                 return false;
             }
             
-            if (this.isMoving) {
-                console.log(`🚫 Input #${this.inputCallCount} BLOCKED - movement in progress (${source})`);
-                this.showDebugCounter(`❌ LOCKED: ${source}`);
+            if (!window.currentGame) {
+                console.log(`🚫🚫🚫 GLOBAL BLOCK #${window.GLOBAL_QUESTION_LOCK.inputCount} - No active game (${source})`);
                 return false;
             }
             
-            this.lastInputTime = now;
-            console.log(`✅ Input #${this.inputCallCount} ACCEPTED from: ${source}`);
-            this.showDebugCounter(`✅ ACCEPTED: ${source}`);
+            if (window.currentGame.isMoving) {
+                console.log(`🚫🚫🚫 GLOBAL BLOCK #${window.GLOBAL_QUESTION_LOCK.inputCount} - Game movement locked (${source})`);
+                return false;
+            }
             
-            this.handleDirectionalInput(dx, dy);
+            if (timeSinceLastInput < SUPER_DEBOUNCE_MS) {
+                console.log(`🚫🚫🚫 GLOBAL BLOCK #${window.GLOBAL_QUESTION_LOCK.inputCount} - Too fast: ${timeSinceLastInput}ms < ${SUPER_DEBOUNCE_MS}ms (${source})`);
+                return false;
+            }
+            
+            // ACCEPT AND LOCK EVERYTHING GLOBALLY
+            window.GLOBAL_QUESTION_LOCK.isActive = true;
+            window.GLOBAL_QUESTION_LOCK.lastInputTime = now;
+            console.log(`✅✅✅ GLOBAL ACCEPT #${window.GLOBAL_QUESTION_LOCK.inputCount} - LOCKED GLOBALLY: ${source}`);
+            
+            // Call the current game's input handler
+            window.currentGame.handleDirectionalInput(dx, dy);
             return true;
         };
         
+        // GLOBAL unlock function
+        window.GLOBAL_UNLOCK = () => {
+            console.log('🔓🌍 GLOBAL UNLOCK - Releasing global question lock');
+            window.GLOBAL_QUESTION_LOCK.isActive = false;
+            if (window.currentGame) {
+                window.currentGame.isMoving = false;
+                window.currentGame.isQuestionActive = false;
+            }
+        };
+
         // Add debug counter display method
         this.showDebugCounter = (message) => {
             let debugDiv = document.getElementById('inputDebugCounter');
@@ -410,7 +453,7 @@ class MazeGame {
                 `;
                 document.body.appendChild(debugDiv);
             }
-            debugDiv.innerHTML = `Input #${this.inputCallCount}: ${message}<br>Moving: ${this.isMoving}`;
+            debugDiv.innerHTML = `Input #${window.GLOBAL_QUESTION_LOCK.inputCount}: ${message}<br>Moving: ${this.isMoving}`;
             
             // Auto-hide after 3 seconds
             clearTimeout(this.debugTimeout);
@@ -435,7 +478,7 @@ class MazeGame {
             }
             
             e.preventDefault();
-            safeHandleInput(dx, dy, 'keyboard');
+            globalSafeInput(dx, dy, 'keyboard');
         });
 
         // Canvas click controls - SINGLE consolidated handler
@@ -468,7 +511,7 @@ class MazeGame {
                 dy = deltaY > 0 ? 1 : -1;
             }
             
-            safeHandleInput(dx, dy, 'canvas-click');
+            globalSafeInput(dx, dy, 'canvas-click');
         });
 
         // Disable right-click context menu without triggering movement
@@ -527,7 +570,7 @@ class MazeGame {
                 dy = deltaY > 0 ? 1 : -1;
             }
             
-            safeHandleInput(dx, dy, 'touch-swipe');
+            globalSafeInput(dx, dy, 'touch-swipe');
         }, { passive: false });
 
         // Virtual D-pad controls with unified debouncing
@@ -543,7 +586,7 @@ class MazeGame {
                 event.preventDefault();
                 event.stopPropagation();
                 
-                safeHandleInput(dx, dy, 'virtual-dpad');
+                globalSafeInput(dx, dy, 'virtual-dpad');
             };
             
             if (upBtn) {
@@ -569,79 +612,245 @@ class MazeGame {
         
         setTimeout(setupVirtualDPad, 100);
 
-        document.getElementById('regenerateMazeBtn').addEventListener('click', () => {
-            this.initializeMaze();
-            this.playerX = 0;
-            this.playerY = 0;
-            this.placeCoinInMaze();
-            this.draw();
-        });
+        // Set up regenerate maze button
+        const regenerateMazeBtn = document.getElementById('regenerateMazeBtn');
+        if (regenerateMazeBtn) {
+            regenerateMazeBtn.addEventListener('click', () => {
+                console.log('🔄 Regenerating maze...');
+                this.initializeMaze();
+                this.playerX = 0;
+                this.playerY = 0;
+                this.placeCoinInMaze();
+                this.draw();
+                this.updateQuestionCounter();
+                console.log('✅ Maze regenerated successfully');
+            });
+        }
     }
 
     handleDirectionalInput(dx, dy) {
-        // Prevent rapid-fire questions - only one question per movement
+        // STRICT SINGLE QUESTION ENFORCEMENT
         if (this.isMoving) {
-            console.log('Movement already in progress, ignoring input. Current lock status:', this.isMoving);
-            console.log('Questions remaining:', this.remainingQuestions);
-            console.log('Player position:', this.playerX, this.playerY);
+            console.log('🚫 Movement locked - ignoring input');
             return;
         }
         
-        console.log('🎮 Movement input received:', { dx, dy, questionsLeft: this.remainingQuestions });
+        console.log(`🎮 SINGLE MOVE: Direction (${dx}, ${dy})`);
         
-        // Store the intended direction
-        this.intendedDirection = { dx, dy };
-        
-        // Check if the intended direction is valid
+        // Validate move
         const newX = this.playerX + dx;
         const newY = this.playerY + dy;
         
         if (!this.isValidCell(newX, newY) || this.maze[newY][newX] === WALL) {
-            console.log('❌ Invalid move to:', newX, newY);
+            console.log('❌ Invalid move - wall or boundary');
             return;
         }
 
-        // If no questions left, check for dead ends then allow movement
-        if (this.remainingQuestions === 0) {
-            console.log('✅ No questions remaining, allowing free movement');
-            if (this.maze[newY][newX] === DEAD_END) {
-                alert("That's a dead end! Choose another path.");
-                return;
-            }
-            this.executeMove(newX, newY);
-            return;
-        }
-
-        // Check if we have questions available
-        if (this.questions.length === 0) {
-            console.log('⚠️ No questions available in the pool!');
-            // Allow movement anyway
-            this.executeMove(newX, newY);
-            return;
-        }
-
-        // Lock movement while asking question
+        // LOCK MOVEMENT IMMEDIATELY
         this.isMoving = true;
-        console.log('🔒 Movement locked for question');
+        console.log('🔒 MOVEMENT LOCKED');
         
-        // Safety timeout to prevent permanent lock (30 seconds)
+        // Store intended move
+        this.pendingMove = { newX, newY };
+        
+        // Safety timeout
         this.movementTimeout = setTimeout(() => {
-            if (this.isMoving) {
-                console.log('⚠️ SAFETY TIMEOUT: Unlocking movement after 30 seconds');
-                this.isMoving = false;
-                alert('🔧 Movement unlocked due to timeout. You can continue playing.');
+            console.log('⚠️ SAFETY TIMEOUT - Force unlocking movement');
+            this.isMoving = false;
+            if (this.movementTimeout) {
+                clearTimeout(this.movementTimeout);
+                this.movementTimeout = null;
             }
         }, 30000);
         
-        // We have questions - ask one immediately
+        // Check if we have questions
+        if (this.questions.length === 0) {
+            console.log('📚 No questions - adding emergency questions');
+            this.addEmergencyQuestions();
+        }
+        
+        // Ask EXACTLY ONE question
+        this.askSingleQuestion();
+    }
+
+    askSingleQuestion() {
+        console.log('❓ ASKING EXACTLY ONE QUESTION');
+        console.log('📊 Questions in pool:', this.questions.length);
+        
+        // Get one random question
         const questionIndex = Math.floor(Math.random() * this.questions.length);
         const question = this.questions[questionIndex];
         this.questions.splice(questionIndex, 1);
         
-        console.log('❓ Asking question:', question.question);
+        console.log('📝 Selected question:', question.question.substring(0, 50) + '...');
+        console.log('📊 Questions remaining after selection:', this.questions.length);
         
-        // Use story-based question presentation
-        this.handleStoryQuestion(question, newX, newY);
+        // Show the question using simple prompt
+        this.showSingleQuestion(question);
+    }
+
+    showSingleQuestion(question) {
+        // Create the question prompt
+        let promptText = `🤖 DEBUG PROTOCOL INITIATED\n\n${question.question}\n\n`;
+        
+        if (question.isMCQ && question.options) {
+            question.options.forEach(option => {
+                promptText += option + "\n";
+            });
+            promptText += "\nEnter your answer (A, B, C, or D):";
+        } else {
+            promptText += "Enter your answer:";
+        }
+        
+        console.log('🎯 SHOWING SINGLE PROMPT');
+        const userAnswer = prompt(promptText);
+        console.log('💬 User answered:', userAnswer);
+        
+        // Process the answer
+        this.processSingleAnswer(question, userAnswer);
+    }
+
+    processSingleAnswer(question, userAnswer) {
+        console.log('⚖️ PROCESSING SINGLE ANSWER');
+        
+        const isCorrect = question.checkAnswer(userAnswer);
+        console.log('✅ Answer correct:', isCorrect);
+        
+        if (isCorrect) {
+            // CORRECT - Move forward
+            console.log('🎉 CORRECT ANSWER - Moving forward');
+            this.addCoins(COIN_REWARDS.CORRECT_ANSWER);
+            this.executePendingMove();
+        } else {
+            // WRONG - Back to start or spend coins
+            console.log('❌ WRONG ANSWER - Handling penalty');
+            this.addCoins(COIN_REWARDS.WRONG_ANSWER);
+            
+            const coinCost = COIN_COSTS.AVOID_DEAD_END;
+            let shouldGoBack = true;
+            
+            if (this.coins >= coinCost) {
+                const useCoins = confirm(
+                    `⚠️ WRONG ANSWER!\n\n` +
+                    `Correct answer: ${question.answer}\n\n` +
+                    `Option 1: Return to start (free)\n` +
+                    `Option 2: Continue with ${coinCost} coins\n\n` +
+                    `Current coins: ${this.coins}\n` +
+                    `Use coins to continue?`
+                );
+                
+                if (useCoins) {
+                    this.addCoins(-coinCost);
+                    shouldGoBack = false;
+                    console.log('💰 Used coins to continue');
+                    this.executePendingMove();
+                }
+            }
+            
+            if (shouldGoBack) {
+                console.log('🔄 Returning to start');
+                this.returnToStart();
+            }
+        }
+        
+        // ALWAYS unlock movement after processing
+        this.unlockMovement();
+    }
+
+    executePendingMove() {
+        if (!this.pendingMove) {
+            console.log('⚠️ No pending move to execute');
+            return;
+        }
+        
+        console.log('🚀 EXECUTING MOVE to:', this.pendingMove.newX, this.pendingMove.newY);
+        
+        // Mark path as correct
+        this.maze[this.pendingMove.newY][this.pendingMove.newX] = CORRECT_PATH;
+        
+        // Move player
+        this.playerX = this.pendingMove.newX;
+        this.playerY = this.pendingMove.newY;
+        
+        // Collect coin if present
+        this.collectCoin(this.playerX, this.playerY);
+        
+        // Update display
+        this.draw();
+        this.updateQuestionCounter();
+        
+        // Check if at exit
+        this.checkExit();
+        
+        // Clear pending move
+        this.pendingMove = null;
+    }
+
+    returnToStart() {
+        console.log('↩️ RETURNING TO START');
+        this.playerX = 0;
+        this.playerY = 0;
+        this.handleDeadEnd();
+        this.draw();
+        this.updateQuestionCounter();
+        this.pendingMove = null;
+    }
+
+    unlockMovement() {
+        console.log('🔓 UNLOCKING MOVEMENT AND QUESTION SYSTEM');
+        this.isMoving = false;
+        this.isQuestionActive = false; // Reset question lock
+        
+        // ALSO UNLOCK GLOBAL SYSTEM
+        if (window.GLOBAL_UNLOCK) {
+            window.GLOBAL_UNLOCK();
+        }
+        
+        if (this.movementTimeout) {
+            clearTimeout(this.movementTimeout);
+            this.movementTimeout = null;
+        }
+        
+        console.log('✅ Movement and questions unlocked - ready for next input');
+    }
+
+    addEmergencyQuestions() {
+        // Add some backup questions if we run out
+        const emergencyQuestions = [
+            new Question(
+                "What is the main method signature in Java?", 
+                "B", 
+                "public static void main(String[] args) is the main method signature",
+                ["A) public void main(String[] args)", "B) public static void main(String[] args)", "C) static void main(String[] args)", "D) public main(String[] args)"]
+            ),
+            new Question(
+                "Which keyword is used to inherit from a class?", 
+                "A", 
+                "'extends' is used to inherit from a class in Java",
+                ["A) extends", "B) implements", "C) inherits", "D) super"]
+            ),
+            new Question(
+                "What is the default value of a boolean variable?", 
+                "B", 
+                "Boolean variables default to false in Java",
+                ["A) true", "B) false", "C) null", "D) 0"]
+            ),
+            new Question(
+                "Which access modifier provides the most restrictive access?", 
+                "C", 
+                "'private' provides the most restrictive access - only within the same class",
+                ["A) public", "B) protected", "C) private", "D) default"]
+            ),
+            new Question(
+                "What is used to create an instance of a class?", 
+                "D", 
+                "The 'new' keyword is used to create instances of classes",
+                ["A) create", "B) instance", "C) make", "D) new"]
+            )
+        ];
+        
+        this.questions.push(...emergencyQuestions);
+        console.log('🆘 Added', emergencyQuestions.length, 'emergency questions. Total questions now:', this.questions.length);
     }
 
     executeMove(newX, newY) {
@@ -675,7 +884,11 @@ class MazeGame {
                 this.playerY = 0;
                 this.updateQuestionCounter();
             } else {
-                // Game completed - mark this difficulty as completed
+                // Game completed - UNLOCK EVERYTHING FIRST
+                console.log('🏁 GAME COMPLETED - Unlocking all systems');
+                this.unlockMovement();
+                
+                // Mark this difficulty as completed
                 this.markDifficultyCompleted(this.difficulty);
                 
                 // Add coins to total
@@ -689,10 +902,15 @@ class MazeGame {
                 
                 if (allCompleted) {
                     // Special message for completing all difficulties
-                alert(`🎊 CONGRATULATIONS! SYSTEM FULLY DEBUGGED! 🎊\n\nYou've successfully escaped the corrupted code maze!\nGame Score: ${this.coins} coins\nTotal Coins Earned: ${newTotal} coins`);
+                    alert(`🎊 CONGRATULATIONS! SYSTEM FULLY DEBUGGED! 🎊\n\nYou've successfully escaped the corrupted code maze!\nGame Score: ${this.coins} coins\nTotal Coins Earned: ${newTotal} coins`);
                     
                     setTimeout(() => {
                         alert(`🌟 ULTIMATE ACHIEVEMENT UNLOCKED! 🌟\n\n💀 ESCAPE FROM DIGITAL DEATH COMPLETE! 💀\n\nYou have successfully conquered ALL difficulty levels!\n✅ Easy Mode - CLEARED\n✅ Medium Mode - CLEARED  \n✅ Hard Mode - CLEARED\n\nThe corrupted digital realm has been fully purged!\nYou are now a true MASTER DEBUGGER!\n\n🚀 FREEDOM ACHIEVED - WELCOME BACK TO REALITY! 🚀`);
+                        
+                        // Auto-return to start screen after final message
+                        setTimeout(() => {
+                            this.returnToStartScreen();
+                        }, 2000);
                     }, 1500);
                     
                     // Add completion bonus
@@ -705,12 +923,17 @@ class MazeGame {
                     // Regular completion message
                     alert(`🎊 CONGRATULATIONS! SYSTEM FULLY DEBUGGED! 🎊\n\nYou've successfully escaped the corrupted code maze!\nGame Score: ${this.coins} coins\nTotal Coins Earned: ${newTotal} coins\n\nCompleted Difficulties: ${completedDifficulties.map(d => d.toUpperCase()).join(', ')}\n${this.getRemainingDifficultiesMessage(completedDifficulties)}`);
                 
-                // Add completion bonus
-                const completionBonus = 50;
-                const finalTotal = addToTotalCoins(completionBonus);
-                setTimeout(() => {
-                    alert(`🚀 SYSTEM BONUS UNLOCKED: +${completionBonus} coins!\nYour new total: ${finalTotal} coins\n\nThe digital realm is safe once again!`);
-                }, 1000);
+                    // Add completion bonus
+                    const completionBonus = 50;
+                    const finalTotal = addToTotalCoins(completionBonus);
+                    setTimeout(() => {
+                        alert(`🚀 SYSTEM BONUS UNLOCKED: +${completionBonus} coins!\nYour new total: ${finalTotal} coins\n\nThe digital realm is safe once again!`);
+                        
+                        // Auto-return to start screen after completion
+                        setTimeout(() => {
+                            this.returnToStartScreen();
+                        }, 2000);
+                    }, 1000);
                 }
             }
         }
@@ -1033,125 +1256,21 @@ class MazeGame {
         return false;
     }
 
-    handleCorrectAnswer() {
-        this.addCoins(COIN_REWARDS.CORRECT_ANSWER);
-        this.remainingQuestions--;
-        this.updateQuestionCounter();
-    }
-
-    handleWrongAnswer() {
-        this.addCoins(COIN_REWARDS.WRONG_ANSWER);
-    }
-
     handleDeadEnd() {
         this.addCoins(COIN_REWARDS.DEAD_END);
         this.inDeadEnd = true;
     }
 
-    handleStoryQuestion(question, newX, newY) {
-        // Create a multiple choice prompt
-        let promptText = question.question + "\n\n";
-        
-        if (question.isMCQ && question.options) {
-            // Add multiple choice options
-            question.options.forEach(option => {
-                promptText += option + "\n";
-            });
-            promptText += "\nEnter your answer (A, B, C, or D):";
-        } else {
-            // Fallback for non-MCQ questions
-            promptText += "Enter your answer:";
-        }
-        
-        const userAnswer = prompt(promptText);
-        this.handleQuestionAnswer(question, userAnswer, newX, newY);
-    }
-
-    handleQuestionAnswer(question, userAnswer, newX, newY) {
-        console.log('🎯 Processing answer:', userAnswer, 'for question:', question.question);
-        
-        if (question.checkAnswer(userAnswer)) {
-            // CORRECT ANSWER - ALLOW MOVEMENT
-            console.log('✅ Correct answer!');
-            soundEffects.correctAnswer();
-            this.addCoins(COIN_REWARDS.CORRECT_ANSWER);
-            
-            // Execute the move using the intended direction
-            this.maze[newY][newX] = CORRECT_PATH;
-            this.isFirstMove = false;
-            this.executeMove(newX, newY);
-            
-            // Update question counter based on new position
-            this.updateQuestionCounter();
-            
-        } else {
-            // WRONG ANSWER - OPTION TO SPEND COINS OR GO BACK
-            console.log('❌ Wrong answer. Correct answer was:', question.answer);
-            soundEffects.wrongAnswer();
-            this.handleWrongAnswer();
-            
-            const coinCost = COIN_COSTS.AVOID_DEAD_END;
-            let shouldGoBack = true;
-            
-            // Check if player has enough coins and offer the option
-            if (this.coins >= coinCost) {
-                const useCoins = confirm(
-                    `⚠️ DEBUG PROTOCOL FAILED!\n\n` +
-                    `Option 1: Return to system start (free)\n` +
-                    `Option 2: Override with ${coinCost} data tokens\n\n` +
-                    `Current tokens: ${this.coins}\n` +
-                    `Execute override protocol?`
-                );
-                
-                if (useCoins) {
-                    // Player chooses to spend coins - execute the move
-                    console.log('💰 Player spent coins to continue');
-                    this.addCoins(-coinCost);
-                    shouldGoBack = false;
-                    this.executeMove(newX, newY);
-                }
-            } else {
-                // Not enough coins
-                alert(`💻 INSUFFICIENT DATA TOKENS!\nRequired: ${coinCost} tokens\nAvailable: ${this.coins}\nInitiating system reset...`);
-            }
-            
-            if (shouldGoBack) {
-                // Send back to start
-                console.log('🔄 Sending player back to start');
-                this.playerX = 0;
-                this.playerY = 0;
-                
-                // Update question counter based on new position
-                this.updateQuestionCounter();
-                
-                this.handleDeadEnd();
-                this.draw();
-            } else {
-                // Player moved, update question counter for current position
-                this.updateQuestionCounter();
-            }
-        }
-        
-        // Unlock movement after question is processed
-        this.isMoving = false;
-        console.log('🔓 Movement unlocked');
-        
-        // Clear safety timeout
-        if (this.movementTimeout) {
-            clearTimeout(this.movementTimeout);
-            this.movementTimeout = null;
-        }
-    }
-
     // Emergency debug functions - can be called from console
     forceUnlockMovement() {
         this.isMoving = false;
+        this.isQuestionActive = false; // Reset question lock
         if (this.movementTimeout) {
             clearTimeout(this.movementTimeout);
             this.movementTimeout = null;
         }
-        console.log('🚑 EMERGENCY: Movement force unlocked!');
-        return 'Movement unlocked successfully';
+        console.log('🚑 EMERGENCY: Movement and questions force unlocked!');
+        return 'Movement and questions unlocked successfully';
     }
 
     getGameStatus() {
@@ -1167,17 +1286,41 @@ class MazeGame {
     }
 
     addMoreQuestions() {
-        // Add some backup questions if we run out
-        this.questions.push(
-            new Question(
-                "Emergency question: What is Java?", 
-                "B", 
-                "Java is a programming language",
-                ["A) A coffee", "B) A programming language", "C) An island", "D) A car"]
-            )
-        );
-        console.log('🆘 Added emergency question. Questions now:', this.questions.length);
-        return 'Emergency question added';
+        // Use the same emergency questions system
+        this.addEmergencyQuestions();
+        console.log('🆘 Added more emergency questions. Questions now:', this.questions.length);
+        return `Emergency questions added. Total: ${this.questions.length}`;
+    }
+
+    // New function to return to start screen
+    returnToStartScreen() {
+        console.log('🏠 RETURNING TO START SCREEN');
+        
+        // Unlock everything
+        this.unlockMovement();
+        
+        // Get screen elements
+        const startScreen = document.getElementById('startScreen');
+        const gameContainer = document.getElementById('gameContainer');
+        
+        if (startScreen && gameContainer) {
+            startScreen.style.display = 'flex';
+            gameContainer.style.display = 'none';
+            
+            // Clear the current game
+            if (window.currentGame) {
+                window.currentGame = null;
+            }
+            
+            // Update difficulty button status to show completion
+            if (typeof updateDifficultyButtonStatus === 'function') {
+                updateDifficultyButtonStatus();
+            }
+            
+            console.log('✅ Successfully returned to start screen after completion');
+        } else {
+            console.error('❌ Could not find screen elements for return');
+        }
     }
 }
 

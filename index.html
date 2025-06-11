@@ -93,35 +93,47 @@
         .virtual-dpad {
             display: grid;
             grid-template-rows: repeat(3, 1fr);
-            gap: 8px;
+            gap: 6px;
             margin: 20px auto;
-            width: 180px;
-            height: 180px;
+            width: 170px;
+            height: 170px;
             justify-content: center;
+            align-items: center;
         }
         
         .dpad-row {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         
         .dpad-btn {
-            width: 55px;
-            height: 55px;
+            width: 52px;
+            height: 52px;
             background: linear-gradient(145deg, rgba(0, 255, 65, 0.2), rgba(0, 200, 50, 0.3));
             border: 2px solid #00ff41;
-            border-radius: 8px;
+            border-radius: 10px;
             color: #00ff41;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+            box-shadow: 0 0 12px rgba(0, 255, 65, 0.3);
             user-select: none;
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Special styling for up and down buttons to make them more prominent */
+        #upBtn, #downBtn {
+            background: linear-gradient(145deg, rgba(0, 255, 65, 0.3), rgba(0, 200, 50, 0.4));
+            border: 3px solid #00ff41;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
+            font-size: 26px;
         }
         
         .dpad-btn:hover, .dpad-btn:active {
@@ -130,19 +142,25 @@
             transform: scale(0.95);
             text-shadow: 0 0 10px #00ff41;
         }
+        
+        #upBtn:hover, #downBtn:hover {
+            background: linear-gradient(145deg, rgba(0, 255, 65, 0.5), rgba(0, 200, 50, 0.6));
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.6);
+            text-shadow: 0 0 15px #00ff41;
+        }
 
         .dpad-spacer {
-            width: 55px;
-            height: 55px;
+            width: 52px;
+            height: 52px;
             /* Empty space for layout */
         }
         
         .dpad-center {
-            width: 55px;
-            height: 55px;
+            width: 52px;
+            height: 52px;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(0, 255, 65, 0.2);
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -512,25 +530,33 @@
         
         @media (max-width: 768px) {
             .virtual-dpad {
-                width: 160px;
-                height: 160px;
-                gap: 6px;
+                width: 150px;
+                height: 150px;
+                gap: 5px;
             }
             
             .dpad-btn {
-                width: 50px;
-                height: 50px;
+                width: 46px;
+                height: 46px;
                 font-size: 20px;
+                border-radius: 8px;
+            }
+            
+            /* Mobile styling for up and down buttons */
+            #upBtn, #downBtn {
+                font-size: 22px;
+                border: 2px solid #00ff41;
             }
             
             .dpad-spacer {
-                width: 50px;
-                height: 50px;
+                width: 46px;
+                height: 46px;
             }
             
             .dpad-center {
-                width: 50px;
-                height: 50px;
+                width: 46px;
+                height: 46px;
+                border-radius: 8px;
             }
             
             .character-portrait {
@@ -1129,7 +1155,7 @@
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <script src="game.js?v=20250611-centereddpad"></script>
     
     <script>
     // Game initialization
@@ -1285,6 +1311,32 @@
             alert('🐷 Q has been restored! Refresh the page to see him again!');
         };
 
+        // GLOBAL EVENT SYSTEM RESET - for debugging double questions
+        window.resetGlobalEvents = () => {
+            console.log('🔄 RESETTING GLOBAL EVENT SYSTEM');
+            window.MAZE_GAME_EVENTS_INITIALIZED = false;
+            if (window.GLOBAL_QUESTION_LOCK) {
+                window.GLOBAL_QUESTION_LOCK.isActive = false;
+                window.GLOBAL_QUESTION_LOCK.inputCount = 0;
+                window.GLOBAL_QUESTION_LOCK.lastInputTime = 0;
+            }
+            console.log('✅ Global event system reset - restart game to reinitialize');
+            return 'Global events reset - restart game';
+        };
+
+        // ULTIMATE QUESTION DEBUG
+        window.debugQuestions = () => {
+            const lock = window.GLOBAL_QUESTION_LOCK;
+            const game = window.currentGame;
+            return {
+                globalLock: lock ? lock.isActive : 'not initialized',
+                globalInputCount: lock ? lock.inputCount : 'not initialized',
+                gameMoving: game ? game.isMoving : 'no game',
+                gameQuestionActive: game ? game.isQuestionActive : 'no game',
+                eventsInitialized: window.MAZE_GAME_EVENTS_INITIALIZED || false
+            };
+        };
+
         // Test function to simulate completing all difficulties
         window.testCompleteAllDifficulties = () => {
             console.log('🧪 TESTING COMPLETE ALL DIFFICULTIES...');
@@ -1319,15 +1371,41 @@
         document.getElementById('mediumBtn').addEventListener('click', () => startGame('medium'));
         document.getElementById('hardBtn').addEventListener('click', () => startGame('hard'));
 
-        // Add click event listener to new game button - FIXED
+        // Add click event listener to new game button - ENHANCED
         document.getElementById('newGameBtn').addEventListener('click', () => {
             console.log('🔄 New Game clicked - Returning to start screen');
-            startScreen.style.display = 'flex';
-            gameContainer.style.display = 'none';
-            if (currentGame) {
-                currentGame = null;
+            
+            // Force unlock everything first (in case game is in completed state)
+            if (window.currentGame) {
+                console.log('🔓 Force unlocking current game state');
+                window.currentGame.unlockMovement();
+                window.currentGame = null;
             }
-            updateDifficultyButtonStatus();
+            
+            const startScreen = document.getElementById('startScreen');
+            const gameContainer = document.getElementById('gameContainer');
+            
+            if (startScreen && gameContainer) {
+                startScreen.style.display = 'flex';
+                gameContainer.style.display = 'none';
+                
+                updateDifficultyButtonStatus();
+                console.log('✅ Successfully returned to start screen');
+                
+                // Show a quick feedback message
+                const debugDiv = document.getElementById('inputDebugCounter');
+                if (debugDiv) {
+                    debugDiv.innerHTML = '🏠 Returned to Start Screen';
+                    setTimeout(() => {
+                        if (debugDiv && debugDiv.parentNode) {
+                            debugDiv.parentNode.removeChild(debugDiv);
+                        }
+                    }, 2000);
+                }
+            } else {
+                console.error('❌ Could not find start screen or game container elements');
+                alert('❌ Error: Could not return to start screen. Please refresh the page.');
+            }
         });
 
         // Add event listeners for other buttons - RESTORED
