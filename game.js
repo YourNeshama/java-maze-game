@@ -356,18 +356,69 @@ class MazeGame {
     setupEventListeners() {
         // Global debouncing system to prevent double-triggering from any source
         this.lastInputTime = 0;
+        this.inputCallCount = 0; // Track total input calls
         const INPUT_DEBOUNCE_MS = 150; // Increase debounce time
         
         const safeHandleInput = (dx, dy, source = 'unknown') => {
+            this.inputCallCount++;
             const now = Date.now();
+            const timeSinceLastInput = now - this.lastInputTime;
+            
+            console.log(`📊 INPUT #${this.inputCallCount}: Source=${source}, Time since last=${timeSinceLastInput}ms, isMoving=${this.isMoving}`);
+            
             if (now - this.lastInputTime < INPUT_DEBOUNCE_MS) {
-                console.log(`🚫 Input blocked - too soon after last input (${source})`);
+                console.log(`🚫 Input #${this.inputCallCount} BLOCKED - too soon after last input (${source})`);
+                // Show visual feedback on screen
+                this.showDebugCounter(`❌ BLOCKED: ${source} (${timeSinceLastInput}ms)`);
                 return false;
             }
+            
+            if (this.isMoving) {
+                console.log(`🚫 Input #${this.inputCallCount} BLOCKED - movement in progress (${source})`);
+                this.showDebugCounter(`❌ LOCKED: ${source}`);
+                return false;
+            }
+            
             this.lastInputTime = now;
-            console.log(`🎮 Input accepted from: ${source}`);
+            console.log(`✅ Input #${this.inputCallCount} ACCEPTED from: ${source}`);
+            this.showDebugCounter(`✅ ACCEPTED: ${source}`);
+            
             this.handleDirectionalInput(dx, dy);
             return true;
+        };
+        
+        // Add debug counter display method
+        this.showDebugCounter = (message) => {
+            let debugDiv = document.getElementById('inputDebugCounter');
+            if (!debugDiv) {
+                debugDiv = document.createElement('div');
+                debugDiv.id = 'inputDebugCounter';
+                debugDiv.style.cssText = `
+                    position: fixed;
+                    top: 10px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    color: #00ff41;
+                    padding: 10px;
+                    border: 2px solid #00ff41;
+                    border-radius: 5px;
+                    font-family: 'Courier New', monospace;
+                    font-size: 14px;
+                    z-index: 10000;
+                    text-align: center;
+                `;
+                document.body.appendChild(debugDiv);
+            }
+            debugDiv.innerHTML = `Input #${this.inputCallCount}: ${message}<br>Moving: ${this.isMoving}`;
+            
+            // Auto-hide after 3 seconds
+            clearTimeout(this.debugTimeout);
+            this.debugTimeout = setTimeout(() => {
+                if (debugDiv && debugDiv.parentNode) {
+                    debugDiv.parentNode.removeChild(debugDiv);
+                }
+            }, 3000);
         };
 
         // Keyboard controls
