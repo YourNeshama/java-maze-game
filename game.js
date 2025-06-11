@@ -354,7 +354,23 @@ class MazeGame {
     }
 
     setupEventListeners() {
-        // Keyboard controls - immediate question on keypress
+        // Global debouncing system to prevent double-triggering from any source
+        this.lastInputTime = 0;
+        const INPUT_DEBOUNCE_MS = 150; // Increase debounce time
+        
+        const safeHandleInput = (dx, dy, source = 'unknown') => {
+            const now = Date.now();
+            if (now - this.lastInputTime < INPUT_DEBOUNCE_MS) {
+                console.log(`🚫 Input blocked - too soon after last input (${source})`);
+                return false;
+            }
+            this.lastInputTime = now;
+            console.log(`🎮 Input accepted from: ${source}`);
+            this.handleDirectionalInput(dx, dy);
+            return true;
+        };
+
+        // Keyboard controls
         document.addEventListener('keydown', (e) => {
             if (this.isMoving) return;
             
@@ -367,18 +383,25 @@ class MazeGame {
                 default: return;
             }
             
-            this.handleDirectionalInput(dx, dy);
+            e.preventDefault();
+            safeHandleInput(dx, dy, 'keyboard');
         });
 
-        // Canvas click controls - immediate question on click
+        // Canvas click controls - SINGLE consolidated handler
         this.canvas.addEventListener('click', (e) => {
             if (this.isMoving) return;
             
+            // Only handle left clicks (button 0), ignore right clicks
+            if (e.button !== undefined && e.button !== 0) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
             const rect = this.canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
-            // Calculate which direction was clicked relative to player
+            // Calculate direction relative to player
             const playerPixelX = this.playerX * this.cellSize + this.cellSize/2;
             const playerPixelY = this.playerY * this.cellSize + this.cellSize/2;
             
@@ -387,7 +410,6 @@ class MazeGame {
             const absDeltaX = Math.abs(deltaX);
             const absDeltaY = Math.abs(deltaY);
             
-            // Determine primary direction
             let dx = 0, dy = 0;
             if (absDeltaX > absDeltaY) {
                 dx = deltaX > 0 ? 1 : -1;
@@ -395,59 +417,26 @@ class MazeGame {
                 dy = deltaY > 0 ? 1 : -1;
             }
             
-            this.handleDirectionalInput(dx, dy);
+            safeHandleInput(dx, dy, 'canvas-click');
         });
 
-        // Right-click controls - also trigger questions immediately
+        // Disable right-click context menu without triggering movement
         this.canvas.addEventListener('contextmenu', (e) => {
-            e.preventDefault(); // Prevent browser context menu
-            if (this.isMoving) return;
-            
-            const rect = this.canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            // Calculate which direction was right-clicked relative to player
-            const playerPixelX = this.playerX * this.cellSize + this.cellSize/2;
-            const playerPixelY = this.playerY * this.cellSize + this.cellSize/2;
-            
-            const deltaX = x - playerPixelX;
-            const deltaY = y - playerPixelY;
-            const absDeltaX = Math.abs(deltaX);
-            const absDeltaY = Math.abs(deltaY);
-            
-            // Determine primary direction
-            let dx = 0, dy = 0;
-            if (absDeltaX > absDeltaY) {
-                dx = deltaX > 0 ? 1 : -1;
-            } else {
-                dy = deltaY > 0 ? 1 : -1;
-            }
-            
-            // Show special right-click feedback
-            showDebugPopup('🖱️ Right-click detected - Initiating debug protocol', 'info');
-            
-            this.handleDirectionalInput(dx, dy);
+            e.preventDefault();
+            console.log('🖱️ Right-click disabled on canvas');
         });
 
-        // Additional event to catch right mouse button down
+        // Prevent any mouse button events that might interfere
         this.canvas.addEventListener('mousedown', (e) => {
             if (e.button === 2) { // Right mouse button
                 e.preventDefault();
-                // This will be handled by contextmenu event
+                e.stopPropagation();
             }
         });
 
-        // Prevent drag operations that might interfere
-        this.canvas.addEventListener('dragstart', (e) => {
-            e.preventDefault();
-        });
-
-        // Touch controls - immediate question on swipe
+        // Touch controls with debouncing
         let touchStartX = 0;
         let touchStartY = 0;
-        let touchEndX = 0;
-        let touchEndY = 0;
         const minSwipeDistance = 30;
 
         this.canvas.addEventListener('touchstart', (e) => {
@@ -462,12 +451,14 @@ class MazeGame {
         }, { passive: false });
 
         this.canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
             if (this.isMoving) return;
             
+            e.preventDefault();
+            e.stopPropagation();
+            
             const touch = e.changedTouches[0];
-            touchEndX = touch.clientX;
-            touchEndY = touch.clientY;
+            const touchEndX = touch.clientX;
+            const touchEndY = touch.clientY;
             
             const deltaX = touchEndX - touchStartX;
             const deltaY = touchEndY - touchStartY;
@@ -479,43 +470,32 @@ class MazeGame {
             }
             
             let dx = 0, dy = 0;
-            
             if (absDeltaX > absDeltaY) {
                 dx = deltaX > 0 ? 1 : -1;
             } else {
                 dy = deltaY > 0 ? 1 : -1;
             }
             
-            this.handleDirectionalInput(dx, dy);
+            safeHandleInput(dx, dy, 'touch-swipe');
         }, { passive: false });
 
-        // Virtual D-pad controls - prevent double triggering
+        // Virtual D-pad controls with unified debouncing
         const setupVirtualDPad = () => {
             const upBtn = document.getElementById('upBtn');
             const downBtn = document.getElementById('downBtn');
             const leftBtn = document.getElementById('leftBtn');
             const rightBtn = document.getElementById('rightBtn');
             
-            // Function to handle direction input with debouncing
             const handleDPadInput = (dx, dy, event) => {
+                if (this.isMoving) return;
+                
                 event.preventDefault();
                 event.stopPropagation();
                 
-                // Prevent double-triggering from both mouse and touch events
-                if (this.lastDPadTime && Date.now() - this.lastDPadTime < 100) {
-                    console.log('🚫 D-pad double-click prevented');
-                    return;
-                }
-                this.lastDPadTime = Date.now();
-                
-                if (!this.isMoving) {
-                    console.log('🎮 D-pad input:', { dx, dy });
-                    this.handleDirectionalInput(dx, dy);
-                }
+                safeHandleInput(dx, dy, 'virtual-dpad');
             };
             
             if (upBtn) {
-                // Use mousedown for mouse users, touchstart for touch users
                 upBtn.addEventListener('mousedown', (e) => handleDPadInput(0, -1, e));
                 upBtn.addEventListener('touchstart', (e) => handleDPadInput(0, -1, e), { passive: false });
             }
