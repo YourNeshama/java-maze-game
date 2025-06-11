@@ -489,55 +489,50 @@ class MazeGame {
             this.handleDirectionalInput(dx, dy);
         }, { passive: false });
 
-        // Virtual D-pad controls - immediate question on button press
+        // Virtual D-pad controls - prevent double triggering
         const setupVirtualDPad = () => {
             const upBtn = document.getElementById('upBtn');
             const downBtn = document.getElementById('downBtn');
             const leftBtn = document.getElementById('leftBtn');
             const rightBtn = document.getElementById('rightBtn');
             
+            // Function to handle direction input with debouncing
+            const handleDPadInput = (dx, dy, event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Prevent double-triggering from both mouse and touch events
+                if (this.lastDPadTime && Date.now() - this.lastDPadTime < 100) {
+                    console.log('🚫 D-pad double-click prevented');
+                    return;
+                }
+                this.lastDPadTime = Date.now();
+                
+                if (!this.isMoving) {
+                    console.log('🎮 D-pad input:', { dx, dy });
+                    this.handleDirectionalInput(dx, dy);
+                }
+            };
+            
             if (upBtn) {
-                upBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (!this.isMoving) this.handleDirectionalInput(0, -1);
-                });
-                upBtn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    if (!this.isMoving) this.handleDirectionalInput(0, -1);
-                });
+                // Use mousedown for mouse users, touchstart for touch users
+                upBtn.addEventListener('mousedown', (e) => handleDPadInput(0, -1, e));
+                upBtn.addEventListener('touchstart', (e) => handleDPadInput(0, -1, e), { passive: false });
             }
             
             if (downBtn) {
-                downBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (!this.isMoving) this.handleDirectionalInput(0, 1);
-                });
-                downBtn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    if (!this.isMoving) this.handleDirectionalInput(0, 1);
-                });
+                downBtn.addEventListener('mousedown', (e) => handleDPadInput(0, 1, e));
+                downBtn.addEventListener('touchstart', (e) => handleDPadInput(0, 1, e), { passive: false });
             }
             
             if (leftBtn) {
-                leftBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (!this.isMoving) this.handleDirectionalInput(-1, 0);
-                });
-                leftBtn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    if (!this.isMoving) this.handleDirectionalInput(-1, 0);
-                });
+                leftBtn.addEventListener('mousedown', (e) => handleDPadInput(-1, 0, e));
+                leftBtn.addEventListener('touchstart', (e) => handleDPadInput(-1, 0, e), { passive: false });
             }
             
             if (rightBtn) {
-                rightBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (!this.isMoving) this.handleDirectionalInput(1, 0);
-                });
-                rightBtn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    if (!this.isMoving) this.handleDirectionalInput(1, 0);
-                });
+                rightBtn.addEventListener('mousedown', (e) => handleDPadInput(1, 0, e));
+                rightBtn.addEventListener('touchstart', (e) => handleDPadInput(1, 0, e), { passive: false });
             }
         };
         
